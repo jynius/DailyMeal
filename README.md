@@ -49,6 +49,18 @@ npm run start:dev
 - 실행 주소: http://localhost:8000
 - API 문서: http://localhost:8000/api-docs
 
+### 3. PM2로 전체 실행 (권장)
+```bash
+# PM2 개발 환경 실행
+npm run pm2:dev
+
+# PM2 상태 확인
+npm run pm2:status
+
+# PM2 중지
+npm run pm2:stop
+```
+
 ## 🔧 기술 스택
 
 ### Frontend
@@ -69,6 +81,12 @@ npm run start:dev
 - **Documentation**: Swagger/OpenAPI
 - **File Upload**: Multer
 
+### DevOps & 배포
+- **프로세스 관리**: PM2 (로컬 개발 + 프로덕션)
+- **CI/CD**: GitHub Actions
+- **웹 서버**: Nginx (프로덕션 리버스 프록시)
+- **플랫폼**: Ubuntu 22.04 LTS
+
 ## 📱 API 엔드포인트
 
 ### 인증
@@ -86,16 +104,19 @@ npm run start:dev
 
 ## 🚀 빠른 시작
 
-### 개발 환경
+### 🎯 개발 환경 (PM2 권장)
 ```bash
 # 1. 저장소 클론
-git clone <repository-url>
+git clone https://github.com/jynius/DailyMeal.git
 cd DailyMeal
 
-# 2. 개발 환경 설정
-npm run setup
+# 2. 의존성 설치
+npm run install:all
 
-# 3. 개발 서버 시작 (두 터미널 필요)
+# 3. PM2로 개발 서버 시작 (한 번에 실행)
+npm run pm2:dev
+
+# 또는 개별 터미널 실행
 # 터미널 1: 백엔드
 cd backend && npm run start:dev
 
@@ -142,6 +163,12 @@ npm run stop
 테스트 → dev 브랜치 push → 자동 스테이징 배포
 배포 → prod 브랜치 push → 자동 프로덕션 배포
 ```
+
+### CI/CD 파이프라인
+- **GitHub Actions**: `.github/workflows/deploy.yml`
+- **자동 테스트**: PR 생성 시 백엔드/프론트엔드 테스트 실행
+- **자동 배포**: dev/prod 브랜치 push 시 서버 자동 배포
+- **환경 변수**: GitHub Secrets로 관리
 
 ## �🎨 렌더링 방식 (Hybrid)
 
@@ -204,7 +231,22 @@ npm run dev:backend
 ### 접속 URL
 - **프론트엔드**: http://localhost:3000
 - **백엔드 API**: http://localhost:8000
-- **API 문서**: http://localhost:8000/api (Swagger)
+- **API 문서**: http://localhost:8000/api-docs (Swagger)
+
+### PM2 관리 명령어
+```bash
+# 상태 확인
+pm2 list
+
+# 로그 확인
+pm2 logs
+
+# 재시작
+pm2 restart all
+
+# 완전 정리
+pm2 delete all
+```
 
 ## 🧪 개발 환경
 
@@ -222,4 +264,32 @@ npm run dev:backend
 
 ---
 
-**DailyMeal MVP** - 3개월 개발 계획에 따른 기본 기능 구현 완료 ✅
+---
+
+## 📋 현재 개발 상태
+
+### ✅ 완료된 기능
+- 회원가입/로그인 시스템
+- 식사 기록 CRUD (생성, 조회, 수정, 삭제)
+- 사진 업로드 및 표시
+- 별점 평가 시스템
+- 위치 정보 기록
+- 가격 및 메모 기능
+- 검색 기능 (메뉴명, 장소, 메모)
+- 통계 기능 (총 기록 수, 평균 별점)
+- PM2 프로세스 관리
+- GitHub Actions CI/CD
+- Nginx 프로덕션 배포
+
+### 🚧 알려진 이슈
+- 로컬 PM2 환경에서 간헐적 연결 문제 (일반 dev 서버는 정상)
+- TypeScript strict 모드 적용으로 인한 타입 경고
+
+### 🎯 다음 단계
+- 프로덕션 환경 최적화
+- 성능 모니터링 도구 추가
+- 사용자 피드백 반영
+
+---
+
+**DailyMeal MVP** - 식단 기록의 새로운 경험 🍽️✨
