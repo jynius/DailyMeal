@@ -16,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { Express } from 'express';
 import { MealRecordsService } from './meal-records.service';
 import { CreateMealRecordDto, UpdateMealRecordDto } from '../dto/meal-record.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
