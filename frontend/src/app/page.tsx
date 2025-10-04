@@ -1,8 +1,3 @@
-// 🔥 Static Generation: 정적으로 생성 (빠른 로딩)
-// export const dynamic = 'force-static' // 완전 정적
-// 또는
-export const revalidate = 3600 // 1시간마다 재생성 (ISR)
-
 'use client'
 
 import { useEffect, useState } from "react";

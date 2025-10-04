@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: MealPageProps): Promise<Metad
           {
             url: meal.imageUrl.startsWith('http') 
               ? meal.imageUrl 
-              : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${meal.imageUrl}`,
+              : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${meal.imageUrl}`,
             width: 1200,
             height: 630,
             alt: meal.title,
@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: MealPageProps): Promise<Metad
         description: meal.description,
         images: [meal.imageUrl.startsWith('http') 
           ? meal.imageUrl 
-          : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${meal.imageUrl}`
+          : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${meal.imageUrl}`
         ],
       },
       
@@ -84,7 +84,7 @@ export async function generateMetadata({ params }: MealPageProps): Promise<Metad
 
 async function fetchMealData(id: string): Promise<MealData | null> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const response = await fetch(`${apiUrl}/api/meal-records/${id}`, {
       // SSR에서는 캐시를 사용하지 않음 (최신 데이터)
       cache: 'no-store'
@@ -150,7 +150,7 @@ export default async function MealPage({ params }: MealPageProps) {
             <Image
               src={meal.imageUrl.startsWith('http') 
                 ? meal.imageUrl 
-                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${meal.imageUrl}`
+                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${meal.imageUrl}`
               }
               alt={meal.title}
               fill

@@ -30,7 +30,7 @@ export function MealCard({
       <div className="aspect-square relative bg-gray-100">
         {photo ? (
           <Image
-            src={photo}
+            src={photo.startsWith('http') ? photo : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${photo}`}
             alt={name}
             fill
             className="object-cover"

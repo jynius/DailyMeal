@@ -68,7 +68,7 @@ cat dailymeal-deploy-key
 | 브랜치 | 환경 | 자동 배포 | 서버 경로 | 포트 |
 |--------|------|-----------|-----------|------|
 | `main` | 개발 | ❌ | - | - |
-| `dev` | 스테이징 | ✅ | `/home/ubuntu/DailyMeal-staging` | 8001, 3001 |
+| `dev` | 스테이징 | ✅ | `/home/ubuntu/DailyMeal-staging` | 8000, 3000 |
 | `prod` | 프로덕션 | ✅ | `/home/ubuntu/DailyMeal` | 8000, 3000 |
 
 ## ✅ 설정 확인

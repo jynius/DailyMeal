@@ -252,9 +252,9 @@ export default function AddMealPage() {
       if (result) {
         console.log('✅ Meal record created successfully:', result)
         toast.success('식사 기록이 성공적으로 저장되었습니다! 🎉', '저장 완료')
-        // 잠시 후 페이지 이동
+        // 잠시 후 페이지 이동 (완전 새로고침으로 API 재초기화)
         setTimeout(() => {
-          router.push('/feed')
+          window.location.href = '/feed'
         }, 1500)
       }
     } catch (error: any) {

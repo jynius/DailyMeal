@@ -5,7 +5,7 @@
 	Skip this step otherwise.
 	 -->
 
-- [x] Launch the Project ✅ Frontend (3000) + Backend (3001) + API connectedcific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
+- [x] Launch the Project ✅ Frontend (3000) + Backend (8000) + API connectedcific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 - [x] Verify that the copilot-instructions.md file in the .github directory is created. ✅ Created
 
 - [x] Clarify Project Requirements ✅ DailyMeal MVP: Next.js + NestJS fullstack food logging app
@@ -47,7 +47,7 @@
 	Skip this step otherwise.
 	 -->
 
-- [x] Launch the Project ✅ Frontend (3000) + Backend (3001) + API connected
+- [x] Launch the Project ✅ Frontend (3000) + Backend (8000) + API connected
 	<!--
 	Verify that all previous steps have been completed.
 	Prompt user for debug mode, launch only if confirmed.

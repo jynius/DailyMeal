@@ -1,6 +1,6 @@
 // 데일리밀 API 클라이언트
 
-const API_BASE_URL = 'http://localhost:3001'
+const API_BASE_URL = 'http://localhost:8000'
 console.log('🌐 API Base URL set to:', API_BASE_URL)
 
 export interface ApiResponse<T> {
@@ -95,19 +95,40 @@ async function apiRequest<T>(
 
   console.log('📤 Making request to:', `${API_BASE_URL}${endpoint}`)
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  })
+  // 타임아웃 설정
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10000) // 10초 타임아웃
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ 
-      error: '서버 오류가 발생했습니다' 
-    }))
-    throw new Error(error.error || error.message || '요청 실패')
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+      signal: controller.signal
+    })
+
+    clearTimeout(timeoutId) // 성공시 타임아웃 제거
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ 
+        error: '서버 오류가 발생했습니다' 
+      }))
+      throw new Error(error.error || error.message || '요청 실패')
+    }
+
+    return response.json()
+  } catch (error: any) {
+    clearTimeout(timeoutId) // 오류시 타임아웃 제거
+    
+    if (error.name === 'AbortError') {
+      throw new Error('요청이 시간 초과되었습니다')
+    }
+    
+    if (error.code === 'ECONNREFUSED' || error.message?.includes('ERR_CONNECTION_REFUSED')) {
+      throw new Error('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
+    }
+    
+    throw error
   }
-
-  return response.json()
 }
 
 // 인증 API

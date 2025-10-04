@@ -46,8 +46,8 @@ cd backend
 npm install
 npm run start:dev
 ```
-- 실행 주소: http://localhost:3001
-- API 문서: http://localhost:3001/api-docs
+- 실행 주소: http://localhost:8000
+- API 문서: http://localhost:8000/api-docs
 
 ## 🔧 기술 스택
 
@@ -197,14 +197,14 @@ npm run dev
 # 프론트엔드만 실행 (포트: 3000)
 npm run dev:frontend
 
-# 백엔드만 실행 (포트: 3001)  
+# 백엔드만 실행 (포트: 8000)  
 npm run dev:backend
 ```
 
 ### 접속 URL
 - **프론트엔드**: http://localhost:3000
-- **백엔드 API**: http://localhost:3001
-- **API 문서**: http://localhost:3001/api (Swagger)
+- **백엔드 API**: http://localhost:8000
+- **API 문서**: http://localhost:8000/api (Swagger)
 
 ## 🧪 개발 환경
 

@@ -41,7 +41,7 @@ async function bootstrap() {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT || 8000;
   await app.listen(port);
   
   console.log(`🚀 DailyMeal API Server running on http://localhost:${port}`);

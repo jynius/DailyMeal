@@ -4,7 +4,10 @@ name: DailyMeal CI/CD Pipeline
 # 트리거 조건
 on:
   push:
-    branches: [ dev, prod ] # dev(스테이징), prod(운영) 브랜치 배포
+          script: |
+          cd /home/ubuntu/DailyMeal-staging
+          export BACKEND_PORT=8000
+          export FRONTEND_PORT=3000anches: [ dev, prod ] # dev(스테이징), prod(운영) 브랜치 배포
   pull_request:
     branches: [ main, dev ] # main, dev로의 PR 시 테스트 실행
 
@@ -80,15 +83,15 @@ jobs:
         script: |
           cd /home/ubuntu/DailyMeal
           export BACKEND_PORT=8001
-          export FRONTEND_PORT=3001
+          export FRONTEND_PORT=8000
           npm ci --omit=dev --prefix ./backend
           npm ci --omit=dev --prefix ./frontend
           chmod +x deploy.sh && ./deploy.sh
           
           # Staging 헬스 체크
           sleep 5
-          curl -f http://localhost:8001/api-docs || exit 1
-          curl -f http://localhost:3001 || exit 1
+          curl -f http://localhost:8000/api-docs || exit 1
+          curl -f http://localhost:3000 || exit 1
           echo "✅ Staging 배포 완료!"
 
   # 🚀 프로덕션 환경 배포 (prod 브랜치 → 운영 서버)

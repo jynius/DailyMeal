@@ -1,6 +1,3 @@
-// 🔥 Static Generation with ISR: 1시간마다 재생성
-export const revalidate = 3600
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -16,18 +13,31 @@ export default function FeedPage() {
   useEffect(() => {
     const fetchMeals = async () => {
       try {
+        // 짧은 딜레이를 추가하여 API 클라이언트 안정화
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
         // 임시로 로그인한 사용자가 없어도 빈 배열을 보여주도록 처리
         const result = await mealRecordsApi.getAll()
         console.log('🍽️ API Response:', result)
         if (Array.isArray(result)) {
-          console.log('📸 Image URLs:', result.map((meal: MealRecord) => meal.photo))
+          console.log('📸 Image URLs:', result.map((meal: MealRecord) => meal.photos))
           setMeals(result)
         } else if (result.data) {
-          console.log('📸 Image URLs:', result.data.map((meal: MealRecord) => meal.photo))
+          console.log('📸 Image URLs:', result.data.map((meal: MealRecord) => meal.photos))
           setMeals(result.data)
         }
       } catch (err: any) {
         console.error('식사 기록 로딩 실패:', err)
+        
+        // 연결 오류의 경우 재시도 로직
+        if (err.message?.includes('ERR_CONNECTION_REFUSED') || err.code === 'ECONNREFUSED') {
+          console.log('🔄 Connection failed, retrying in 1 second...')
+          setTimeout(() => {
+            window.location.reload()
+          }, 1000)
+          return
+        }
+        
         // 인증 오류인 경우 샘플 데이터 표시
         if (err.message?.includes('unauthorized') || err.message?.includes('401')) {
           setMeals(getSampleMeals())

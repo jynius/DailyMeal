@@ -23,7 +23,7 @@ export class MealRecordsService {
     }
     
     // 상대 경로를 절대 URL로 변환
-    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
+    const baseUrl = process.env.API_BASE_URL || 'http://localhost:8000';
     return `${baseUrl}${photo}`;
   }
 

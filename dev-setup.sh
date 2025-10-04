@@ -5,7 +5,7 @@ echo "🔧 DailyMeal 개발 환경 시작..."
 
 # 환경 변수 설정
 export NODE_ENV=development
-export NEXT_PUBLIC_API_URL=http://localhost:3001
+export NEXT_PUBLIC_API_URL=http://localhost:8000
 export NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 echo "📦 의존성 설치 중..."
