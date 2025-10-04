@@ -26,11 +26,12 @@ export default function FeedPage() {
           console.log('📸 Image URLs:', result.data.map((meal: MealRecord) => meal.photos))
           setMeals(result.data)
         }
-      } catch (err: any) {
-        console.error('식사 기록 로딩 실패:', err)
+      } catch (err: unknown) {
+        const error = err as Error
+        console.error('식사 기록 로딩 실패:', error)
         
         // 연결 오류의 경우 재시도 로직
-        if (err.message?.includes('ERR_CONNECTION_REFUSED') || err.code === 'ECONNREFUSED') {
+        if (error.message?.includes('ERR_CONNECTION_REFUSED') || 'code' in error && error.code === 'ECONNREFUSED') {
           console.log('🔄 Connection failed, retrying in 1 second...')
           setTimeout(() => {
             window.location.reload()
@@ -39,10 +40,10 @@ export default function FeedPage() {
         }
         
         // 인증 오류인 경우 샘플 데이터 표시
-        if (err.message?.includes('unauthorized') || err.message?.includes('401')) {
+        if (error.message?.includes('unauthorized') || error.message?.includes('401')) {
           setMeals(getSampleMeals())
         } else {
-          setError(err.message || '식사 기록을 불러올 수 없습니다.')
+          setError(error.message || '식사 기록을 불러올 수 없습니다.')
         }
       } finally {
         setLoading(false)

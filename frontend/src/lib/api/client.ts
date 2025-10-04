@@ -116,18 +116,19 @@ async function apiRequest<T>(
     }
 
     return response.json()
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error
     clearTimeout(timeoutId) // 오류시 타임아웃 제거
     
-    if (error.name === 'AbortError') {
+    if (err.name === 'AbortError') {
       throw new Error('요청이 시간 초과되었습니다')
     }
     
-    if (error.code === 'ECONNREFUSED' || error.message?.includes('ERR_CONNECTION_REFUSED')) {
+    if (('code' in err && err.code === 'ECONNREFUSED') || err.message?.includes('ERR_CONNECTION_REFUSED')) {
       throw new Error('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
     }
     
-    throw error
+    throw err
   }
 }
 

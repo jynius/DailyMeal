@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { Camera, Star, MapPin } from "lucide-react";
+import { Camera } from "lucide-react";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { AuthForm } from "@/components/auth/auth-form";
 import { tokenManager, mealRecordsApi, type MealRecord } from "@/lib/api/client";
