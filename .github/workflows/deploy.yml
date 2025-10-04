@@ -55,11 +55,11 @@ jobs:
         
     - name: 🔧 Build backend (Staging)
       run: |
-        cd backend && npm ci --omit=dev && npm run build
+        cd backend && npm ci && npm run build
         
     - name: 🎨 Build frontend (Staging)  
       run: |
-        cd frontend && npm ci --omit=dev && npm run build:hybrid
+        cd frontend && npm ci && npm run build:hybrid
       env:
         NEXT_PUBLIC_API_URL: /api
         NEXT_PUBLIC_SITE_URL: ${{ vars.STAGING_DOMAIN_URL || 'http://dev.localhost' }}
@@ -84,8 +84,8 @@ jobs:
           cd /home/ubuntu/DailyMeal
           export BACKEND_PORT=8001
           export FRONTEND_PORT=8000
-          npm ci --omit=dev --prefix ./backend
-          npm ci --omit=dev --prefix ./frontend
+          npm ci --prefix ./backend
+          npm ci --prefix ./frontend
           chmod +x deploy.sh && ./deploy.sh
           
           # Staging 헬스 체크
@@ -112,11 +112,11 @@ jobs:
         
     - name: 🔧 Build backend (Production)
       run: |
-        cd backend && npm ci --omit=dev && npm run build
+        cd backend && npm ci && npm run build
         
     - name: 🎨 Build frontend (Production)
       run: |
-        cd frontend && npm ci --omit=dev && npm run build:hybrid
+        cd frontend && npm ci && npm run build:hybrid
       env:
         NEXT_PUBLIC_API_URL: /api
         NEXT_PUBLIC_SITE_URL: ${{ vars.DOMAIN_URL || 'http://localhost' }}
@@ -148,9 +148,9 @@ jobs:
         script: |
           cd /home/ubuntu/DailyMeal
           
-          # 의존성 설치 (프로덕션용)
-          npm ci --omit=dev --prefix ./backend
-          npm ci --omit=dev --prefix ./frontend
+          # 의존성 설치 (프로덕션용) - 빌드 도구 포함
+          npm ci --prefix ./backend
+          npm ci --prefix ./frontend
           
           # PM2 서비스 재시작
           export BACKEND_PORT=8000
