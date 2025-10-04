@@ -6,8 +6,18 @@ const nextConfig: NextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
-        port: '3001',
+        port: '8000',
         pathname: '/uploads/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'your-domain.com',
+        pathname: '/api/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'your-domain.com',
+        pathname: '/api/uploads/**',
       },
     ],
     formats: ['image/webp', 'image/avif'],
@@ -19,6 +29,8 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
+  // Hybrid 렌더링: 페이지별로 다른 렌더링 방식 사용
+  // output: 'export' 제거 - 페이지별 설정 사용
 };
 
 export default nextConfig;

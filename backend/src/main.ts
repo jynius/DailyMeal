@@ -6,9 +6,13 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS 설정
+  // CORS 설정 (Nginx 리버스 프록시 고려)
   app.enableCors({
-    origin: ['http://localhost:3000'], // 프론트엔드 URL
+    origin: [
+      'http://localhost:3000', // 개발 환경
+      'http://your-domain.com', // 프로덕션 도메인
+      'https://your-domain.com' // HTTPS 프로덕션 도메인
+    ],
     credentials: true,
   });
 

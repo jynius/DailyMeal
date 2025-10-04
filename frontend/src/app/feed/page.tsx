@@ -1,3 +1,6 @@
+// 🔥 Static Generation with ISR: 1시간마다 재생성
+export const revalidate = 3600
+
 'use client'
 
 import { useEffect, useState } from 'react'

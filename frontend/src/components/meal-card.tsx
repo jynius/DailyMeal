@@ -1,5 +1,6 @@
 import { Star, MapPin, Clock } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 interface MealCardProps {
   id: string
@@ -13,6 +14,7 @@ interface MealCardProps {
 }
 
 export function MealCard({
+  id,
   name,
   photo,
   location,
@@ -22,7 +24,8 @@ export function MealCard({
   price,
 }: MealCardProps) {
   return (
-    <div className="bg-white rounded-lg border overflow-hidden shadow-sm">
+    <Link href={`/meal/${id}`} className="block">
+      <div className="bg-white rounded-lg border overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
       {/* Photo */}
       <div className="aspect-square relative bg-gray-100">
         {photo ? (
@@ -83,5 +86,6 @@ export function MealCard({
         </div>
       </div>
     </div>
+    </Link>
   )
 }

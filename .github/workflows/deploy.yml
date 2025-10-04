@@ -1,0 +1,167 @@
+# DailyMeal 자동 배포 워크플로우
+name: DailyMeal CI/CD Pipeline
+
+# 트리거 조건
+on:
+  push:
+    branches: [ dev, prod ] # dev(스테이징), prod(운영) 브랜치 배포
+  pull_request:
+    branches: [ main, dev ] # main, dev로의 PR 시 테스트 실행
+
+jobs:
+  # PR 테스트 (main 또는 dev로의 PR일 때)
+  test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: 📥 Checkout source code
+      uses: actions/checkout@v4
+      
+    - name: ⚙️ Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: 🧪 Run tests
+      run: |
+        # 백엔드 테스트
+        cd backend && npm install && npm run test
+        # 프론트엔드 빌드 테스트
+        cd ../frontend && npm install && npm run build:hybrid
+      env:
+        NEXT_PUBLIC_API_URL: /api
+        NEXT_PUBLIC_SITE_URL: http://localhost
+
+  # 🔧 Staging 환경 배포 (dev 브랜치 → 스테이징 서버)
+  deploy-staging:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-22.04
+    environment: staging
+    
+    steps:
+    - name: 📥 Checkout source code
+      uses: actions/checkout@v4
+      
+    - name: ⚙️ Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: 🔧 Build backend (Staging)
+      run: |
+        cd backend && npm ci --omit=dev && npm run build
+        
+    - name: 🎨 Build frontend (Staging)  
+      run: |
+        cd frontend && npm ci --omit=dev && npm run build:hybrid
+      env:
+        NEXT_PUBLIC_API_URL: /api
+        NEXT_PUBLIC_SITE_URL: ${{ vars.STAGING_DOMAIN_URL || 'http://dev.localhost' }}
+        
+    - name: 🚀 Deploy to Staging Server
+      uses: easingthemes/ssh-deploy@main
+      with:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+        REMOTE_HOST: ${{ vars.EC2_HOST }}
+        REMOTE_USER: ${{ vars.EC2_USERNAME }}
+        SOURCE: "./"
+        TARGET: "/home/ubuntu/DailyMeal"
+        EXCLUDE: "/node_modules/, /.git/, /deprecated/, /dailymeal-deploy-key*"
+        
+    - name: ⚡ Restart Staging Services
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ vars.EC2_HOST }}
+        username: ${{ vars.EC2_USERNAME }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        script: |
+          cd /home/ubuntu/DailyMeal
+          export BACKEND_PORT=8001
+          export FRONTEND_PORT=3001
+          npm ci --omit=dev --prefix ./backend
+          npm ci --omit=dev --prefix ./frontend
+          chmod +x deploy.sh && ./deploy.sh
+          
+          # Staging 헬스 체크
+          sleep 5
+          curl -f http://localhost:8001/api-docs || exit 1
+          curl -f http://localhost:3001 || exit 1
+          echo "✅ Staging 배포 완료!"
+
+  # 🚀 프로덕션 환경 배포 (prod 브랜치 → 운영 서버)
+  deploy-production:
+    if: github.ref == 'refs/heads/prod'
+    runs-on: ubuntu-22.04
+    environment: production
+    
+    steps:
+    - name: 📥 Checkout source code
+      uses: actions/checkout@v4
+
+    - name: ⚙️ Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20' # LTS 버전 (안정성 우선)
+        cache: 'npm'
+        
+    - name: 🔧 Build backend (Production)
+      run: |
+        cd backend && npm ci --omit=dev && npm run build
+        
+    - name: 🎨 Build frontend (Production)
+      run: |
+        cd frontend && npm ci --omit=dev && npm run build:hybrid
+      env:
+        NEXT_PUBLIC_API_URL: /api
+        NEXT_PUBLIC_SITE_URL: ${{ vars.DOMAIN_URL || 'http://localhost' }}
+        
+    - name: 🚀 Deploy to Production Server
+      uses: easingthemes/ssh-deploy@main
+      with:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+        REMOTE_HOST: ${{ vars.EC2_HOST }}
+        REMOTE_USER: ${{ vars.EC2_USERNAME }}
+        SOURCE: "./"
+        TARGET: "/home/ubuntu/DailyMeal"
+        EXCLUDE: "/node_modules/, /.git/, /deprecated/, /dailymeal-deploy-key*"
+        SCRIPT_BEFORE: |
+          # 배포 전 백업
+          if [ -d "/home/ubuntu/DailyMeal-backup" ]; then
+            rm -rf /home/ubuntu/DailyMeal-backup
+          fi
+          if [ -d "/home/ubuntu/DailyMeal" ]; then
+            mv /home/ubuntu/DailyMeal /home/ubuntu/DailyMeal-backup
+          fi
+          
+    - name: ⚡ Restart Production Services
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ vars.EC2_HOST }}
+        username: ${{ vars.EC2_USERNAME }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        script: |
+          cd /home/ubuntu/DailyMeal
+          
+          # 의존성 설치 (프로덕션용)
+          npm ci --omit=dev --prefix ./backend
+          npm ci --omit=dev --prefix ./frontend
+          
+          # PM2 서비스 재시작
+          export BACKEND_PORT=8000
+          export FRONTEND_PORT=3000
+          chmod +x deploy.sh && ./deploy.sh
+          
+          # Nginx 설정 확인 및 재로드
+          if [ -f "/etc/nginx/sites-available/dailymeal" ]; then
+            sudo nginx -t && sudo systemctl reload nginx
+          fi
+          
+          # 프로덕션 헬스 체크
+          sleep 5
+          curl -f http://localhost:8000/api-docs || exit 1
+          curl -f http://localhost:3000 || exit 1
+          echo "✅ 프로덕션 배포 완료!"
+        
