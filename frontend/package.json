@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "build:hybrid": "next build",
-    "start": "next start",
-    "start:hybrid": "next start -p 3000",
+    "dev": "npx next dev --turbopack",
+    "build": "npx next build --turbopack",
+    "build:hybrid": "npx next build",
+    "start": "npx next start",
+    "start:hybrid": "npx next start -p 3000",
     "lint": "eslint"
   },
   "dependencies": {
