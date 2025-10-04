@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { MealRecordsModule } from './meal-records/meal-records.module';
 import { User } from './entities/user.entity';
 import { MealRecord } from './entities/meal-record.entity';
+import { AppLoggerService, PackageLogger } from './common/logger.service';
+import { loggerConfig } from './common/logger.config';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -52,6 +54,16 @@ import { MealRecord } from './entities/meal-record.entity';
     MealRecordsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: AppLoggerService,
+      useFactory: () => {
+        const logger = new AppLoggerService(loggerConfig);
+        PackageLogger.setGlobalLogger(logger);
+        return logger;
+      }
+    }
+  ],
 })
 export class AppModule {}

@@ -2,18 +2,35 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from './auth.service';
+import { AppLoggerService } from '../common/logger.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  private readonly logger = AppLoggerService.getLogger('JwtStrategy');
+
   constructor(private authService: AuthService) {
+    const jwtSecret = 'dailymeal-fixed-secret-key';
+    
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'dailymeal-secret-key',
+      secretOrKey: jwtSecret,
     });
+    
+    this.logger.info(`JWT Strategy initialized with secret: ${jwtSecret.substring(0, 10)}...`);
   }
 
   async validate(payload: any) {
-    return await this.authService.validateUser(payload.sub);
+    this.logger.debug('Validating JWT payload');
+    this.logger.trace(`Payload details: ${JSON.stringify(payload)}`);
+    
+    try {
+      const user = await this.authService.validateUser(payload.sub);
+      this.logger.info(`User ${payload.email} authenticated successfully`);
+      return user;
+    } catch (error) {
+      this.logger.error(`JWT validation failed for user ${payload.email}`, error as Error);
+      throw error;
+    }
   }
 }

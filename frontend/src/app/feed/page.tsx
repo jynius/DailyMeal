@@ -15,7 +15,14 @@ export default function FeedPage() {
       try {
         // 임시로 로그인한 사용자가 없어도 빈 배열을 보여주도록 처리
         const result = await mealRecordsApi.getAll()
-        setMeals(result.data)
+        console.log('🍽️ API Response:', result)
+        if (Array.isArray(result)) {
+          console.log('📸 Image URLs:', result.map((meal: MealRecord) => meal.photo))
+          setMeals(result)
+        } else if (result.data) {
+          console.log('📸 Image URLs:', result.data.map((meal: MealRecord) => meal.photo))
+          setMeals(result.data)
+        }
       } catch (err: any) {
         console.error('식사 기록 로딩 실패:', err)
         // 인증 오류인 경우 샘플 데이터 표시

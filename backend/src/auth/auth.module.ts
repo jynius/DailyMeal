@@ -12,7 +12,7 @@ import { User } from '../entities/user.entity';
     TypeOrmModule.forFeature([User]),
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'dailymeal-secret-key',
+      secret: 'dailymeal-fixed-secret-key',
       signOptions: { expiresIn: '7d' },
     }),
   ],

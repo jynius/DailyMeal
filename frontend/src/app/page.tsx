@@ -1,15 +1,18 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { Camera, Plus, Star, MapPin } from "lucide-react";
+import { Camera, Star, MapPin } from "lucide-react";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { AuthForm } from "@/components/auth/auth-form";
-import { tokenManager } from "@/lib/api/client";
+import { tokenManager, mealRecordsApi, type MealRecord } from "@/lib/api/client";
+import { MealCard } from "@/components/meal-card";
 import Link from "next/link";
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [meals, setMeals] = useState<MealRecord[]>([])
+  const [mealsLoading, setMealsLoading] = useState(false)
 
   useEffect(() => {
     const token = tokenManager.get()
@@ -17,8 +20,35 @@ export default function Home() {
     setIsLoading(false)
   }, [])
 
+  // 로그인 상태일 때 식사 기록 불러오기
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchMeals()
+    }
+  }, [isAuthenticated])
+
+  const fetchMeals = async () => {
+    try {
+      setMealsLoading(true)
+      const result = await mealRecordsApi.getAll()
+      console.log('🏠 Home - API Response:', result)
+      
+      if (Array.isArray(result)) {
+        setMeals(result.slice(0, 3)) // 최신 3개만 표시
+      } else if (result.data) {
+        setMeals(result.data.slice(0, 3)) // 최신 3개만 표시
+      }
+    } catch (error) {
+      console.error('식사 기록 로딩 실패:', error)
+      setMeals([]) // 에러시 빈 배열
+    } finally {
+      setMealsLoading(false)
+    }
+  }
+
   const handleAuthSuccess = () => {
     setIsAuthenticated(true)
+    // 로그인 후 식사 기록을 불러옴 (useEffect에서 자동 실행됨)
   }
 
   if (isLoading) {
@@ -41,76 +71,50 @@ export default function Home() {
     <div className="max-w-md mx-auto min-h-screen bg-white pb-20">
       {/* Header */}
       <header className="bg-white border-b px-4 py-3 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">DailyMeal</h1>
-          <Link href="/add" className="p-2 rounded-full bg-blue-500 text-white">
-            <Plus size={20} />
-          </Link>
-        </div>
+        <h1 className="text-xl font-bold text-gray-900">DailyMeal</h1>
       </header>
 
-      {/* Welcome Message */}
-      <div className="p-6 text-center">
-        <div className="mb-4">
-          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Camera size={32} className="text-blue-500" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            환영합니다!
-          </h2>
-          <p className="text-gray-600 mb-6">
-            매일의 식사를 기록하고<br />
-            소중한 추억을 남겨보세요
-          </p>
+      {/* 식사 기록이 없을 때만 Welcome Message 표시 */}
+      {mealsLoading ? (
+        <div className="p-6 text-center">
+          <div className="text-gray-500">식사 기록을 불러오는 중...</div>
         </div>
-        
-        <Link href="/add" className="block w-full bg-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors text-center">
-          첫 번째 식사 기록하기
-        </Link>
-      </div>
-
-      {/* Sample Feed (Preview) */}
-      <div className="px-4 pb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          이런 식으로 기록해보세요
-        </h3>
-        
-        {/* Sample Meal Card */}
-        <div className="bg-white rounded-lg border overflow-hidden shadow-sm">
-          <div className="aspect-square bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
-            <Camera size={48} className="text-orange-400" />
+      ) : meals.length === 0 ? (
+        <div className="p-6 text-center">
+          <div className="mb-4">
+            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Camera size={32} className="text-blue-500" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              환영합니다!
+            </h2>
+            <p className="text-gray-600 mb-6">
+              매일의 식사를 기록하고<br />
+              소중한 추억을 남겨보세요
+            </p>
           </div>
           
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-semibold text-gray-900">맛있는 파스타</h4>
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    size={16} 
-                    className={i < 4 ? "text-yellow-400 fill-current" : "text-gray-300"} 
-                  />
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex items-center text-sm text-gray-500 mb-2">
-              <MapPin size={14} className="mr-1" />
-              홍대 이탈리안 레스토랑
-            </div>
-            
-            <p className="text-sm text-gray-600">
-              친구들과 함께 먹은 맛있는 파스타! 
-              크림소스가 정말 진했어요 🍝
-            </p>
-            
-            <div className="mt-3 text-xs text-gray-400">
-              2024년 10월 3일 오후 1:30
-            </div>
+          <Link href="/add" className="block w-full bg-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors text-center">
+            첫 번째 식사 기록하기
+          </Link>
+        </div>
+      ) : (
+        // 식사 기록이 있을 때 표시
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">최근 식사 기록</h2>
+            <Link href="/feed" className="text-blue-500 text-sm font-medium">
+              더보기 →
+            </Link>
+          </div>
+          
+          <div className="space-y-4">
+            {meals.map((meal) => (
+              <MealCard key={meal.id} {...meal} />
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
       <BottomNavigation />
     </div>

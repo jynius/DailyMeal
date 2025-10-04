@@ -1,6 +1,7 @@
 // 데일리밀 API 클라이언트
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const API_BASE_URL = 'http://localhost:3001'
+console.log('🌐 API Base URL set to:', API_BASE_URL)
 
 export interface ApiResponse<T> {
   success?: boolean
@@ -19,23 +20,29 @@ export interface User {
 export interface MealRecord {
   id: string
   name: string
-  photo?: string
+  photos?: string[]
   location?: string
   rating: number
   memo?: string
   price?: number
   userId: string
+  latitude?: number
+  longitude?: number
+  address?: string
   createdAt: string
   updatedAt: string
 }
 
 export interface CreateMealRecordData {
   name: string
-  photo?: File
+  photos?: File[]
   location?: string
   rating: number
   memo?: string
   price?: number
+  latitude?: number
+  longitude?: number
+  address?: string
 }
 
 // 토큰 관리
@@ -66,19 +73,27 @@ async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = tokenManager.get()
+  const isFormData = options.body instanceof FormData
   
-  const headers: HeadersInit = {
-    ...options.headers,
-  }
+  console.log('🔑 API Request Debug:')
+  console.log('Endpoint:', endpoint)
+  console.log('Full URL:', `${API_BASE_URL}${endpoint}`)
+  console.log('Token exists:', !!token)
+  console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'null')
+  console.log('Is FormData:', isFormData)
   
-  // multipart/form-data가 아닌 경우에만 Content-Type 설정
-  if (!(options.body instanceof FormData)) {
+  const headers: Record<string, string> = {}
+  
+  // 파일 업로드가 아닌 경우만 Content-Type 설정
+  if (!isFormData) {
     headers['Content-Type'] = 'application/json'
   }
   
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
   }
+
+  console.log('📤 Making request to:', `${API_BASE_URL}${endpoint}`)
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
@@ -120,8 +135,10 @@ export const mealRecordsApi = {
     formData.append('name', data.name)
     formData.append('rating', data.rating.toString())
     
-    if (data.photo) {
-      formData.append('photo', data.photo)
+    if (data.photos && data.photos.length > 0) {
+      data.photos.forEach((photo) => {
+        formData.append('photos', photo)
+      })
     }
     if (data.location) {
       formData.append('location', data.location)
@@ -132,7 +149,23 @@ export const mealRecordsApi = {
     if (data.price) {
       formData.append('price', data.price.toString())
     }
+    if (data.latitude) {
+      formData.append('latitude', data.latitude.toString())
+    }
+    if (data.longitude) {
+      formData.append('longitude', data.longitude.toString())
+    }
+    if (data.address) {
+      formData.append('address', data.address)
+    }
     
+    return apiRequest<MealRecord>('/meal-records', {
+      method: 'POST',
+      body: formData,
+    })
+  },
+
+  createWithFiles: async (formData: FormData) => {
     return apiRequest<MealRecord>('/meal-records', {
       method: 'POST',
       body: formData,

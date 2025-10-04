@@ -5,15 +5,19 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User } from '../entities/user.entity';
 import { CreateUserDto, LoginDto } from '../dto/user.dto';
+import { AppLoggerService, LogMethod } from '../common/logger.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = AppLoggerService.getLogger('AuthService');
+
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
   ) {}
 
+  @LogMethod()
   async register(createUserDto: CreateUserDto) {
     const { email, password, name } = createUserDto;
 
@@ -54,6 +58,7 @@ export class AuthService {
     };
   }
 
+  @LogMethod()
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
@@ -88,15 +93,20 @@ export class AuthService {
     };
   }
 
+  @LogMethod()
   async validateUser(userId: string) {
+    this.logger.debug(`Validating user with ID: ${userId}`);
+    
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
-
+    
     if (!user) {
+      this.logger.warn(`User not found with ID: ${userId}`);
       throw new UnauthorizedException('유효하지 않은 사용자입니다');
     }
 
+    this.logger.debug(`User validated: ${user.email}`);
     return {
       id: user.id,
       email: user.email,

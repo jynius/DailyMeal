@@ -11,18 +11,46 @@ export class MealRecordsService {
     private mealRecordRepository: Repository<MealRecord>,
   ) {}
 
+  /**
+   * 이미지 경로를 절대 URL로 변환
+   */
+  private transformImageUrl(photo: string | null): string | null {
+    if (!photo) return null;
+    
+    // 이미 절대 URL인 경우
+    if (photo.startsWith('http')) {
+      return photo;
+    }
+    
+    // 상대 경로를 절대 URL로 변환
+    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
+    return `${baseUrl}${photo}`;
+  }
+
+  /**
+   * MealRecord 엔티티의 이미지 URL을 변환
+   */
+  private transformMealRecord(mealRecord: MealRecord): any {
+    return {
+      ...mealRecord,
+      photo: this.transformImageUrl(mealRecord.photo),
+    };
+  }
+
   async create(
     createMealRecordDto: CreateMealRecordDto,
     userId: string,
-    photo?: string,
+    photos?: string[],
   ) {
     const mealRecord = this.mealRecordRepository.create({
       ...createMealRecordDto,
       userId,
-      photo,
+      photo: photos && photos.length > 0 ? photos[0] : undefined, // 첫 번째 사진을 메인 사진으로
+      photos: photos || [], // 모든 사진들
     });
 
-    return await this.mealRecordRepository.save(mealRecord);
+    const saved = await this.mealRecordRepository.save(mealRecord);
+    return this.transformMealRecord(saved);
   }
 
   async findAll(userId: string, page: number = 1, limit: number = 10) {
@@ -36,7 +64,7 @@ export class MealRecordsService {
     });
 
     return {
-      data: mealRecords,
+      data: mealRecords.map(record => this.transformMealRecord(record)),
       total,
       page,
       limit,
@@ -53,7 +81,7 @@ export class MealRecordsService {
       throw new NotFoundException('식사 기록을 찾을 수 없습니다');
     }
 
-    return mealRecord;
+    return this.transformMealRecord(mealRecord);
   }
 
   async update(

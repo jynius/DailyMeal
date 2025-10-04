@@ -46,6 +46,35 @@ export class CreateMealRecordDto {
   @IsNumber()
   @Transform(({ value }) => value ? parseFloat(value) : undefined)
   price?: number;
+
+  @ApiProperty({ 
+    example: 37.5665, 
+    description: 'GPS 위도',
+    required: false 
+  })
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  latitude?: number;
+
+  @ApiProperty({ 
+    example: 126.9780, 
+    description: 'GPS 경도',
+    required: false 
+  })
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  longitude?: number;
+
+  @ApiProperty({ 
+    example: '서울특별시 마포구 홍익로 39', 
+    description: '상세 주소',
+    required: false 
+  })
+  @IsOptional()
+  @IsString()
+  address?: string;
 }
 
 export class UpdateMealRecordDto {
@@ -95,4 +124,33 @@ export class UpdateMealRecordDto {
   @IsNumber()
   @Transform(({ value }) => value ? parseFloat(value) : undefined)
   price?: number;
+
+  @ApiProperty({ 
+    example: 37.5665, 
+    description: 'GPS 위도',
+    required: false 
+  })
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  latitude?: number;
+
+  @ApiProperty({ 
+    example: 126.9780, 
+    description: 'GPS 경도',
+    required: false 
+  })
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  longitude?: number;
+
+  @ApiProperty({ 
+    example: '서울특별시 마포구 홍익로 39', 
+    description: '상세 주소',
+    required: false 
+  })
+  @IsOptional()
+  @IsString()
+  address?: string;
 }

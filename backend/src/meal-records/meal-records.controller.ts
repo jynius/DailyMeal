@@ -9,11 +9,12 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
   Query,
   ValidationPipe,
   Request,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { MealRecordsService } from './meal-records.service';
 import { CreateMealRecordDto, UpdateMealRecordDto } from '../dto/meal-record.dto';
@@ -21,17 +22,20 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { AppLoggerService, LogMethod } from '../common/logger.service';
 
 @ApiTags('Meal Records')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('meal-records')
 export class MealRecordsController {
+  private readonly logger = AppLoggerService.getLogger('MealRecordsController');
+
   constructor(private readonly mealRecordsService: MealRecordsService) {}
 
   @Post()
   @UseInterceptors(
-    FileInterceptor('photo', {
+    FilesInterceptor('photos', 5, {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, callback) => {
@@ -46,7 +50,8 @@ export class MealRecordsController {
         callback(null, true);
       },
       limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB
+        fileSize: 5 * 1024 * 1024, // 5MB per file
+        files: 5, // 최대 5개 파일
       },
     }),
   )
@@ -55,15 +60,35 @@ export class MealRecordsController {
   @ApiResponse({ status: 201, description: '식사 기록 생성 성공' })
   async create(
     @Body(ValidationPipe) createMealRecordDto: CreateMealRecordDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
     @Request() req: any,
   ) {
-    const photoPath = file ? `/uploads/${file.filename}` : undefined;
-    return this.mealRecordsService.create(
+    this.logger.info(`🔄 create() called for user: ${req.user.email}`);
+    this.logger.debug(`📝 Meal data: ${createMealRecordDto.name}, Rating: ${createMealRecordDto.rating}`);
+    this.logger.debug(`📁 Files received: ${files?.length || 0}`);
+    
+    // 다중 사진 경로 처리
+    const photoPaths: string[] = [];
+    if (files && files.length > 0) {
+      files.forEach(file => {
+        photoPaths.push(`/uploads/${file.filename}`);
+        this.logger.debug(`Photo uploaded: ${file.filename}`);
+      });
+    }
+    
+    // GPS 좌표 로그
+    if (createMealRecordDto.latitude && createMealRecordDto.longitude) {
+      this.logger.debug(`GPS coordinates: ${createMealRecordDto.latitude}, ${createMealRecordDto.longitude}`);
+    }
+    
+    const result = await this.mealRecordsService.create(
       createMealRecordDto,
       req.user.id,
-      photoPath,
+      photoPaths,
     );
+    
+    this.logger.info(`✅ create() completed successfully for meal: ${createMealRecordDto.name}`);
+    return result;
   }
 
   @Get()

@@ -1,7 +1,17 @@
+'use client'
+
 import { User, Settings, Heart, Star, Calendar, LogOut } from 'lucide-react'
 import { BottomNavigation } from '@/components/bottom-navigation'
+import { tokenManager } from '@/lib/api/client'
+import { useRouter } from 'next/navigation'
 
 export default function ProfilePage() {
+  const router = useRouter()
+
+  const handleLogout = () => {
+    tokenManager.remove()
+    router.push('/')
+  }
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
       {/* Header */}
@@ -48,6 +58,7 @@ export default function ProfilePage() {
         ].map((item, index) => (
           <button
             key={index}
+            onClick={() => router.push(item.href)}
             className="w-full flex items-center justify-between bg-white p-4 rounded-lg border hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center">
@@ -62,11 +73,7 @@ export default function ProfilePage() {
       {/* Logout */}
       <div className="px-4 pt-4">
         <button 
-          onClick={() => {
-            const { tokenManager } = require('@/lib/api/client')
-            tokenManager.remove()
-            window.location.href = '/'
-          }}
+          onClick={handleLogout}
           className="w-full flex items-center justify-center bg-red-50 text-red-600 p-4 rounded-lg border border-red-200 hover:bg-red-100 transition-colors"
         >
           <LogOut size={20} className="mr-2" />
