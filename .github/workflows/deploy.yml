@@ -4,10 +4,7 @@ name: DailyMeal CI/CD Pipeline
 # 트리거 조건
 on:
   push:
-          script: |
-          cd /home/ubuntu/DailyMeal-staging
-          export BACKEND_PORT=8000
-          export FRONTEND_PORT=3000anches: [ dev, prod ] # dev(스테이징), prod(운영) 브랜치 배포
+    branches: [ dev, prod ] # dev(스테이징), prod(운영) 브랜치 배포
   pull_request:
     branches: [ main, dev ] # main, dev로의 PR 시 테스트 실행
 
