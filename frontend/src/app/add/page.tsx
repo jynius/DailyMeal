@@ -36,9 +36,8 @@ export default function AddMealPage() {
   const [gpsLoading, setGpsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMobile, setIsMobile] = useState<boolean>(false)
-  const [isClient, setIsClient] = useState(false)
   const router = useRouter()
-  const { showAlert, showConfirm } = useAlert()
+  const { showAlert } = useAlert()
   const toast = useToast()
 
   // 클라이언트 사이드에서만 모바일 감지
@@ -257,19 +256,20 @@ export default function AddMealPage() {
           window.location.href = '/feed'
         }, 1500)
       }
-    } catch (error: any) {
-      console.error('❌ 저장 실패:', error)
+    } catch (error: unknown) {
+      const err = error as Error
+      console.error('❌ 저장 실패:', err)
       
       let errorMessage = '저장에 실패했습니다. 다시 시도해주세요.'
       let errorTitle = '저장 실패'
       
-      if (error.message?.includes('파일')) {
+      if (err.message?.includes('파일')) {
         errorTitle = '파일 업로드 오류'
         errorMessage = '파일 업로드 중 오류가 발생했습니다.\n파일 크기나 형식을 확인해주세요.'
-      } else if (error.message?.includes('네트워크') || error.message?.includes('network')) {
+      } else if (err.message?.includes('네트워크') || err.message?.includes('network')) {
         errorTitle = '네트워크 오류'
         errorMessage = '네트워크 연결을 확인하고 다시 시도해주세요.'
-      } else if (error.message?.includes('권한') || error.message?.includes('unauthorized')) {
+      } else if (err.message?.includes('권한') || err.message?.includes('unauthorized')) {
         showAlert({
           title: '인증 오류',
           message: '로그인이 필요합니다. 다시 로그인해주세요.',
@@ -335,6 +335,7 @@ export default function AddMealPage() {
                 <div className="grid grid-cols-2 gap-2 p-2 h-full">
                   {photoPreviews.slice(0, 3).map((preview, index) => (
                     <div key={index} className="relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={preview}
                         alt={`미리보기 ${index + 1}`}

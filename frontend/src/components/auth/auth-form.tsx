@@ -43,8 +43,9 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       
       alert(result.message)
       onSuccess?.()
-    } catch (err: any) {
-      setError(err.message || '인증에 실패했습니다.')
+    } catch (err: unknown) {
+      const error = err as Error
+      setError(error.message || '인증에 실패했습니다.')
     } finally {
       setLoading(false)
     }
@@ -74,8 +75,9 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       tokenManager.set(result.token)
       alert('데모 계정으로 로그인되었습니다!')
       onSuccess?.()
-    } catch (err: any) {
-      setError(err.message || '데모 로그인에 실패했습니다.')
+    } catch (err: unknown) {
+      const error = err as Error
+      setError(error.message || '데모 로그인에 실패했습니다.')
     } finally {
       setLoading(false)
     }
