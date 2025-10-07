@@ -84,6 +84,21 @@ html {
   animation-duration: 300ms;
 }
 
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
 /* 포커스 아웃라인 개선 */
 button:focus-visible,
 input:focus-visible,

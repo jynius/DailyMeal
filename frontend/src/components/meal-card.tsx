@@ -1,6 +1,9 @@
-import { Star, MapPin, Clock } from 'lucide-react'
+import { Star, MapPin, Clock, Share } from 'lucide-react'
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { ShareModal } from './share-modal'
+import { ROUTES } from '@/lib/constants'
 
 interface MealCardProps {
   id: string
@@ -23,8 +26,24 @@ export function MealCard({
   createdAt,
   price,
 }: MealCardProps) {
+  const [showShareModal, setShowShareModal] = useState(false)
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault() // Link 클릭 방지
+    e.stopPropagation()
+    setShowShareModal(true)
+  }
+
+  const shareData = {
+    title: `${name} - DailyMeal`,
+    description: memo || `${name} 식사 기록`,
+    url: `${typeof window !== 'undefined' ? window.location.origin : ''}${ROUTES.MEAL(id)}`,
+    imageUrl: photo
+  }
+
   return (
-    <Link href={`/meal/${id}`} className="block">
+    <>
+      <Link href={`/meal/${id}`} className="block">
       <div className="bg-white rounded-lg border overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
       {/* Photo */}
       <div className="aspect-square relative bg-gray-100">
@@ -81,12 +100,30 @@ export function MealCard({
           </p>
         )}
         
-        <div className="flex items-center text-xs text-gray-400">
-          <Clock size={12} className="mr-1" />
-          {createdAt}
+        <div className="flex items-center justify-between text-xs text-gray-400">
+          <div className="flex items-center">
+            <Clock size={12} className="mr-1" />
+            {createdAt}
+          </div>
+          <button
+            onClick={handleShare}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            title="공유하기"
+          >
+            <Share size={14} className="text-gray-500" />
+          </button>
         </div>
       </div>
     </div>
     </Link>
+
+    {/* 공유 모달 */}
+    <ShareModal
+      isOpen={showShareModal}
+      onClose={() => setShowShareModal(false)}
+      shareData={shareData}
+      imageUrl={photo}
+    />
+    </>
   )
 }
