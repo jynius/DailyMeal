@@ -283,9 +283,11 @@ export default function RestaurantMapPage({ params }: MapPageProps) {
                       
                       {restaurant.representativePhoto && (
                         <div className="flex-shrink-0 ml-4">
-                          <img
+                          <Image
                             src={restaurant.representativePhoto}
                             alt={restaurant.name}
+                            width={64}
+                            height={64}
                             className="w-16 h-16 object-cover rounded-lg"
                           />
                         </div>
@@ -316,6 +318,7 @@ interface RestaurantMapCardProps {
   index: number
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function RestaurantMapCard({ restaurant, index }: RestaurantMapCardProps) {
   const getPriceRangeText = (range?: string) => {
     switch (range) {

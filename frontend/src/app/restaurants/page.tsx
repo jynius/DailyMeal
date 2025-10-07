@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { MapPin, Star, Calendar, Users, Share, Plus } from 'lucide-react'
 import { BottomNavigation } from '@/components/bottom-navigation'
 import { useToast } from '@/components/ui/toast'
@@ -14,17 +14,13 @@ export default function RestaurantsPage() {
   const toast = useToast()
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'전체' | '최근' | '즐겨찾기' | '카테고리'>('전체')
+  // const [activeTab, setActiveTab] = useState<'전체' | '최근' | '즐겨찾기' | '카테고리'>('전체')
   const [filter, setFilter] = useState<'all' | 'recent' | 'favorite' | 'category'>('all')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [shareData, setShareData] = useState<ShareData | null>(null)
 
-  useEffect(() => {
-    fetchRestaurants()
-  }, [])
-
-  const fetchRestaurants = async () => {
+  const fetchRestaurants = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
@@ -50,11 +46,11 @@ export default function RestaurantsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
 
   useEffect(() => {
     fetchRestaurants()
-  }, [toast])
+  }, [fetchRestaurants])
 
   const handleShareRestaurant = (restaurant: Restaurant, e: React.MouseEvent) => {
     e.preventDefault()
@@ -121,7 +117,7 @@ export default function RestaurantsPage() {
           ].map((filterOption) => (
             <button
               key={filterOption.key}
-              onClick={() => setFilter(filterOption.key as any)}
+              onClick={() => setFilter(filterOption.key as 'all' | 'recent' | 'favorite' | 'category')}
               className={`px-3 py-1.5 rounded-full text-sm ${
                 filter === filterOption.key
                   ? 'bg-blue-500 text-white'

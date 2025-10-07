@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { ArrowLeft, MapPin, Star, Share, Plus, Minus, Eye, EyeOff } from 'lucide-react'
-import type { Restaurant, RestaurantMap } from '@/types/restaurant'
+import { Plus, ArrowLeft, Eye, EyeOff, MapPin, Star } from 'lucide-react'
+import type { Restaurant } from '@/types/restaurant'
 import { useToast } from '@/components/ui/toast'
 
 export default function CreateMapPage() {

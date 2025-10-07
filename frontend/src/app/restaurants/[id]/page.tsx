@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
-import { ArrowLeft, MapPin, Star, Calendar, Share, Phone, Clock, ExternalLink } from 'lucide-react'
+import { useState, useEffect, use, useCallback } from 'react'
+import { ArrowLeft, MapPin, Star, Calendar, Share } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import type { RestaurantDetail, RestaurantMeal } from '@/types/restaurant'
+import type { RestaurantDetail } from '@/types/restaurant'
 import { ShareModal } from '@/components/share-modal'
 
 interface RestaurantPageProps {
@@ -19,11 +19,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
   const [loading, setLoading] = useState(true)
   const [showShareModal, setShowShareModal] = useState(false)
 
-  useEffect(() => {
-    fetchRestaurantDetail()
-  }, [resolvedParams.id])
-
-  const fetchRestaurantDetail = async () => {
+  const fetchRestaurantDetail = useCallback(async () => {
     try {
       // 실제 API 호출 대신 샘플 데이터 사용
       const sampleRestaurant: RestaurantDetail = {
@@ -77,7 +73,11 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [resolvedParams.id])
+
+  useEffect(() => {
+    fetchRestaurantDetail()
+  }, [fetchRestaurantDetail])
 
   if (loading) {
     return (

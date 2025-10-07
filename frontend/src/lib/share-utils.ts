@@ -31,7 +31,7 @@ export const shareUtils = {
     try {
       await navigator.clipboard.writeText(url)
       return true
-    } catch (err) {
+    } catch {
       // 폴백: 구식 방법
       const textArea = document.createElement('textarea')
       textArea.value = url
@@ -48,7 +48,7 @@ export const shareUtils = {
   getSocialShareUrl(platform: 'kakao' | 'facebook' | 'twitter' | 'instagram', data: ShareData) {
     const encodedUrl = encodeURIComponent(data.url)
     const encodedText = encodeURIComponent(data.description)
-    const encodedTitle = encodeURIComponent(data.title)
+    // const encodedTitle = encodeURIComponent(data.title)
 
     switch (platform) {
       case 'kakao':

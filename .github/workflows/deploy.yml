@@ -102,16 +102,44 @@ jobs:
           export NODE_ENV=staging
           export NODE_OPTIONS="--max-old-space-size=512"  # 메모리 제한 512MB
           
-          # 🔧 의존성 설치 (프로덕션 전용, 캐시 활용)
-          echo "📦 [$(date)] 의존성 설치 중 (캐시 우선)..."
-          npm ci --prefix ./backend --only=production --prefer-offline --no-audit
-          npm ci --prefix ./frontend --only=production --prefer-offline --no-audit
+          # 🔧 스마트 의존성 관리 (리소스 절약)
+          echo "📦 [$(date)] 스마트 의존성 체크 중..."
           
-          # 🧹 이전 프로세스 정리
+          # 백엔드 의존성 체크
+          cd backend
+          if [ ! -f "package-lock.json" ] || [ "package.json" -nt "package-lock.json" ]; then
+            echo "  🔧 백엔드 의존성 설치 중..."
+            npm ci --only=production --prefer-offline --no-audit
+          else
+            echo "  ✅ 백엔드 의존성 최신 상태"
+          fi
+          cd ..
+          
+          # 프론트엔드 의존성 체크
+          cd frontend
+          if [ ! -f "package-lock.json" ] || [ "package.json" -nt "package-lock.json" ]; then
+            echo "  🎨 프론트엔드 의존성 설치 중..."
+            npm ci --only=production --prefer-offline --no-audit
+          else
+            echo "  ✅ 프론트엔드 의존성 최신 상태"
+          fi
+          cd ..
+          
+          # 🧹 이전 프로세스 정리 (node_modules는 보존)
           echo "🧹 [$(date)] 이전 프로세스 정리 중..."
+          pm2 stop all 2>/dev/null || true
+          pm2 delete all 2>/dev/null || true
           pkill -f "node.*backend" || true
           pkill -f "next.*frontend" || true
-          sleep 2
+          
+          # 의존성 상태 확인 (삭제하지 않음)
+          if [ -d "./backend/node_modules" ]; then
+            echo "  🔧 백엔드 node_modules 보존됨"
+          fi
+          if [ -d "./frontend/node_modules" ]; then
+            echo "  🎨 프론트엔드 node_modules 보존됨"
+          fi
+          sleep 3
           
           # 📊 배포 중 리소스 측정
           echo "📊 의존성 설치 후 리소스 상태:"
