@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { MealRecordsModule } from './meal-records/meal-records.module';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 import { User } from './entities/user.entity';
 import { MealRecord } from './entities/meal-record.entity';
 import { AppLoggerService, PackageLogger } from './common/logger.service';
@@ -52,6 +53,7 @@ import { loggerConfig } from './common/logger.config';
     }),
     AuthModule,
     MealRecordsModule,
+    RestaurantsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Home, Plus, User, Search } from 'lucide-react'
+import { Home, Plus, User, Search, MapPin } from 'lucide-react'
 
 export function BottomNavigation() {
   return (
@@ -21,6 +21,14 @@ export function BottomNavigation() {
           <span className="text-xs mt-1">검색</span>
         </Link>
         
+        <Link 
+          href="/restaurants" 
+          className="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-blue-500"
+        >
+          <MapPin size={20} />
+          <span className="text-xs mt-1">맛집</span>
+        </Link>
+
         <Link 
           href="/add" 
           className="flex flex-col items-center py-2 px-3 text-blue-500"
