@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { MealCard } from '@/components/meal-card'
 import { BottomNavigation } from '@/components/bottom-navigation'
-import { mealRecordsApi, type MealRecord } from '@/lib/api/client'
+import { mealRecordsApi } from '@/lib/api/client'
+import type { MealRecord } from '@/types'
 
 export default function FeedPage() {
   const [meals, setMeals] = useState<MealRecord[]>([])
@@ -18,12 +19,9 @@ export default function FeedPage() {
         
         // 임시로 로그인한 사용자가 없어도 빈 배열을 보여주도록 처리
         const result = await mealRecordsApi.getAll()
-        console.log('🍽️ API Response:', result)
         if (Array.isArray(result)) {
-          console.log('📸 Image URLs:', result.map((meal: MealRecord) => meal.photos))
           setMeals(result)
         } else if (result.data) {
-          console.log('📸 Image URLs:', result.data.map((meal: MealRecord) => meal.photos))
           setMeals(result.data)
         }
       } catch (err: unknown) {
@@ -32,7 +30,6 @@ export default function FeedPage() {
         
         // 연결 오류의 경우 재시도 로직
         if (error.message?.includes('ERR_CONNECTION_REFUSED') || 'code' in error && error.code === 'ECONNREFUSED') {
-          console.log('🔄 Connection failed, retrying in 1 second...')
           setTimeout(() => {
             window.location.reload()
           }, 1000)

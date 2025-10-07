@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { APP_CONFIG } from '@/lib/constants'
 import { authApi, tokenManager } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 
@@ -60,15 +61,15 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       let result
       try {
         result = await authApi.login({
-          email: 'demo@dailymeal.com',
-          password: 'demo123',
+          email: APP_CONFIG.DEMO_USER.email,
+          password: APP_CONFIG.DEMO_USER.password,
         })
       } catch {
         // 계정이 없으면 생성
         result = await authApi.register({
-          email: 'demo@dailymeal.com',
-          password: 'demo123',
-          name: '데모 사용자',
+          email: APP_CONFIG.DEMO_USER.email,
+          password: APP_CONFIG.DEMO_USER.password,
+          name: APP_CONFIG.DEMO_USER.name,
         })
       }
 

@@ -1,37 +1,9 @@
 // 데일리밀 API 클라이언트
+import { APP_CONFIG } from '@/lib/constants'
 
-const API_BASE_URL = 'http://localhost:8000'
-console.log('🌐 API Base URL set to:', API_BASE_URL)
+const API_BASE_URL = APP_CONFIG.API_BASE_URL
 
-export interface ApiResponse<T> {
-  success?: boolean
-  data?: T
-  message?: string
-  error?: string
-}
-
-export interface User {
-  id: string
-  email: string
-  name: string
-  createdAt: string
-}
-
-export interface MealRecord {
-  id: string
-  name: string
-  photos?: string[]
-  location?: string
-  rating: number
-  memo?: string
-  price?: number
-  userId: string
-  latitude?: number
-  longitude?: number
-  address?: string
-  createdAt: string
-  updatedAt: string
-}
+import type { MealRecord, User } from '@/types'
 
 export interface CreateMealRecordData {
   name: string
@@ -75,13 +47,6 @@ async function apiRequest<T>(
   const token = tokenManager.get()
   const isFormData = options.body instanceof FormData
   
-  console.log('🔑 API Request Debug:')
-  console.log('Endpoint:', endpoint)
-  console.log('Full URL:', `${API_BASE_URL}${endpoint}`)
-  console.log('Token exists:', !!token)
-  console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'null')
-  console.log('Is FormData:', isFormData)
-  
   const headers: Record<string, string> = {}
   
   // 파일 업로드가 아닌 경우만 Content-Type 설정
@@ -93,11 +58,9 @@ async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  console.log('📤 Making request to:', `${API_BASE_URL}${endpoint}`)
-
   // 타임아웃 설정
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 10000) // 10초 타임아웃
+  const timeoutId = setTimeout(() => controller.abort(), APP_CONFIG.API_TIMEOUT)
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {

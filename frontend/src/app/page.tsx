@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { Camera } from "lucide-react";
+import { Camera } from 'lucide-react'
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { AuthForm } from "@/components/auth/auth-form";
-import { tokenManager, mealRecordsApi, type MealRecord } from "@/lib/api/client";
+import { tokenManager, mealRecordsApi } from "@/lib/api/client";
+import type { MealRecord } from "@/types";
 import { MealCard } from "@/components/meal-card";
 import Link from "next/link";
 
@@ -31,7 +32,6 @@ export default function Home() {
     try {
       setMealsLoading(true)
       const result = await mealRecordsApi.getAll()
-      console.log('🏠 Home - API Response:', result)
       
       if (Array.isArray(result)) {
         setMeals(result.slice(0, 3)) // 최신 3개만 표시

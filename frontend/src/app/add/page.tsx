@@ -124,16 +124,14 @@ export default function AddMealPage() {
   }
 
   const handlePhotosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('📷 Photo selection triggered!')
-    console.log('📁 Files selected:', e.target.files?.length || 0)
+    // 파일 선택 처리
     
     const files = Array.from(e.target.files || [])
     if (files.length === 0) {
-      console.log('❌ No files selected')
       return
     }
     
-    console.log('✅ Files to process:', files.map(f => ({ name: f.name, size: f.size, type: f.type })))
+    // 선택된 파일들 처리
 
     // 파일 검증
     const validFiles = files.filter(file => {
@@ -170,7 +168,7 @@ export default function AddMealPage() {
         setPhotoPreviews(prev => [...prev, reader.result as string])
         // 마지막 파일이 로드되었을 때 알림
         if (index === selectedFiles.length - 1) {
-          console.log(`✅ ${selectedFiles.length}개 사진이 성공적으로 추가되었습니다!`)
+          // 사진 추가 성공
         }
       }
       reader.onerror = () => {
@@ -245,11 +243,11 @@ export default function AddMealPage() {
         data.append('photos', photo)
       })
 
-      console.log('🚀 Submitting meal record...')
+      // 식사 기록 제출
       const result = await mealRecordsApi.createWithFiles(data)
       
       if (result) {
-        console.log('✅ Meal record created successfully:', result)
+        // 식사 기록 생성 성공
         toast.success('식사 기록이 성공적으로 저장되었습니다! 🎉', '저장 완료')
         // 잠시 후 페이지 이동 (완전 새로고침으로 API 재초기화)
         setTimeout(() => {
@@ -316,8 +314,8 @@ export default function AddMealPage() {
             />
             <label
               htmlFor="photo-upload"
-              onClick={() => console.log('🎯 Label clicked! Device:', isMobile ? 'Mobile' : 'Desktop')}
-              onTouchStart={() => console.log('📱 Touch started on label')}
+              onClick={undefined}
+              onTouchStart={undefined}
               className={`block w-full aspect-square border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
                 formData.photos.length === 0 
                   ? 'border-red-300 hover:border-red-400 bg-red-50' 
@@ -380,7 +378,7 @@ export default function AddMealPage() {
               <Button
                 type="button"
                 onClick={() => {
-                  console.log('📱 Mobile button clicked!')
+                  // 모바일 버튼 클릭
                   const input = document.getElementById('photo-upload') as HTMLInputElement
                   if (input) {
                     input.click()

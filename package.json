@@ -10,8 +10,8 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:pm2": "./start-pm2.sh",
-    "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm run dev",
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
     "build:all": "cd frontend && npm run build && cd ../backend && npm run build",
     "deploy": "./deploy.sh",
