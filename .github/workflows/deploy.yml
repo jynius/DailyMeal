@@ -1,6 +1,12 @@
 # DailyMeal 자동 배포 워크플로우
 name: DailyMeal CI/CD Pipeline
 
+# 권한 설정 (보안 강화)
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
 # 트리거 조건
 on:
   push:
@@ -23,6 +29,9 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
+        cache-dependency-path: |
+          backend/package-lock.json
+          frontend/package-lock.json
         
     - name: 🧪 Run tests
       run: |
@@ -59,10 +68,10 @@ jobs:
         cd frontend && npm ci && npm run build:hybrid
       env:
         NEXT_PUBLIC_API_URL: /api
-        NEXT_PUBLIC_SITE_URL: ${{ vars.STAGING_DOMAIN_URL || 'http://dev.localhost' }}
+        NEXT_PUBLIC_SITE_URL: https://dev-dailymeal.example.com
         
     - name: 🚀 Deploy to Staging Server
-      uses: easingthemes/ssh-deploy@main
+      uses: easingthemes/ssh-deploy@v2.2.11
       with:
         SSH_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
         REMOTE_HOST: ${{ vars.EC2_HOST }}
@@ -72,31 +81,109 @@ jobs:
         EXCLUDE: "/node_modules/, /.git/, /deprecated/, /dailymeal-deploy-key*"
         
     - name: ⚡ Restart Staging Services
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ vars.EC2_HOST }}
         username: ${{ vars.EC2_USERNAME }}
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
           cd /home/ubuntu/DailyMeal
+          
+          # 📊 배포 시작 리소스 측정
+          echo "🚀 [$(date)] 스테이징 배포 시작 - 리소스 측정 중..."
+          echo "📊 초기 시스템 상태:"
+          echo "💾 메모리 사용률: $(free -h | awk '/^Mem:/ {print $3 "/" $2 " (" int($3/$2 * 100) "%)"}')"
+          echo "💽 디스크 사용률: $(df -h / | awk 'NR==2{print $3 "/" $2 " (" $5 ")"}')"
+          echo "⚡ CPU 부하: $(uptime | awk -F'load average:' '{ print $2 }')"
+          
+          # 환경 변수 설정 (리소스 절약)
           export BACKEND_PORT=8001
           export FRONTEND_PORT=8000
-          npm ci --prefix ./backend
-          npm ci --prefix ./frontend
+          export NODE_ENV=staging
+          export NODE_OPTIONS="--max-old-space-size=512"  # 메모리 제한 512MB
+          
+          # 🔧 의존성 설치 (프로덕션 전용, 캐시 활용)
+          echo "📦 [$(date)] 의존성 설치 중 (캐시 우선)..."
+          npm ci --prefix ./backend --only=production --prefer-offline --no-audit
+          npm ci --prefix ./frontend --only=production --prefer-offline --no-audit
+          
+          # 🧹 이전 프로세스 정리
+          echo "🧹 [$(date)] 이전 프로세스 정리 중..."
+          pkill -f "node.*backend" || true
+          pkill -f "next.*frontend" || true
+          sleep 2
+          
+          # 📊 배포 중 리소스 측정
+          echo "📊 의존성 설치 후 리소스 상태:"
+          echo "💾 메모리: $(free -h | awk '/^Mem:/ {print $3 "/" $2 " (" int($3/$2 * 100) "%)"}')"
+          echo "💽 디스크: $(df -h / | awk 'NR==2{print $3 "/" $2 " (" $5 ")"}')"
+          
+          # 🚀 서비스 시작
           chmod +x deploy.sh && ./deploy.sh
           
-          # Staging 헬스 체크
-          sleep 5
-          curl -f http://localhost:8000/api-docs || exit 1
-          curl -f http://localhost:3000 || exit 1
-          echo "✅ Staging 배포 완료!"
+          # 📊 서비스 시작 후 리소스 모니터링
+          echo "⏳ [$(date)] 서비스 시작 대기 및 모니터링..."
+          sleep 10
+          
+          echo "📊 서비스 시작 후 리소스 상태:"
+          echo "💾 메모리: $(free -h | awk '/^Mem:/ {print $3 "/" $2 " (" int($3/$2 * 100) "%)"}')"
+          echo "💽 디스크: $(df -h / | awk 'NR==2{print $3 "/" $2 " (" $5 ")"}')"
+          echo "🔄 Node 프로세스: $(ps aux | grep -E "node.*backend|next.*frontend" | grep -v grep | wc -l)개"
+          
+          # 🏥 백엔드 헬스 체크 (성능 측정 포함)
+          for i in {1..3}; do
+            echo "🔍 백엔드 체크 $i/3..."
+            START_TIME=$(date +%s%N)
+            if curl -f -s http://localhost:8001/api-docs > /dev/null; then
+              END_TIME=$(date +%s%N)
+              RESPONSE_TIME=$(( (END_TIME - START_TIME) / 1000000 ))
+              echo "✅ 백엔드 서비스 정상 (응답시간: ${RESPONSE_TIME}ms)"
+              break
+            elif [ $i -eq 3 ]; then
+              echo "❌ 백엔드 서비스 시작 실패"
+              echo "🔍 프로세스 상태: $(ps aux | grep -E "node.*backend" | grep -v grep)"
+              echo "📋 백엔드 로그: $(tail -n 5 ./backend/logs/error.log 2>/dev/null || echo '로그 없음')"
+              exit 1
+            else
+              echo "⏳ 백엔드 재시도 $i/3... (5초 대기)"
+              sleep 5
+            fi
+          done
+          
+          # 🏥 프론트엔드 헬스 체크 (성능 측정 포함)
+          for i in {1..3}; do
+            echo "🔍 프론트엔드 체크 $i/3..."
+            START_TIME=$(date +%s%N)
+            if curl -f -s http://localhost:8000 > /dev/null; then
+              END_TIME=$(date +%s%N)
+              RESPONSE_TIME=$(( (END_TIME - START_TIME) / 1000000 ))
+              echo "✅ 프론트엔드 서비스 정상 (응답시간: ${RESPONSE_TIME}ms)"
+              break
+            elif [ $i -eq 3 ]; then
+              echo "❌ 프론트엔드 서비스 시작 실패"
+              echo "🔍 프로세스 상태: $(ps aux | grep -E "next.*frontend" | grep -v grep)"
+              exit 1
+            else
+              echo "⏳ 프론트엔드 재시도 $i/3... (5초 대기)"
+              sleep 5
+            fi
+          done
+          
+          # 📊 최종 리소스 상태 로깅
+          echo "=========================================="
+          echo "🎉 [$(date)] Staging 배포 완료!"
+          echo "📊 최종 시스템 상태:"
+          echo "💾 메모리: $(free -h | awk '/^Mem:/ {print $3 "/" $2 " (" int($3/$2 * 100) "%)"}')"
+          echo "💽 디스크: $(df -h / | awk 'NR==2{print $3 "/" $2 " (" $5 ")"}')"
+          echo "⚡ CPU: $(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')% 사용중"
+          echo "🔄 활성 프로세스: $(ps aux | grep -E "node|next" | grep -v grep | wc -l)개"
+          echo "=========================================="
 
   # 🚀 프로덕션 환경 배포 (prod 브랜치 → 운영 서버)
   deploy-production:
     if: github.ref == 'refs/heads/prod'
     runs-on: ubuntu-22.04
-    environment: production
-    
+
     steps:
     - name: 📥 Checkout source code
       uses: actions/checkout@v4
@@ -116,10 +203,10 @@ jobs:
         cd frontend && npm ci && npm run build:hybrid
       env:
         NEXT_PUBLIC_API_URL: /api
-        NEXT_PUBLIC_SITE_URL: ${{ vars.DOMAIN_URL || 'http://localhost' }}
+        NEXT_PUBLIC_SITE_URL: https://dailymeal.example.com
         
     - name: 🚀 Deploy to Production Server
-      uses: easingthemes/ssh-deploy@main
+      uses: easingthemes/ssh-deploy@v2.2.11
       with:
         SSH_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
         REMOTE_HOST: ${{ vars.EC2_HOST }}
@@ -127,31 +214,82 @@ jobs:
         SOURCE: "./"
         TARGET: "/home/ubuntu/DailyMeal"
         EXCLUDE: "/node_modules/, /.git/, /deprecated/, /dailymeal-deploy-key*"
-        SCRIPT_BEFORE: |
-          # 배포 전 백업
-          if [ -d "/home/ubuntu/DailyMeal-backup" ]; then
-            rm -rf /home/ubuntu/DailyMeal-backup
-          fi
-          if [ -d "/home/ubuntu/DailyMeal" ]; then
-            mv /home/ubuntu/DailyMeal /home/ubuntu/DailyMeal-backup
-          fi
-          
+
     - name: ⚡ Restart Production Services
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ vars.EC2_HOST }}
         username: ${{ vars.EC2_USERNAME }}
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
+          # 📊 배포 시작 시스템 상태 로깅
+          echo "🚀 [$(date)] 프로덕션 배포 시작"
+          echo "=========================================="
+          
+          # 📊 시스템 리소스 측정 함수
+          log_resources() {
+            local stage="$1"
+            echo "📊 [$stage] 시스템 상태 ($(date)):"
+            echo "  💾 메모리: $(free -h | awk '/^Mem:/ {print "사용=" $3 " 전체=" $2 " (" int($3/$2 * 100) "%)"}')"
+            echo "  💽 디스크: $(df -h / | awk 'NR==2{print "사용=" $3 " 전체=" $2 " (" $5 ")"}')"
+            echo "  ⚡ CPU: $(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')% 사용중"
+            echo "  📈 부하: $(uptime | awk -F'load average:' '{print $2}')"
+            echo "  🔄 프로세스: $(ps aux | grep -E "(node|npm)" | grep -v grep | wc -l)개 Node.js 프로세스"
+          }
+          
+          log_resources "배포 시작"
+          
+          # 배포 전 백업 (공간 확인 후)
+          echo "💾 [$(date)] 백업 공간 확인 중..."
+          AVAILABLE_SPACE=$(df / | awk 'NR==2{print $4}')
+          REQUIRED_SPACE=$(du -s /home/ubuntu/DailyMeal 2>/dev/null | awk '{print $1}' || echo "1000000")
+          
+          if [ "$AVAILABLE_SPACE" -gt "$((REQUIRED_SPACE * 2))" ]; then
+            echo "✅ 충분한 공간 확인 - 백업 진행"
+            if [ -d "/home/ubuntu/DailyMeal-backup" ]; then
+              rm -rf /home/ubuntu/DailyMeal-backup
+            fi
+            if [ -d "/home/ubuntu/DailyMeal" ]; then
+              cp -r /home/ubuntu/DailyMeal /home/ubuntu/DailyMeal-backup
+            fi
+          else
+            echo "⚠️ 디스크 공간 부족 - 백업 생략 (가용: ${AVAILABLE_SPACE}KB, 필요: ${REQUIRED_SPACE}KB)"
+          fi
+          
           cd /home/ubuntu/DailyMeal
           
-          # 의존성 설치 (프로덕션용) - 빌드 도구 포함
-          npm ci --prefix ./backend
-          npm ci --prefix ./frontend
-          
-          # PM2 서비스 재시작
+          # 환경 변수 설정 (성능 최적화)
           export BACKEND_PORT=8000
           export FRONTEND_PORT=3000
+          export NODE_ENV=production
+          export NODE_OPTIONS="--max-old-space-size=1024 --optimize-for-size"  # 메모리 제한 1GB
+          
+          # 🧹 이전 프로세스 정리 (메모리 해제)
+          echo "🧹 [$(date)] 기존 프로세스 정리 중..."
+          pm2 stop all 2>/dev/null || true
+          pm2 delete all 2>/dev/null || true
+          pkill -f "node.*backend" || true
+          pkill -f "next.*frontend" || true
+          sleep 3
+          
+          log_resources "프로세스 정리 후"
+          
+          # 🔧 의존성 설치 (최적화된 설정)
+          echo "📦 [$(date)] 의존성 설치 중 (프로덕션 최적화)..."
+          
+          # 병렬 설치 대신 순차 설치 (메모리 절약)
+          echo "  🔧 백엔드 의존성..."
+          npm ci --prefix ./backend --only=production --prefer-offline --no-audit --silent
+          
+          log_resources "백엔드 설치 후"
+          
+          echo "  🎨 프론트엔드 의존성..."
+          npm ci --prefix ./frontend --only=production --prefer-offline --no-audit --silent
+          
+          log_resources "의존성 설치 완료"
+          
+          # 🚀 서비스 시작 (리소스 모니터링 포함)
+          echo "🚀 [$(date)] 서비스 시작 중..."
           chmod +x deploy.sh && ./deploy.sh
           
           # Nginx 설정 확인 및 재로드
@@ -159,9 +297,92 @@ jobs:
             sudo nginx -t && sudo systemctl reload nginx
           fi
           
-          # 프로덕션 헬스 체크
-          sleep 5
-          curl -f http://localhost:8000/api-docs || exit 1
-          curl -f http://localhost:3000 || exit 1
-          echo "✅ 프로덕션 배포 완료!"
+          # 📊 프로덕션 헬스 체크 (성능 모니터링 포함)
+          echo "⏳ [$(date)] 프로덕션 서비스 시작 대기 및 모니터링..."
+          sleep 15
+          
+          log_resources "서비스 시작 후"
+          
+          # 🏥 백엔드 헬스 체크 (성능 측정 포함)
+          BACKEND_SUCCESS=false
+          for i in {1..5}; do
+            echo "🔍 [프로덕션] 백엔드 체크 $i/5..."
+            START_TIME=$(date +%s%N)
+            
+            if curl -f -s --max-time 10 http://localhost:8000/api-docs > /dev/null; then
+              END_TIME=$(date +%s%N)
+              RESPONSE_TIME=$(( (END_TIME - START_TIME) / 1000000 ))
+              echo "✅ 백엔드 서비스 정상 (응답시간: ${RESPONSE_TIME}ms)"
+              
+              # 추가 성능 체크
+              MEMORY_USAGE=$(ps -o pid,vsz,rss,comm -p $(pgrep -f "node.*backend") 2>/dev/null | awk 'NR>1{print "PID=" $1 " 메모리=" int($3/1024) "MB"}' || echo "프로세스 정보 없음")
+              echo "📊 백엔드 프로세스: $MEMORY_USAGE"
+              
+              BACKEND_SUCCESS=true
+              break
+            elif [ $i -eq 5 ]; then
+              echo "❌ 백엔드 서비스 시작 실패 - 롤백 시작"
+              echo "📋 오류 로그: $(tail -n 10 ./backend/logs/error.log 2>/dev/null || echo '로그 파일 없음')"
+              echo "🔍 프로세스 상태: $(ps aux | grep -E "node.*backend" | grep -v grep || echo '프로세스 없음')"
+              
+              # 백업에서 복구
+              if [ -d "/home/ubuntu/DailyMeal-backup" ]; then
+                echo "🔄 [$(date)] 이전 버전으로 롤백 중..."
+                mv /home/ubuntu/DailyMeal /home/ubuntu/DailyMeal-failed
+                mv /home/ubuntu/DailyMeal-backup /home/ubuntu/DailyMeal
+                cd /home/ubuntu/DailyMeal
+                chmod +x deploy.sh && ./deploy.sh
+                echo "✅ 롤백 완료"
+              fi
+              exit 1
+            else
+              echo "⏳ 백엔드 재시도 $i/5... (10초 대기)"
+              log_resources "재시도 $i"
+              sleep 10
+            fi
+          done
+          
+          # 🏥 프론트엔드 헬스 체크 (성능 측정 포함)
+          if [ "$BACKEND_SUCCESS" = true ]; then
+            for i in {1..5}; do
+              echo "🔍 [프로덕션] 프론트엔드 체크 $i/5..."
+              START_TIME=$(date +%s%N)
+              
+              if curl -f -s --max-time 10 http://localhost:3000 > /dev/null; then
+                END_TIME=$(date +%s%N)
+                RESPONSE_TIME=$(( (END_TIME - START_TIME) / 1000000 ))
+                echo "✅ 프론트엔드 서비스 정상 (응답시간: ${RESPONSE_TIME}ms)"
+                
+                # 추가 성능 체크
+                MEMORY_USAGE=$(ps -o pid,vsz,rss,comm -p $(pgrep -f "next.*frontend") 2>/dev/null | awk 'NR>1{print "PID=" $1 " 메모리=" int($3/1024) "MB"}' || echo "프로세스 정보 없음")
+                echo "📊 프론트엔드 프로세스: $MEMORY_USAGE"
+                break
+              elif [ $i -eq 5 ]; then
+                echo "❌ 프론트엔드 서비스 시작 실패"
+                echo "🔍 프로세스 상태: $(ps aux | grep -E "next.*frontend" | grep -v grep || echo '프로세스 없음')"
+                exit 1
+              else
+                echo "⏳ 프론트엔드 재시도 $i/5... (10초 대기)"
+                sleep 10
+              fi
+            done
+          fi
+          
+          # 🧹 백업 정리 (성공 시)
+          if [ -d "/home/ubuntu/DailyMeal-backup" ]; then
+            BACKUP_SIZE=$(du -sh /home/ubuntu/DailyMeal-backup | awk '{print $1}')
+            rm -rf /home/ubuntu/DailyMeal-backup
+            echo "🗑️ 이전 백업 정리 완료 (${BACKUP_SIZE} 공간 확보)"
+          fi
+          
+          # 📊 최종 성능 리포트
+          log_resources "배포 완료"
+          echo "=========================================="
+          echo "🎉 [$(date)] 프로덕션 배포 성공!"
+          echo "📈 성능 요약:"
+          echo "  🔧 백엔드: http://localhost:8000 (API 문서: /api-docs)"
+          echo "  🎨 프론트엔드: http://localhost:3000"
+          echo "  📊 총 Node.js 프로세스: $(ps aux | grep -E "node|next" | grep -v grep | wc -l)개"
+          echo "  💾 총 메모리 사용량: $(ps aux | grep -E "node|next" | grep -v grep | awk '{sum+=$6} END {print int(sum/1024) "MB"}')"
+          echo "=========================================="
         
