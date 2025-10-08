@@ -52,11 +52,19 @@ JWT_SECRET=dailymeal-jwt-secret-key-change-this-in-production
 # Server Configuration
 PORT=8000
 NODE_ENV=development
+
+# File Upload Configuration
+UPLOAD_DIR=./uploads
+UPLOAD_MAX_FILE_SIZE=5242880
+UPLOAD_MAX_FILES=5
 ```
 
 **중요한 환경 변수:**
 - `JWT_SECRET`: JWT 토큰 생성/검증에 사용하는 비밀키 (프로덕션에서는 반드시 변경!)
 - `DB_*`: PostgreSQL 데이터베이스 연결 정보
+- `UPLOAD_DIR`: 파일 업로드 저장 경로 (기본값: `./uploads`)
+- `UPLOAD_MAX_FILE_SIZE`: 파일당 최대 크기 (바이트, 기본값: 5MB)
+- `UPLOAD_MAX_FILES`: 최대 업로드 파일 개수 (기본값: 5개)
 
 ### Frontend: `frontend/.env.local`
 

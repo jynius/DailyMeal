@@ -37,7 +37,7 @@ async function bootstrap() {
 
   // 업로드 폴더 생성
   const fs = require('fs');
-  const uploadDir = './uploads';
+  const uploadDir = process.env.UPLOAD_DIR || './uploads';
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }

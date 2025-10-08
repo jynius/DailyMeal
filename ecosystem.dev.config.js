@@ -16,7 +16,10 @@ module.exports = {
         DB_USERNAME: process.env.DB_USERNAME,
         DB_PASSWORD: process.env.DB_PASSWORD,
         DB_NAME: process.env.DB_NAME,
-        JWT_SECRET: process.env.JWT_SECRET
+        JWT_SECRET: process.env.JWT_SECRET,
+        UPLOAD_DIR: process.env.UPLOAD_DIR || './uploads',
+        UPLOAD_MAX_FILE_SIZE: process.env.UPLOAD_MAX_FILE_SIZE || '5242880',
+        UPLOAD_MAX_FILES: process.env.UPLOAD_MAX_FILES || '5'
       },
       instances: 1,
       exec_mode: 'fork',

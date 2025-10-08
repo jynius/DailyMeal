@@ -12,7 +12,10 @@ module.exports = {
         DB_USERNAME: 'postgres',
         DB_PASSWORD: 'your_production_password_here',
         DB_NAME: 'dailymeal',
-        JWT_SECRET: 'your_production_jwt_secret_change_this'
+        JWT_SECRET: 'your_production_jwt_secret_change_this',
+        UPLOAD_DIR: './uploads',
+        UPLOAD_MAX_FILE_SIZE: '5242880',
+        UPLOAD_MAX_FILES: '5'
       },
       instances: 1,
       exec_mode: 'fork',

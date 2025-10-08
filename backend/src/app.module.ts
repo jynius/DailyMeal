@@ -50,7 +50,7 @@ import { RealTimeModule } from './realtime/realtime.module';
       })(),
     ),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
+      rootPath: join(__dirname, '..', process.env.UPLOAD_DIR || 'uploads'),
       serveRoot: '/uploads',
     }),
     AuthModule,

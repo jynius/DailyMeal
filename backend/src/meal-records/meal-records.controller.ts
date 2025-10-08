@@ -25,6 +25,11 @@ import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { AppLoggerService, LogMethod } from '../common/logger.service';
 
+// 파일 업로드 설정 (환경 변수)
+const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
+const UPLOAD_MAX_FILE_SIZE = parseInt(process.env.UPLOAD_MAX_FILE_SIZE || '5242880'); // 5MB
+const UPLOAD_MAX_FILES = parseInt(process.env.UPLOAD_MAX_FILES || '5');
+
 @ApiTags('Meal Records')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -36,9 +41,9 @@ export class MealRecordsController {
 
   @Post()
   @UseInterceptors(
-    FilesInterceptor('photos', 5, {
+    FilesInterceptor('photos', UPLOAD_MAX_FILES, {
       storage: diskStorage({
-        destination: './uploads',
+        destination: UPLOAD_DIR,
         filename: (req, file, callback) => {
           const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
           callback(null, uniqueName);
@@ -51,8 +56,8 @@ export class MealRecordsController {
         callback(null, true);
       },
       limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB per file
-        files: 5, // 최대 5개 파일
+        fileSize: UPLOAD_MAX_FILE_SIZE,
+        files: UPLOAD_MAX_FILES,
       },
     }),
   )
