@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npx next dev",
+    "dev": "npx next dev -H 0.0.0.0",
     "build": "npx next build",
-    "start": "npx next start",
+    "start": "npx next start -H 0.0.0.0",
     "start:hybrid": "npm run build && npm run start",
     "lint": "eslint"
   },
