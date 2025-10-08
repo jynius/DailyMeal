@@ -21,10 +21,10 @@ module.exports = {
       min_uptime: '10s'
     },
     {
-      // 🔥 Hybrid 렌더링: Next.js 서버 (SSR + Static)
-      name: 'dailymeal-frontend-hybrid',
+      // 🔥 프로덕션 프론트엔드: 빌드된 Next.js 서버
+      name: 'dailymeal-frontend',
       script: 'npm',
-      args: 'run start:hybrid',
+      args: 'run start',
       cwd: './frontend',
       env: {
         NODE_ENV: 'production',

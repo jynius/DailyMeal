@@ -81,6 +81,11 @@ export default function FeedPage() {
   ]
 
   const formatDate = (dateString: string) => {
+    // 클라이언트에서만 실행되도록 체크
+    if (typeof window === 'undefined') {
+      return '로딩...'
+    }
+    
     const date = new Date(dateString)
     return date.toLocaleDateString('ko-KR', {
       year: 'numeric',

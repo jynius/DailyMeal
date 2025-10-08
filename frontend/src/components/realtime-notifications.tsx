@@ -45,6 +45,11 @@ export function RealTimeNotifications() {
   }
 
   const formatTime = (timestamp: string) => {
+    // 클라이언트에서만 실행되도록 체크
+    if (typeof window === 'undefined') {
+      return '로딩...'
+    }
+    
     const date = new Date(timestamp)
     const now = new Date()
     const diff = now.getTime() - date.getTime()

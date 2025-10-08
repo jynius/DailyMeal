@@ -5,7 +5,51 @@
 ## ✨ 주요 기능
 
 ### 📱 **개인 식사 기록**
-- 📸 **사진 기반 식사 기록**: 음식 사진과 함께 상세 정보 기록
+- 📸 **사진 기반 식사 기록**: 음식 사진과 함께## 🚀 서버 배포 가이드
+
+### 빠른 배포 (권장)
+```bash
+# 1. 저장소 클론
+git clone https://github.com/jynius/DailyMeal.git
+cd DailyMeal
+
+# 2. 간단 배포 스크립트 실행
+./deploy-simple.sh
+```
+
+### 수동 배포
+```bash
+# 1. 의존성 설치
+cd backend && npm install && cd ..
+cd frontend && npm install && cd ..
+
+# 2. 빌드
+cd backend && npm run build && cd ..
+cd frontend && npm run build && cd ..
+
+# 3. PM2로 실행
+pm2 start ecosystem.config.js
+```
+
+### 개발 모드 실행
+```bash
+# PM2 개발 모드
+pm2 start ecosystem.dev.config.js
+
+# 또는 개별 실행
+cd backend && npm run start:dev &
+cd frontend && npm run dev &
+```
+
+### 트러블슈팅
+- **"Could not find a production build"**: `npm run build`를 먼저 실행하세요
+- **PM2 재시작 루프**: `pm2 logs`로 오류 확인 후 `pm2 restart all`
+- **포트 충돌**: PM2 설정에서 PORT 환경변수 수정
+
+## 📞 문의 및 지원
+
+- **GitHub Issues**: [버그 리포트 및 기능 요청](https://github.com/jynius/DailyMeal/issues)
+- **개발자**: [@jynius](https://github.com/jynius)정보 기록
 - ⭐ **별점 평가 시스템**: 1-5점 별점으로 음식 평가
 - 📍 **위치 정보**: 식사 장소 기록
 - 💰 **가격 기록**: 음식 가격 정보 저장
@@ -94,7 +138,25 @@
 - **기능 요청**: 사용 시나리오와 예상 동작 설명
 - **질문**: 구체적인 상황과 시도한 방법 포함
 
-## 📞 문의 및 지원
+## � 최근 해결된 이슈들
+
+### 2025.10.08 - 안정성 및 호환성 개선
+- ✅ **Bus Error 해결**: Next.js 15.5.4 → 14.2.13, React 19.1.0 → 18.3.1 다운그레이드로 서버 환경 호환성 확보
+- ✅ **404 오류 해결**: 전체 사이트 접근 불가 문제 해결
+- ✅ **Socket.IO 안정화**: CORS 설정 개선 및 연결 로직 단순화
+- ✅ **TailwindCSS 호환성**: v4 → v3.4.15 다운그레이드로 빌드 안정성 확보
+- ✅ **ES Module 설정**: PostCSS 및 Next.js 설정 파일 ES Module 형식으로 통일
+- ✅ **PM2 안정성**: 프로세스 재시작 횟수 대폭 감소 (116회 → 35회)
+
+### 성능 및 안정성 지표
+```
+현재 PM2 상태:
+├─ 백엔드: 13회 재시작, 57.3MB 메모리 사용
+├─ 프론트엔드: 35회 재시작, 25.8MB 메모리 사용  
+└─ 서비스: 모든 엔드포인트 정상 응답 (200 OK)
+```
+
+## �📞 문의 및 지원
 
 - **GitHub Issues**: [버그 리포트 및 기능 요청](https://github.com/jynius/DailyMeal/issues)
 - **개발자**: [@jynius](https://github.com/jynius)

@@ -38,7 +38,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastState[]>([])
 
   const showToast = (options: ToastOptions) => {
-    const id = Date.now().toString()
+    const id = crypto.randomUUID() // Date.now() 대신 UUID 사용
     const newToast: ToastState = {
       id,
       isOpen: true,

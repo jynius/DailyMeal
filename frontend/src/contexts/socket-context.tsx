@@ -45,7 +45,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false)
   const [connectedUsers, setConnectedUsers] = useState(0)
   const [notifications, setNotifications] = useState<RealTimeNotification[]>([])
-  const [networkStatus, setNetworkStatus] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true)
+  const [networkStatus, setNetworkStatus] = useState(true) // 초기값을 고정으로 설정
+  const [mounted, setMounted] = useState(false) // 마운트 상태 추가
 
   const clearNotifications = useCallback(() => {
     setNotifications([])
@@ -63,7 +64,19 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
   }, [socket])
 
+  // 클라이언트에서만 실행되는 마운트 체크
   useEffect(() => {
+    setMounted(true)
+    
+    // 네트워크 상태를 클라이언트에서만 설정
+    if (typeof navigator !== 'undefined') {
+      setNetworkStatus(navigator.onLine)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return // 마운트되기 전에는 실행하지 않음
+    
     const serverUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     
     console.log('🔌 Attempting to connect to Socket.IO server:', serverUrl);
@@ -117,7 +130,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     // 실시간 알림 수신
     newSocket.on('newMeal', (data) => {
       const notification: RealTimeNotification = {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(), // Date.now() 대신 UUID 사용
         type: 'NEW_MEAL',
         data: data.data,
         timestamp: data.timestamp,
@@ -128,7 +141,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     newSocket.on('newRestaurant', (data) => {
       const notification: RealTimeNotification = {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         type: 'NEW_RESTAURANT',
         data: data.data,
         timestamp: data.timestamp,
@@ -139,7 +152,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     newSocket.on('likeUpdate', (data) => {
       const notification: RealTimeNotification = {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         type: 'LIKE_UPDATE',
         data: data.data,
         timestamp: data.timestamp,
@@ -150,7 +163,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     newSocket.on('newComment', (data) => {
       const notification: RealTimeNotification = {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         type: 'NEW_COMMENT',
         data: data.data,
         timestamp: data.timestamp,
@@ -161,7 +174,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     newSocket.on('notification', (data) => {
       const notification: RealTimeNotification = {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         type: 'NOTIFICATION',
         data: data.data,
         timestamp: data.timestamp,
@@ -180,7 +193,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       console.log('🔌 Cleaning up socket connection');
       newSocket.close()
     }
-  }, []) // 의존성 제거하여 한번만 실행
+  }, [mounted]) // mounted 상태에 의존
 
   const contextValue: SocketContextType = {
     socket,
