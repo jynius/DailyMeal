@@ -47,6 +47,11 @@ docs/
 │   ├── PM2_NAMING_STRATEGY.md
 │   └── PM2_SCRIPT_GUIDE.md
 │
+├── 🗄️ 데이터베이스 (3개)
+│   ├── DATABASE.md                      # DB 구조 및 관리 📊
+│   ├── POSTGRES_MIGRATION.md            # PostgreSQL 마이그레이션 🔄
+│   └── WHEN_TO_MIGRATE_POSTGRES.md      # 마이그레이션 타이밍 ⏰
+│
 ├── 🌐 네트워크 & 인프라 (4개)
 │   ├── NETWORK_ARCHITECTURE.md
 │   ├── NGINX_PROXY_SETUP.md
@@ -75,11 +80,13 @@ bin/  # 스크립트 (11개)
 
 #### 필수 문서 (처음 시작하시나요?)
 - [⭐ **환경 변수 설정**](./docs/ENVIRONMENT_SETUP.md) - 가장 먼저 읽어야 할 문서!
-- [📘 **배포 가이드**](./docs/BUILD_DEPLOY_GUIDE.md) - 처음 배포하는 방법
+- [� **데이터베이스**](./docs/DATABASE.md) - DB 구조 및 테이블 스키마
+- [�📘 **배포 가이드**](./docs/BUILD_DEPLOY_GUIDE.md) - 처음 배포하는 방법
 - [🌐 **네트워크 구조**](./docs/NETWORK_ARCHITECTURE.md) - 시스템 아키텍처 이해
 - [🔧 **PM2 설정**](./docs/ECOSYSTEM_CONFIG_GUIDE.md) - 프로세스 관리
 
 #### 운영 가이드
+- [🗄️ **데이터베이스 관리**](./docs/DATABASE.md) - SQL 쿼리 및 마이그레이션
 - [🔒 **HTTPS 설정**](./docs/HTTPS_SETUP.md) - SSL 인증서 설정
 - [🛡️ **방화벽 설정**](./docs/FIREWALL_SETUP.md) - 보안 설정
 - [🔄 **PM2 스크립트**](./docs/PM2_SCRIPT_GUIDE.md) - 프로세스 관리 스크립트

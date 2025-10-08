@@ -23,6 +23,11 @@ DailyMeal 프로젝트의 모든 기술 문서와 가이드를 모아둔 곳입�
 - [**PM2_NAMING_STRATEGY.md**](./PM2_NAMING_STRATEGY.md) - PM2 프로세스 이름 전략
 - [**PM2_SCRIPT_GUIDE.md**](./PM2_SCRIPT_GUIDE.md) - PM2 script vs npm 실행 가이드
 
+### 🗄️ 데이터베이스
+- [**DATABASE.md**](./DATABASE.md) - 데이터베이스 구조 및 관리 가이드 📊
+- [**POSTGRES_MIGRATION.md**](./POSTGRES_MIGRATION.md) - PostgreSQL 마이그레이션 가이드 🔄
+- [**WHEN_TO_MIGRATE_POSTGRES.md**](./WHEN_TO_MIGRATE_POSTGRES.md) - 마이그레이션 타이밍 가이드 ⏰
+
 ### 🌐 네트워크 & 인프라
 - [**NETWORK_ARCHITECTURE.md**](./NETWORK_ARCHITECTURE.md) - WSL2 + Windows + AWS 네트워크 구조
 - [**NGINX_PROXY_SETUP.md**](./NGINX_PROXY_SETUP.md) - Nginx 리버스 프록시 설정 가이드
