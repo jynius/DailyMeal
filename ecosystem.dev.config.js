@@ -1,9 +1,9 @@
 module.exports = {
   apps: [
     {
-      name: 'dailymeal-backend-dev',
+      name: 'dailymeal-backend',
       script: 'npm',
-      args: 'run start:dev',
+      args: 'run start:dev',  // ← TypeScript watch 모드
       cwd: './backend',
       env: {
         NODE_ENV: 'development',
@@ -17,18 +17,18 @@ module.exports = {
         followSymlinks: false
       },
       max_memory_restart: '1G',
-      error_file: './logs/pm2-dev-error.log',
-      out_file: './logs/pm2-dev-out.log',
-      log_file: './logs/pm2-dev-combined.log',
+      error_file: './logs/pm2-error.log',
+      out_file: './logs/pm2-out.log',
+      log_file: './logs/pm2-combined.log',
       time: true,
       autorestart: true,
       max_restarts: 10,
       min_uptime: '3s'
     },
     {
-      name: 'dailymeal-frontend-dev',
+      name: 'dailymeal-frontend',
       script: 'npm',
-      args: 'run dev',
+      args: 'run dev',  // ← Next.js dev 모드 (Hot Reload)
       cwd: './frontend',
       env: {
         NODE_ENV: 'development',
@@ -38,11 +38,11 @@ module.exports = {
       },
       instances: 1,
       exec_mode: 'fork',
-      watch: false, // Next.js가 자체 핫 리로딩 제공
+      watch: false,
       max_memory_restart: '1G',
-      error_file: './logs/pm2-frontend-dev-error.log',
-      out_file: './logs/pm2-frontend-dev-out.log',
-      log_file: './logs/pm2-frontend-dev-combined.log',
+      error_file: './logs/pm2-frontend-error.log',
+      out_file: './logs/pm2-frontend-out.log',
+      log_file: './logs/pm2-frontend-combined.log',
       time: true,
       autorestart: true,
       max_restarts: 10,
