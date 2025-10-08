@@ -32,7 +32,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     console.log('🔌 Initializing Socket.IO connection...')
     
     // 매우 간단한 Socket.IO 연결
-    const newSocket = io('http://localhost:8000', {
+    const serverUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const newSocket = io(serverUrl, {
       transports: ['polling'] // 일단 polling만 사용
     })
 

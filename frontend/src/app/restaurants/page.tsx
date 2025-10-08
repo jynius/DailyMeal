@@ -8,6 +8,7 @@ import { ShareModal } from '@/components/share-modal'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Restaurant } from '@/types/restaurant'
+import { APP_CONFIG } from '@/lib/constants'
 import type { ShareData } from '@/lib/share-utils'
 
 export default function RestaurantsPage() {
@@ -28,7 +29,7 @@ export default function RestaurantsPage() {
         return
       }
 
-      const response = await fetch('http://localhost:8000/restaurants', {
+      const response = await fetch(`${APP_CONFIG.API_BASE_URL}/restaurants`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

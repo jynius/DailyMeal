@@ -34,7 +34,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
         totalVisits: 3,
         firstVisit: '2024-08-15T19:30:00Z',
         lastVisit: '2024-10-03T13:30:00Z',
-        representativePhoto: 'http://localhost:8000/uploads/085bf7eb-f6d5-4bdb-89b6-bd8bba27a55f.png',
+        representativePhoto: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/uploads/085bf7eb-f6d5-4bdb-89b6-bd8bba27a55f.png`,
         priceRange: 'mid',
         tags: ['데이트', '파스타맛집', '분위기좋음', '재방문의사'],
         meals: [
@@ -314,7 +314,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
                 <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                   {meal.photos && meal.photos[0] ? (
                     <Image
-                      src={`http://localhost:8000/uploads/${meal.photos[0]}`}
+                      src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/uploads/${meal.photos[0]}`}
                       alt={meal.name}
                       width={64}
                       height={64}

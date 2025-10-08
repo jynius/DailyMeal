@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Plus, ArrowLeft, Eye, EyeOff, MapPin, Star } from 'lucide-react'
 import type { Restaurant } from '@/types/restaurant'
 import { useToast } from '@/components/ui/toast'
+import { APP_CONFIG } from '@/lib/constants'
 
 export default function CreateMapPage() {
   const router = useRouter()
@@ -30,7 +31,7 @@ export default function CreateMapPage() {
           return
         }
 
-        const response = await fetch('http://localhost:8000/restaurants', {
+        const response = await fetch(`${APP_CONFIG.API_BASE_URL}/restaurants`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -99,7 +100,7 @@ export default function CreateMapPage() {
         isPublic: mapData.isPublic
       }
 
-      const response = await fetch('http://localhost:8000/restaurants/maps', {
+      const response = await fetch(`${APP_CONFIG.API_BASE_URL}/restaurants/maps`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

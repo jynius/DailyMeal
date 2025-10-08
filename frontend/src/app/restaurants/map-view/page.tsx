@@ -7,6 +7,7 @@ import { KakaoMap } from '@/components/kakao-map'
 import { useToast } from '@/components/ui/toast'
 import Link from 'next/link'
 import type { Restaurant } from '@/types/restaurant'
+import { APP_CONFIG } from '@/lib/constants'
 
 export default function RestaurantMapViewPage() {
   const router = useRouter()
@@ -28,7 +29,7 @@ export default function RestaurantMapViewPage() {
         return
       }
 
-      const response = await fetch('http://localhost:8000/restaurants', {
+      const response = await fetch(`${APP_CONFIG.API_BASE_URL}/restaurants`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

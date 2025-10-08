@@ -6,6 +6,7 @@ import { ArrowLeft, Save, MapPin, Camera } from 'lucide-react'
 import Image from 'next/image'
 import { LocationSelector } from '@/components/location-selector'
 import { useToast } from '@/components/ui/toast'
+import { APP_CONFIG } from '@/lib/constants'
 
 export default function AddRestaurantPage() {
   const router = useRouter()
@@ -78,7 +79,7 @@ export default function AddRestaurantPage() {
         const photoFormData = new FormData()
         photoFormData.append('file', photo)
 
-        const photoResponse = await fetch('http://localhost:8000/uploads', {
+        const photoResponse = await fetch(`${APP_CONFIG.API_BASE_URL}/uploads`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -93,7 +94,7 @@ export default function AddRestaurantPage() {
       }
 
       // 음식점 생성
-      const response = await fetch('http://localhost:8000/restaurants', {
+      const response = await fetch(`${APP_CONFIG.API_BASE_URL}/restaurants`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
