@@ -56,7 +56,7 @@ eas build --platform ios --profile preview
 ```javascript
 const WEB_URL = __DEV__ 
   ? 'http://localhost:3000'  // 개발 모드
-  : 'https://your-domain.com'; // 프로덕션 (실제 도메인으로 변경)
+  : 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com'; // 프로덕션 (실제 도메인으로 변경)
 ```
 
 ### 앱 이름 및 패키지명 변경

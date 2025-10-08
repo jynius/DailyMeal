@@ -9,7 +9,7 @@ export default function App() {
   // 개발 환경에서는 Windows IP 사용, 프로덕션에서는 실제 도메인 사용
   const WEB_URL = __DEV__ 
     ? 'http://192.168.219.103:3000'  // 개발 모드 - Windows IP
-    : 'http://ec2-3-34-138-77.ap-northeast-2.compute.amazonaws.com/'; // 프로덕션 모드
+    : 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com'; // 프로덕션 모드
 
   return (
     <View style={styles.container}>
@@ -23,6 +23,10 @@ export default function App() {
       
       <WebView
         source={{ uri: WEB_URL }}
+        // Android: Self-signed 인증서 허용
+        onShouldStartLoadWithRequest={request => true}
+        // iOS: Self-signed 인증서 무시
+        ignoreSslError={true}
         style={styles.webview}
         onLoadStart={() => setLoading(true)}
         onLoadEnd={() => setLoading(false)}

@@ -169,14 +169,14 @@ eas build --platform ios --profile production
 ```javascript
 const WEB_URL = __DEV__ 
   ? 'http://192.168.219.103:3000'  // 개발
-  : 'http://ec2-3-34-138-77.ap-northeast-2.compute.amazonaws.com/'; // 프로덕션
+  : 'https://ec2-3-34-138-77.ap-northeast-2.compute.amazonaws.com'; // 프로덕션
 ```
 
 프로덕션 URL을 실제 배포된 도메인으로 변경:
 ```javascript
 const WEB_URL = __DEV__ 
   ? 'http://192.168.219.103:3000'  
-  : 'https://dailymeal.com'; // 실제 도메인
+  : 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com'; // 실제 도메인
 ```
 
 ### 아이콘 및 스플래시 준비

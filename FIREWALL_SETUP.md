@@ -54,7 +54,7 @@ netsh interface portproxy show all
 ```javascript
 const WEB_URL = __DEV__ 
   ? 'http://10.255.255.254:3000'  // Windows 호스트 IP
-  : 'http://your-domain.com';
+  : 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com';
 ```
 
 ### Next.js를 Windows 호스트에서 접근 가능하도록 실행:

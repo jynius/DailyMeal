@@ -35,7 +35,10 @@
     },
     "extra": {
       "webUrl": "http://localhost:3000",
-      "productionWebUrl": "https://your-domain.com"
+      "productionWebUrl": "https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com",
+      "eas": {
+        "projectId": "4f64dc67-c866-4a69-89b5-c0453d63899b"
+      }
     }
   }
 }

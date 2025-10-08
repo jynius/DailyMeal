@@ -10,8 +10,8 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:3000', // 개발 환경
-      'http://your-domain.com', // 프로덕션 도메인
-      'https://your-domain.com' // HTTPS 프로덕션 도메인
+      'http://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com', // 프로덕션 도메인
+      'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com' // HTTPS 프로덕션 도메인
     ],
     credentials: true,
   });
