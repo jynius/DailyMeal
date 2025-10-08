@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MealRecord } from '../entities/meal-record.entity';
 import { CreateMealRecordDto, UpdateMealRecordDto } from '../dto/meal-record.dto';
+import { RealTimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class MealRecordsService {
   constructor(
     @InjectRepository(MealRecord)
     private mealRecordRepository: Repository<MealRecord>,
+    private realTimeService: RealTimeService,
   ) {}
 
   /**
@@ -50,7 +52,18 @@ export class MealRecordsService {
     });
 
     const saved = await this.mealRecordRepository.save(mealRecord);
-    return this.transformMealRecord(saved);
+    const transformed = this.transformMealRecord(saved);
+    
+    // 실시간 알림 전송
+    this.realTimeService.notifyNewMeal({
+      id: saved.id,
+      name: saved.name,
+      photo: transformed.photo,
+      userId: saved.userId,
+      createdAt: saved.createdAt,
+    });
+    
+    return transformed;
   }
 
   async findAll(userId: string, page: number = 1, limit: number = 10) {

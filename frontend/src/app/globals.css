@@ -112,3 +112,66 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 모바일 최적화 */
+@supports (padding: max(0px)) {
+  .pb-safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 1rem);
+  }
+  
+  .pt-safe-top {
+    padding-top: max(env(safe-area-inset-top, 0px), 1rem);
+  }
+}
+
+/* 터치 최적화 */
+button, 
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* 스크롤 최적화 */
+.smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* 모바일 텍스트 크기 조정 방지 */
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* 모바일 탭 하이라이트 제거 */
+button, 
+a, 
+input, 
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS 관련 최적화 */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+/* 스와이프 제스처 지원 */
+.swipe-container {
+  touch-action: pan-x pan-y;
+}
+
+/* 고해상도 디스플레이 최적화 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .high-res-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}

@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, use, useCallback } from 'react'
-import { ArrowLeft, MapPin, Star, Calendar, Share } from 'lucide-react'
+import { ArrowLeft, MapPin, Star, Calendar, Share, Navigation } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { RestaurantDetail } from '@/types/restaurant'
 import { ShareModal } from '@/components/share-modal'
+import { KakaoMap } from '@/components/kakao-map'
 
 interface RestaurantPageProps {
   params: Promise<{ id: string }>
@@ -202,6 +203,96 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Location Map */}
+      <div className="mt-4 bg-white">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+              <MapPin size={20} className="mr-2 text-blue-500" />
+              위치 정보
+            </h3>
+            <button
+              onClick={() => {
+                // 카카오맵 앱으로 길찾기 또는 웹 지도 열기
+                const url = `https://map.kakao.com/link/to/${encodeURIComponent(restaurant.name)},${restaurant.latitude},${restaurant.longitude}`
+                window.open(url, '_blank')
+              }}
+              className="flex items-center px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+            >
+              <Navigation size={14} className="mr-1" />
+              길찾기
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {/* 주소 정보 */}
+          <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="font-medium text-gray-900 mb-1">{restaurant.name}</div>
+                <div className="text-gray-600 text-sm">{restaurant.address}</div>
+              </div>
+              <button
+                onClick={() => {
+                  // 주소 복사
+                  navigator.clipboard.writeText(restaurant.address)
+                  alert('주소가 복사되었습니다!')
+                }}
+                className="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 border border-gray-300 rounded"
+              >
+                복사
+              </button>
+            </div>
+          </div>
+
+          {/* 카카오 지도 */}
+          <KakaoMap
+            latitude={restaurant.latitude || 37.5665}
+            longitude={restaurant.longitude || 126.9780}
+            level={3}
+            markers={[{
+              lat: restaurant.latitude || 37.5665,
+              lng: restaurant.longitude || 126.9780,
+              title: restaurant.name,
+              content: `
+                <div style="padding: 10px; min-width: 200px;">
+                  <strong style="color: #333;">${restaurant.name}</strong><br/>
+                  <span style="color: #666; font-size: 12px;">${restaurant.address}</span><br/>
+                  <div style="margin-top: 5px;">
+                    <span style="color: #ff6b35;">★ ${restaurant.averageRating}</span>
+                    <span style="color: #999; margin-left: 5px;">${restaurant.totalVisits}회 방문</span>
+                  </div>
+                </div>
+              `
+            }]}
+            className="w-full h-64 rounded-lg"
+          />
+
+          {/* 주변 정보 (선택사항) */}
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <button
+              onClick={() => {
+                const searchUrl = `https://map.kakao.com/link/search/${encodeURIComponent(restaurant.address + ' 주차장')}`
+                window.open(searchUrl, '_blank')
+              }}
+              className="p-3 text-sm text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              🚗 주변 주차장
+            </button>
+            <button
+              onClick={() => {
+                const searchUrl = `https://map.kakao.com/link/search/${encodeURIComponent(restaurant.address + ' 지하철역')}`
+                window.open(searchUrl, '_blank')
+              }}
+              className="p-3 text-sm text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              🚇 가까운 지하철
+            </button>
+          </div>
         </div>
       </div>
 

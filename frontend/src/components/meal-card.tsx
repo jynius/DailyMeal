@@ -43,8 +43,8 @@ export function MealCard({
 
   return (
     <>
-      <Link href={`/meal/${id}`} className="block">
-      <div className="bg-white rounded-lg border overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+      <Link href={`/meal/${id}`} className="block touch-target">
+      <div className="bg-white rounded-xl border overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98]">
       {/* Photo */}
       <div className="aspect-square relative bg-gray-100">
         {photo ? (
@@ -52,30 +52,31 @@ export function MealCard({
             src={photo.startsWith('http') ? photo : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${photo}`}
             alt={name}
             fill
-            className="object-cover"
+            className="object-cover high-res-image"
             priority
+            sizes="(max-width: 768px) 50vw, 33vw"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
-            <span className="text-4xl">🍽️</span>
+            <span className="text-3xl sm:text-4xl">🍽️</span>
           </div>
         )}
       </div>
       
       {/* Content */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="font-semibold text-gray-900 truncate">{name}</h4>
-          <div className="flex items-center ml-2">
+          <h4 className="font-semibold text-gray-900 truncate text-sm sm:text-base flex-1 mr-2">{name}</h4>
+          <div className="flex items-center flex-shrink-0">
             {[...Array(5)].map((_, i) => (
               <Star 
                 key={i} 
-                size={16} 
-                className={
+                size={14} 
+                className={`${
                   i < rating 
                     ? "text-yellow-400 fill-current" 
                     : "text-gray-300"
-                } 
+                } sm:w-4 sm:h-4`} 
               />
             ))}
           </div>

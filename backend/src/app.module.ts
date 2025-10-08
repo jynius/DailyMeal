@@ -12,6 +12,8 @@ import { User } from './entities/user.entity';
 import { MealRecord } from './entities/meal-record.entity';
 import { AppLoggerService, PackageLogger } from './common/logger.service';
 import { loggerConfig } from './common/logger.config';
+import { RealTimeModule } from './realtime/realtime.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -54,6 +56,7 @@ import { loggerConfig } from './common/logger.config';
     AuthModule,
     MealRecordsModule,
     RestaurantsModule,
+    RealTimeModule,
   ],
   controllers: [AppController],
   providers: [

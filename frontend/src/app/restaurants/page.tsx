@@ -96,13 +96,30 @@ export default function RestaurantsPage() {
       <header className="bg-white border-b px-4 py-3 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900">내 맛집</h1>
-          <Link 
-            href="/restaurants/map/create"
-            className="flex items-center space-x-1 bg-blue-500 text-white px-3 py-1.5 rounded-full text-sm"
-          >
-            <Plus size={16} />
-            <span>맛집지도</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link 
+              href="/restaurants/map-view"
+              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="지도에서 보기"
+            >
+              <MapPin size={20} />
+            </Link>
+            <Link 
+              href="/restaurants/add"
+              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="음식점 추가"
+            >
+              <Plus size={20} />
+            </Link>
+            <Link 
+              href="/restaurants/map/create"
+              className="flex items-center space-x-1 bg-blue-500 text-white px-3 py-1.5 rounded-full text-sm hover:bg-blue-600 transition-colors"
+              title="맛집지도 만들기"
+            >
+              <Plus size={16} />
+              <span>맛집지도</span>
+            </Link>
+          </div>
         </div>
       </header>
 
