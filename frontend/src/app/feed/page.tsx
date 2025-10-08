@@ -3,13 +3,18 @@
 import { useEffect, useState } from 'react'
 import { MealCard } from '@/components/meal-card'
 import { BottomNavigation } from '@/components/bottom-navigation'
+import { Button } from '@/components/ui/button'
 import { mealRecordsApi } from '@/lib/api/client'
+import { useSocket } from '@/contexts/socket-context'
+import { Users, Filter, Zap } from 'lucide-react'
 import type { MealRecord } from '@/types'
 
 export default function FeedPage() {
   const [meals, setMeals] = useState<MealRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [filter, setFilter] = useState<'all' | 'following' | 'nearby'>('all')
+  const { notifications, connectedUsers, isConnected } = useSocket()
 
   useEffect(() => {
     const fetchMeals = async () => {

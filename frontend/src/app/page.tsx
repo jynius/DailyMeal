@@ -8,6 +8,7 @@ import { tokenManager, mealRecordsApi } from "@/lib/api/client";
 import type { MealRecord } from "@/types";
 import { MealCard } from "@/components/meal-card";
 import { useSocket } from "@/contexts/socket-context";
+import { AIMenuRecommendation } from "@/components/ai-menu-recommendation";
 import Link from "next/link";
 
 
@@ -189,6 +190,11 @@ export default function Home() {
             )}
           </div>
         )}
+
+        {/* AI 추천 메뉴 섹션 */}
+        <div className="mb-6">
+          <AIMenuRecommendation />
+        </div>
       </div>
 
       {/* 최근 식사 기록 또는 시작 가이드 */}

@@ -45,6 +45,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false)
   const [connectedUsers, setConnectedUsers] = useState(0)
   const [notifications, setNotifications] = useState<RealTimeNotification[]>([])
+  const [networkStatus, setNetworkStatus] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true)
 
   const clearNotifications = useCallback(() => {
     setNotifications([])
@@ -65,17 +66,22 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const serverUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     
-    // Socket.IO 연결
+    console.log('🔌 Attempting to connect to Socket.IO server:', serverUrl);
+    
+    // Socket.IO 연결 - 간단한 설정으로 시작
     const newSocket = io(serverUrl, {
-      withCredentials: true,
-      transports: ['websocket', 'polling']
+      withCredentials: false, // 일단 false로 시도
+      transports: ['polling', 'websocket'], // polling을 먼저 시도
+      timeout: 10000,
+      reconnection: false, // 일단 자동 재연결 비활성화
+      forceNew: true
     })
 
     setSocket(newSocket)
 
     // 연결 이벤트
     newSocket.on('connect', () => {
-      console.log('Socket connected:', newSocket.id)
+      console.log('✅ Socket connected successfully:', newSocket.id)
       setIsConnected(true)
 
       // 사용자 인증 (토큰이 있을 경우)
@@ -93,8 +99,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       }
     })
 
-    newSocket.on('disconnect', () => {
-      console.log('Socket disconnected')
+    newSocket.on('disconnect', (reason) => {
+      console.log('❌ Socket disconnected:', reason)
+      setIsConnected(false)
+    })
+
+    newSocket.on('connect_error', (error) => {
+      console.error('🚫 Socket connection error:', error)
       setIsConnected(false)
     })
 
@@ -166,13 +177,14 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // 정리
     return () => {
+      console.log('🔌 Cleaning up socket connection');
       newSocket.close()
     }
-  }, [])
+  }, []) // 의존성 제거하여 한번만 실행
 
   const contextValue: SocketContextType = {
     socket,
-    isConnected,
+    isConnected, // 단순히 소켓 연결 상태만 반영
     connectedUsers,
     notifications,
     clearNotifications,

@@ -20,10 +20,10 @@ export interface ConnectedUser {
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: "*", // 개발 환경에서는 모든 origin 허용
     methods: ["GET", "POST"],
-    credentials: true,
-  },
+    credentials: false // credentials 비활성화
+  }
 })
 export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
@@ -32,10 +32,13 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
   afterInit(server: Server) {
     this.logger.log('WebSocket Gateway initialized');
+    this.logger.log('Socket.IO server is ready on port 8000');
+    console.log('🔌 Socket.IO Gateway initialized successfully');
   }
 
   handleConnection(client: Socket, ...args: any[]) {
     this.logger.log(`Client connected: ${client.id}`);
+    console.log(`🔗 Client connected: ${client.id} from ${client.handshake.address}`);
     
     const user: ConnectedUser = {
       id: client.id,
@@ -46,6 +49,7 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     
     // 연결된 사용자 수 브로드캐스트
     this.server.emit('userCount', this.connectedUsers.size);
+    console.log(`👥 Connected users: ${this.connectedUsers.size}`);
   }
 
   handleDisconnect(client: Socket) {

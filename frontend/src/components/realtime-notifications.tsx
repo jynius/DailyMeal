@@ -71,10 +71,10 @@ export function RealTimeNotifications() {
               ? 'bg-green-100 text-green-700' 
               : 'bg-red-100 text-red-700'
           }`}>
-            <div className={`w-2 h-2 rounded-full ${
+            <div className={`w-2 h-2 rounded-full animate-pulse ${
               isConnected ? 'bg-green-500' : 'bg-red-500'
             }`} />
-            {isConnected ? '온라인' : '오프라인'}
+            {isConnected ? '실시간 연결됨' : '오프라인'}
           </div>
           
           {/* 사용자 수 */}
