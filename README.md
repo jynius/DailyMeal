@@ -31,11 +31,16 @@
 
 ```
 docs/
-├── 🚀 배포 & 운영 (4개)
-│   ├── BUILD_DEPLOY_GUIDE.md
-│   ├── CLEANUP_SUMMARY.md
-│   ├── ECOSYSTEM_BUILD_SOLUTION.md
-│   └── ECOSYSTEM_CONFIG_GUIDE.md
+├── 🚀 배포 & 운영 (9개)
+│   ├── BUILD_DEPLOY_GUIDE.md           # 빌드 및 배포 프로세스
+│   ├── CLEANUP_SUMMARY.md              # 스크립트 정리 완료
+│   ├── ECOSYSTEM_BUILD_SOLUTION.md     # 빌드 문제 해결
+│   ├── ECOSYSTEM_CONFIG_GUIDE.md       # PM2 설정 가이드
+│   ├── ENVIRONMENT_SETUP.md ⭐          # 환경 변수 설정 (필수!)
+│   ├── ENV_INTEGRATION_REPORT.md       # 환경 변수 통합 보고서
+│   ├── ENV_ANALYSIS.md                 # 환경 변수 파일 분석
+│   ├── DEV_ENV_CONFLICT.md             # 개발 환경 충돌 해결
+│   └── SUMMARY.md                      # 문서 재구성 요약
 │
 ├── 🔧 PM2 프로세스 관리 (2개)
 │   ├── PM2_NAMING_STRATEGY.md
@@ -55,6 +60,7 @@ docs/
 ### 🎯 빠른 링크
 
 #### 필수 문서 (처음 시작하시나요?)
+- [⭐ **환경 변수 설정**](./docs/ENVIRONMENT_SETUP.md) - 가장 먼저 읽어야 할 문서!
 - [📘 **배포 가이드**](./docs/BUILD_DEPLOY_GUIDE.md) - 처음 배포하는 방법
 - [🌐 **네트워크 구조**](./docs/NETWORK_ARCHITECTURE.md) - 시스템 아키텍처 이해
 - [🔧 **PM2 설정**](./docs/ECOSYSTEM_CONFIG_GUIDE.md) - 프로세스 관리

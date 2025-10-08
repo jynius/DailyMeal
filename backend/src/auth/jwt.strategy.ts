@@ -9,7 +9,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly logger = AppLoggerService.getLogger('JwtStrategy');
 
   constructor(private authService: AuthService) {
-    const jwtSecret = 'dailymeal-fixed-secret-key';
+    const jwtSecret = process.env.JWT_SECRET || 'dailymeal-fixed-secret-key';
     
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

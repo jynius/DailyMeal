@@ -6,7 +6,13 @@ module.exports = {
       cwd: './backend',
       env: {
         NODE_ENV: 'production',
-        PORT: 8000
+        PORT: 8000,
+        DB_HOST: 'localhost',
+        DB_PORT: 5432,
+        DB_USERNAME: 'postgres',
+        DB_PASSWORD: 'your_production_password_here',
+        DB_NAME: 'dailymeal',
+        JWT_SECRET: 'your_production_jwt_secret_change_this'
       },
       instances: 1,
       exec_mode: 'fork',
@@ -30,7 +36,8 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3000,
         NEXT_PUBLIC_API_URL: '/api',
-        NEXT_PUBLIC_SITE_URL: 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com'
+        NEXT_PUBLIC_SITE_URL: 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com',
+        NEXT_PUBLIC_KAKAO_MAP_API_KEY: 'your_production_kakao_api_key_here'
       },
       instances: 1,
       exec_mode: 'fork',

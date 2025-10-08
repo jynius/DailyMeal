@@ -8,21 +8,14 @@ DailyMeal 프로젝트의 모든 기술 문서와 가이드를 모아둔 곳입�
 
 ### 🚀 배포 & 운영
 - [**BUILD_DEPLOY_GUIDE.md**](./BUILD_DEPLOY_GUIDE.md) - 빌드 및 배포 프로세스 완벽 가이드
-- [**CLEANUP_SUMMARY.md---
-
-## 🔗 관련 전문 문서
-
-프로젝트의 다른 특화된 문서들:
-
-- [📱 **모바일 앱 배포**](../app/DEPLOYMENT.md) - Expo 앱 빌드 및 배포 가이드
-- [🌳 **브랜치 전략**](../.github/BRANCH_SETUP.md) - Git 브랜치 설정 및 관리
-- [⚙️ **GitHub Actions**](../.github/GITHUB_ACTIONS_SETUP.md) - CI/CD 환경 설정
-
----
-
-## 🔗 외부 참조(./CLEANUP_SUMMARY.md) - 프로덕션 배포 스크립트 정리 완료
+- [**CLEANUP_SUMMARY.md**](./CLEANUP_SUMMARY.md) - 프로덕션 배포 스크립트 정리 완료
 - [**ECOSYSTEM_BUILD_SOLUTION.md**](./ECOSYSTEM_BUILD_SOLUTION.md) - ecosystem.config.js 빌드 문제 해결
 - [**ECOSYSTEM_CONFIG_GUIDE.md**](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 Ecosystem 설정 완벽 가이드
+- [**ENVIRONMENT_SETUP.md**](./ENVIRONMENT_SETUP.md) - 환경 변수 설정 종합 가이드 ⭐ **필수!**
+- [**ENV_INTEGRATION_REPORT.md**](./ENV_INTEGRATION_REPORT.md) - 환경 변수 통합 작업 완료 보고서
+- [**ENV_ANALYSIS.md**](./ENV_ANALYSIS.md) - 환경 변수 파일 상세 분석
+- [**DEV_ENV_CONFLICT.md**](./DEV_ENV_CONFLICT.md) - 개발 환경 설정 충돌 해결 과정
+- [**SUMMARY.md**](./SUMMARY.md) - 문서 재구성 요약
 
 ### 🔧 PM2 프로세스 관리
 - [**PM2_NAMING_STRATEGY.md**](./PM2_NAMING_STRATEGY.md) - PM2 프로세스 이름 전략
@@ -40,31 +33,47 @@ DailyMeal 프로젝트의 모든 기술 문서와 가이드를 모아둔 곳입�
 
 ---
 
+## 🔗 관련 전문 문서
+
+프로젝트의 다른 특화된 문서들:
+
+- [📱 **모바일 앱 배포**](../app/DEPLOYMENT.md) - Expo 앱 빌드 및 배포 가이드
+- [🌳 **브랜치 전략**](../.github/BRANCH_SETUP.md) - Git 브랜치 설정 및 관리
+- [⚙️ **GitHub Actions**](../.github/GITHUB_ACTIONS_SETUP.md) - CI/CD 환경 설정
+- [📋 **Copilot 가이드**](../.github/copilot-instructions.md) - GitHub Copilot 프로젝트 컨텍스트
+
+---
+
 ## 🗂️ 문서 분류
 
 ### 레벨 1: 필수 읽기 📌
 프로젝트를 시작하거나 배포하는 모든 사람이 반드시 읽어야 할 문서
 
-1. [BUILD_DEPLOY_GUIDE.md](./BUILD_DEPLOY_GUIDE.md) - 배포 프로세스 이해
-2. [NETWORK_ARCHITECTURE.md](./NETWORK_ARCHITECTURE.md) - 네트워크 구조 이해
-3. [ECOSYSTEM_CONFIG_GUIDE.md](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 설정 이해
+1. [**ENVIRONMENT_SETUP.md**](./ENVIRONMENT_SETUP.md) ⭐ - 환경 변수 설정 (가장 먼저!)
+2. [**BUILD_DEPLOY_GUIDE.md**](./BUILD_DEPLOY_GUIDE.md) - 배포 프로세스 이해
+3. [**NETWORK_ARCHITECTURE.md**](./NETWORK_ARCHITECTURE.md) - 네트워크 구조 이해
+4. [**ECOSYSTEM_CONFIG_GUIDE.md**](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 설정 이해
 
 ### 레벨 2: 운영 가이드 🔧
 서버 운영 및 유지보수 담당자를 위한 문서
 
-1. [PM2_SCRIPT_GUIDE.md](./PM2_SCRIPT_GUIDE.md) - PM2 스크립트 이해
-2. [NGINX_PROXY_SETUP.md](./NGINX_PROXY_SETUP.md) - 웹서버 설정
-3. [FIREWALL_SETUP.md](./FIREWALL_SETUP.md) - 보안 설정
-4. [HTTPS_SETUP.md](./HTTPS_SETUP.md) - SSL 인증서 관리
+1. [**PM2_SCRIPT_GUIDE.md**](./PM2_SCRIPT_GUIDE.md) - PM2 스크립트 이해
+2. [**NGINX_PROXY_SETUP.md**](./NGINX_PROXY_SETUP.md) - 웹서버 설정
+3. [**FIREWALL_SETUP.md**](./FIREWALL_SETUP.md) - 보안 설정
+4. [**HTTPS_SETUP.md**](./HTTPS_SETUP.md) - SSL 인증서 관리
 
 ### 레벨 3: 참고 자료 📚
 특정 문제 해결이나 최적화를 위한 문서
 
-1. [CLEANUP_SUMMARY.md](./CLEANUP_SUMMARY.md) - 스크립트 정리 내역
-2. [ECOSYSTEM_BUILD_SOLUTION.md](./ECOSYSTEM_BUILD_SOLUTION.md) - 빌드 문제 해결
-3. [PM2_NAMING_STRATEGY.md](./PM2_NAMING_STRATEGY.md) - 네이밍 전략
-4. [LOCALHOST_CLEANUP.md](./LOCALHOST_CLEANUP.md) - 하드코딩 제거
-5. [SCENARIOS.md](./SCENARIOS.md) - 시나리오별 가이드
+1. [**ENV_INTEGRATION_REPORT.md**](./ENV_INTEGRATION_REPORT.md) - 환경 변수 통합 내역
+2. [**ENV_ANALYSIS.md**](./ENV_ANALYSIS.md) - 환경 변수 파일 상세 분석
+3. [**DEV_ENV_CONFLICT.md**](./DEV_ENV_CONFLICT.md) - 개발 환경 충돌 해결 과정
+4. [**CLEANUP_SUMMARY.md**](./CLEANUP_SUMMARY.md) - 스크립트 정리 내역
+5. [**ECOSYSTEM_BUILD_SOLUTION.md**](./ECOSYSTEM_BUILD_SOLUTION.md) - 빌드 문제 해결
+6. [**PM2_NAMING_STRATEGY.md**](./PM2_NAMING_STRATEGY.md) - 네이밍 전략
+7. [**LOCALHOST_CLEANUP.md**](./LOCALHOST_CLEANUP.md) - 하드코딩 제거
+8. [**SCENARIOS.md**](./SCENARIOS.md) - 시나리오별 가이드
+9. [**SUMMARY.md**](./SUMMARY.md) - 문서 재구성 요약
 
 ---
 
@@ -72,162 +81,111 @@ DailyMeal 프로젝트의 모든 기술 문서와 가이드를 모아둔 곳입�
 
 ### 키워드로 찾기
 
+#### 환경 변수 관련 ⭐
+- **초기 설정**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "초기 설정 방법"
+- **JWT_SECRET**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "JWT Configuration"
+- **카카오 지도 API**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "카카오 지도 API 키 발급"
+- **.env vs PM2**: [ENV_INTEGRATION_REPORT.md](./ENV_INTEGRATION_REPORT.md) → "dotenv 통합"
+- **파일 분석**: [ENV_ANALYSIS.md](./ENV_ANALYSIS.md) → "4개 .env 파일 비교"
+- **충돌 해결**: [DEV_ENV_CONFLICT.md](./DEV_ENV_CONFLICT.md) → "방안 2 선택 과정"
+
 #### 배포 관련
 - **초기 배포**: [BUILD_DEPLOY_GUIDE.md](./BUILD_DEPLOY_GUIDE.md) → "초기 배포"
 - **재배포**: [CLEANUP_SUMMARY.md](./CLEANUP_SUMMARY.md) → "코드 업데이트"
 - **빌드 실패**: [ECOSYSTEM_BUILD_SOLUTION.md](./ECOSYSTEM_BUILD_SOLUTION.md)
 
 #### PM2 관련
-- **PM2 시작**: [PM2_SCRIPT_GUIDE.md](./PM2_SCRIPT_GUIDE.md) → "사용법"
-- **PM2 설정**: [ECOSYSTEM_CONFIG_GUIDE.md](./ECOSYSTEM_CONFIG_GUIDE.md)
+- **PM2 시작**: [PM2_SCRIPT_GUIDE.md](./PM2_SCRIPT_GUIDE.md) → "start-pm2.sh"
+- **PM2 중지**: [PM2_SCRIPT_GUIDE.md](./PM2_SCRIPT_GUIDE.md) → "stop-pm2.sh"
 - **프로세스 이름**: [PM2_NAMING_STRATEGY.md](./PM2_NAMING_STRATEGY.md)
+- **PM2 설정**: [ECOSYSTEM_CONFIG_GUIDE.md](./ECOSYSTEM_CONFIG_GUIDE.md)
 
 #### 네트워크 관련
-- **포트 설정**: [NETWORK_ARCHITECTURE.md](./NETWORK_ARCHITECTURE.md) → "포트 정보"
+- **WSL2 설정**: [NETWORK_ARCHITECTURE.md](./NETWORK_ARCHITECTURE.md) → "WSL2"
+- **방화벽 설정**: [FIREWALL_SETUP.md](./FIREWALL_SETUP.md)
 - **Nginx 설정**: [NGINX_PROXY_SETUP.md](./NGINX_PROXY_SETUP.md)
-- **방화벽**: [FIREWALL_SETUP.md](./FIREWALL_SETUP.md)
-- **SSL**: [HTTPS_SETUP.md](./HTTPS_SETUP.md)
+- **HTTPS 설정**: [HTTPS_SETUP.md](./HTTPS_SETUP.md)
 
 #### 문제 해결
-- **빌드 문제**: [ECOSYSTEM_BUILD_SOLUTION.md](./ECOSYSTEM_BUILD_SOLUTION.md)
-- **환경변수**: [LOCALHOST_CLEANUP.md](./LOCALHOST_CLEANUP.md)
-- **시나리오별**: [SCENARIOS.md](./SCENARIOS.md)
+- **지도 안 보임**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "문제 해결"
+- **JWT 오류**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "JWT 인증 오류"
+- **DB 연결 오류**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "데이터베이스 연결 오류"
+- **localhost 오류**: [LOCALHOST_CLEANUP.md](./LOCALHOST_CLEANUP.md)
 
 ---
 
-## 📊 문서 상태
+## 🎯 시나리오별 가이드
 
-| 문서 | 상태 | 최종 업데이트 | 관련 버전 |
-|------|------|---------------|-----------|
-| BUILD_DEPLOY_GUIDE.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| CLEANUP_SUMMARY.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| ECOSYSTEM_BUILD_SOLUTION.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| ECOSYSTEM_CONFIG_GUIDE.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| PM2_NAMING_STRATEGY.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| PM2_SCRIPT_GUIDE.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| NETWORK_ARCHITECTURE.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| NGINX_PROXY_SETUP.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| FIREWALL_SETUP.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| HTTPS_SETUP.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| LOCALHOST_CLEANUP.md | ✅ 완료 | 2025-10-08 | v1.0 |
-| SCENARIOS.md | ✅ 완료 | 2025-10-08 | v1.0 |
+### 새 개발자 온보딩 🆕
+1. [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) - 환경 변수 설정
+2. [NETWORK_ARCHITECTURE.md](./NETWORK_ARCHITECTURE.md) - 프로젝트 구조 이해
+3. [BUILD_DEPLOY_GUIDE.md](./BUILD_DEPLOY_GUIDE.md) - 로컬 실행 방법
 
----
-
-## 🎯 사용 시나리오별 추천 문서
-
-### 🆕 새로운 팀원 온보딩
-1. 루트 [README.md](../README.md) - 프로젝트 개요
-2. [NETWORK_ARCHITECTURE.md](./NETWORK_ARCHITECTURE.md) - 시스템 구조
-3. [BUILD_DEPLOY_GUIDE.md](./BUILD_DEPLOY_GUIDE.md) - 배포 방법
-
-### 🚀 처음 배포하는 경우
-1. [BUILD_DEPLOY_GUIDE.md](./BUILD_DEPLOY_GUIDE.md) - 배포 프로세스
+### 서버 운영자 🔧
+1. [PM2_SCRIPT_GUIDE.md](./PM2_SCRIPT_GUIDE.md) - PM2 명령어
 2. [ECOSYSTEM_CONFIG_GUIDE.md](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 설정
-3. [FIREWALL_SETUP.md](./FIREWALL_SETUP.md) - 방화벽 설정
-4. [NGINX_PROXY_SETUP.md](./NGINX_PROXY_SETUP.md) - 웹서버 설정
-5. [HTTPS_SETUP.md](./HTTPS_SETUP.md) - SSL 인증서
+3. [NGINX_PROXY_SETUP.md](./NGINX_PROXY_SETUP.md) - 웹서버 관리
 
-### 🔧 운영 중 문제 해결
-1. [SCENARIOS.md](./SCENARIOS.md) - 시나리오별 해결책
-2. [ECOSYSTEM_BUILD_SOLUTION.md](./ECOSYSTEM_BUILD_SOLUTION.md) - 빌드 문제
-3. [PM2_SCRIPT_GUIDE.md](./PM2_SCRIPT_GUIDE.md) - PM2 트러블슈팅
+### DevOps 엔지니어 ⚙️
+1. [BUILD_DEPLOY_GUIDE.md](./BUILD_DEPLOY_GUIDE.md) - CI/CD 파이프라인
+2. [FIREWALL_SETUP.md](./FIREWALL_SETUP.md) - 보안 설정
+3. [HTTPS_SETUP.md](./HTTPS_SETUP.md) - SSL 인증서
 
-### ⚙️ 설정 변경
-1. [ECOSYSTEM_CONFIG_GUIDE.md](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 설정
-2. [NGINX_PROXY_SETUP.md](./NGINX_PROXY_SETUP.md) - Nginx 설정
-3. [NETWORK_ARCHITECTURE.md](./NETWORK_ARCHITECTURE.md) - 네트워크 설정
+### 문제 해결 담당자 🔍
+1. [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) - 환경 변수 문제
+2. [SCENARIOS.md](./SCENARIOS.md) - 다양한 시나리오
+3. [ECOSYSTEM_BUILD_SOLUTION.md](./ECOSYSTEM_BUILD_SOLUTION.md) - 빌드 오류
 
 ---
 
-## 📝 문서 작성 가이드
+## 📝 문서 작성 기준
 
 ### 문서 추가 시
 1. 이 README.md에 링크 추가
-2. 적절한 카테고리에 분류
-3. 문서 상태 테이블 업데이트
+2. 적절한 카테고리에 배치
+3. 레벨 분류 지정
+4. 키워드 검색 섹션에 추가
 
-### 문서 작성 규칙
-- 제목은 대문자와 밑줄로 구분 (예: `BUILD_DEPLOY_GUIDE.md`)
-- Markdown 포맷 사용
-- 코드 블록에 언어 지정
-- 이모지 활용으로 가독성 향상
-- 실제 사용 예제 포함
-
----
-
-## � 문서 개편 완료
-
-### ✅ 정리 내역 (2025-10-08)
-
-모든 기술 문서가 체계적으로 정리되었습니다!
-
-#### **변경 전** ❌
-- 12개의 `.md` 파일이 프로젝트 루트에 산재
-- README 파일들에 중복된 내용과 보일러플레이트
-- 문서 찾기 어려움
-
-#### **변경 후** ✅
-- 모든 문서를 `docs/` 폴더로 통합 (13개 파일)
-- 각 폴더 README는 간결한 소개 + docs 링크
-- 문서 인덱스(`docs/README.md`)로 체계적 분류
-
-### 🎯 개선 효과
-
-1. **문서 접근성 향상** 📚
-   - 한 곳에서 모든 문서 확인
-   - 카테고리별, 레벨별 분류
-   
-2. **README 간소화** 📝
-   - 각 폴더는 간결한 소개만
-   - 상세 내용은 docs 링크로 연결
-   
-3. **유지보수 편리** 🔧
-   - 문서 수정 시 한 곳만 업데이트
-   - 일관된 문서 구조
+### 문서 작성 가이드
+- **제목**: 명확하고 검색 가능한 이름
+- **구조**: 목차, 개요, 상세 내용, 예제, 문제 해결
+- **링크**: 관련 문서 간 상호 참조
+- **예제**: 실제 사용 가능한 명령어와 코드
+- **업데이트**: 변경 사항 발생 시 즉시 반영
 
 ---
 
-## 📝 문서 작성 가이드
+## 🔄 최근 업데이트
 
-### 새 문서 추가 시
-1. `docs/` 폴더에 문서 생성
-2. 이 README.md의 목차에 링크 추가
-3. 적절한 카테고리에 분류
-4. 문서 상태 테이블 업데이트
-5. 관련 폴더 README에 링크 추가 (필요 시)
+### 2025-10-08
+- ✨ **ENVIRONMENT_SETUP.md** 추가 - 환경 변수 설정 종합 가이드
+- ✨ **ENV_INTEGRATION_REPORT.md** 추가 - 환경 변수 통합 작업 보고서
+- 🔧 JWT_SECRET 환경 변수 적용 완료
+- 🔧 KAKAO_MAP_API_KEY 환경 변수 통합
+- 🗑️ .env.production 삭제 (미사용)
+- 📝 backend/.env.example 생성
 
-### 문서 작성 규칙
-- **제목 형식**: 대문자와 밑줄 (예: `BUILD_DEPLOY_GUIDE.md`)
-- **Markdown 포맷** 사용
-- **코드 블록**에 언어 지정
-- **이모지 활용**으로 가독성 향상
-- **실제 사용 예제** 포함
-
----
-
-## �🔗 외부 참조
-
-### 프레임워크 문서
-- [Next.js 공식 문서](https://nextjs.org/docs)
-- [NestJS 공식 문서](https://docs.nestjs.com/)
-- [PM2 공식 문서](https://pm2.keymetrics.io/docs/)
-- [Nginx 공식 문서](https://nginx.org/en/docs/)
-
-### 개발 도구
-- [TypeScript 문서](https://www.typescriptlang.org/docs/)
-- [React 공식 문서](https://react.dev/)
-- [Tailwind CSS 문서](https://tailwindcss.com/docs)
+### 2025-10-07
+- 📚 문서 센터 구조화 완료
+- 🏗️ 13개 문서를 docs/ 폴더로 이동
+- 📋 레벨별 분류 및 검색 기능 추가
+- 🔗 크로스 레퍼런스 체계 확립
 
 ---
 
-## 💡 도움이 필요하신가요?
+## 🤝 기여 가이드
 
-- **GitHub Issues**: [버그 리포트 및 기능 요청](https://github.com/jynius/DailyMeal/issues)
-- **문서 개선 제안**: Pull Request 환영합니다!
-- **개발자 문의**: [@jynius](https://github.com/jynius)
+문서 개선이나 새로운 가이드 추가는 언제나 환영합니다!
+
+1. 문서 작성 또는 수정
+2. 이 README.md에 링크 추가
+3. Pull Request 생성
+4. 리뷰 후 병합
 
 ---
 
-**마지막 업데이트**: 2025-10-08  
-**문서 버전**: 1.0.0
+## 📧 문의
+
+문서 관련 문의사항이나 개선 제안은 이슈로 남겨주세요.
+
+**Happy Coding! 🚀**
