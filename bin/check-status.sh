@@ -1,7 +1,13 @@
 #!/bin/bash
 # DailyMeal PM2 상태 확인 및 복구 스크립트
 
+# 프로젝트 루트 디렉토리로 이동
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
+
 echo "🔍 DailyMeal PM2 상태 진단 시작..."
+echo "📂 프로젝트 루트: $PROJECT_ROOT"
 echo "================================"
 
 # 1. PM2 상태 확인

@@ -1,7 +1,13 @@
 #!/bin/bash
 # 방화벽 상태 확인 스크립트
 
+# 프로젝트 루트 디렉토리로 이동
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
+
 echo "🔍 DailyMeal 방화벽 및 네트워크 연결 테스트"
+echo "📂 프로젝트 루트: $PROJECT_ROOT"
 echo "=============================================="
 echo ""
 

@@ -1,6 +1,13 @@
 #!/bin/bash
+# PM2 프로세스 재시작 스크립트
+
+# 프로젝트 루트 디렉토리로 이동
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
 
 echo "🔄 PM2 프로세스를 재시작합니다..."
+echo "📂 프로젝트 루트: $PROJECT_ROOT"
 
 # PM2 프로세스 재시작
 pm2 restart all

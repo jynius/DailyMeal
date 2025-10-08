@@ -31,7 +31,7 @@
 
 ```
 docs/
-├── 🚀 배포 & 운영 (9개)
+├── 🚀 배포 & 운영 (10개)
 │   ├── BUILD_DEPLOY_GUIDE.md           # 빌드 및 배포 프로세스
 │   ├── CLEANUP_SUMMARY.md              # 스크립트 정리 완료
 │   ├── ECOSYSTEM_BUILD_SOLUTION.md     # 빌드 문제 해결
@@ -40,6 +40,7 @@ docs/
 │   ├── ENV_INTEGRATION_REPORT.md       # 환경 변수 통합 보고서
 │   ├── ENV_ANALYSIS.md                 # 환경 변수 파일 분석
 │   ├── DEV_ENV_CONFLICT.md             # 개발 환경 충돌 해결
+│   ├── SCRIPTS_REORGANIZATION.md       # Shell 스크립트 재구성
 │   └── SUMMARY.md                      # 문서 재구성 요약
 │
 ├── 🔧 PM2 프로세스 관리 (2개)
@@ -55,6 +56,19 @@ docs/
 └── 🔍 문제 해결 & 최적화 (2개)
     ├── LOCALHOST_CLEANUP.md
     └── SCENARIOS.md
+
+bin/  # 스크립트 (11개)
+├── check-build.sh              # 빌드 상태 확인 (Linux/macOS)
+├── check-firewall.sh           # 방화벽 상태 확인 (Linux)
+├── check-firewall-windows.ps1  # 방화벽 상태 확인 (Windows) 🪟
+├── check-status.sh             # PM2 상태 진단
+├── deploy.sh                   # 프로덕션 배포
+├── dev-setup.sh                # 개발 환경 설정
+├── restart-pm2.sh              # PM2 재시작
+├── start-pm2.sh                # PM2 개발 서버 시작
+├── startup.sh                  # PM2 프로덕션 시작
+├── stop-pm2.sh                 # PM2 중지
+└── wsl-port-forward.ps1        # WSL2 포트 포워딩 (Windows) 🪟
 ```
 
 ### 🎯 빠른 링크
@@ -89,6 +103,7 @@ npm run install:all
 
 # 프로덕션 배포
 npm run deploy
+# 또는: ./bin/deploy.sh
 ```
 
 ### 개발 모드
@@ -98,9 +113,25 @@ npm run dev
 
 # PM2로 개발 (백그라운드)
 npm run dev:pm2
+# 또는: ./bin/start-pm2.sh
 ```
 
 자세한 내용은 [배포 가이드](./docs/BUILD_DEPLOY_GUIDE.md)를 참조하세요.
+
+### Windows 개발자 (WSL2)
+
+Windows + WSL2 환경에서 개발하는 경우, 추가 네트워크 설정이 필요할 수 있습니다:
+
+```powershell
+# Windows PowerShell (관리자 권한)
+# WSL2 IP 자동 감지 및 포트 포워딩 설정
+.\bin\wsl-port-forward.ps1
+
+# Windows 방화벽 규칙 확인
+.\bin\check-firewall-windows.ps1
+```
+
+**참고**: 이 PowerShell 스크립트들은 Windows 호스트에서만 실행됩니다. Linux/macOS 개발자는 필요하지 않습니다.
 
 ---
 

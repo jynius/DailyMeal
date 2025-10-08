@@ -3,11 +3,12 @@
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🚀 DailyMeal 간단 배포 시작..."
 
-# 현재 디렉토리 확인
+# 프로젝트 루트 디렉토리로 이동
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
 
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] 📂 작업 디렉토리: $(pwd)"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] 📂 프로젝트 루트: $PROJECT_ROOT"
 
 # 1. 기존 PM2 프로세스 중지
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🛑 기존 PM2 프로세스 중지..."

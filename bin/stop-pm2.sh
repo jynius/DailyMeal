@@ -1,6 +1,11 @@
 #!/bin/bash
 # DailyMeal PM2 통합 중지 스크립트
 
+# 프로젝트 루트 디렉토리로 이동
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
+
 usage() {
     echo "사용법: $0 [옵션]"
     echo ""

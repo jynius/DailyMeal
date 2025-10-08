@@ -15,6 +15,8 @@ DailyMeal 프로젝트의 모든 기술 문서와 가이드를 모아둔 곳입�
 - [**ENV_INTEGRATION_REPORT.md**](./ENV_INTEGRATION_REPORT.md) - 환경 변수 통합 작업 완료 보고서
 - [**ENV_ANALYSIS.md**](./ENV_ANALYSIS.md) - 환경 변수 파일 상세 분석
 - [**DEV_ENV_CONFLICT.md**](./DEV_ENV_CONFLICT.md) - 개발 환경 설정 충돌 해결 과정
+- [**SCRIPTS_REORGANIZATION.md**](./SCRIPTS_REORGANIZATION.md) - Shell 스크립트 재구성 보고서
+- [**SCRIPTS_FINAL_REPORT.md**](./SCRIPTS_FINAL_REPORT.md) - 스크립트 재구성 최종 보고서 (Bash + PowerShell) 🪟
 - [**SUMMARY.md**](./SUMMARY.md) - 문서 재구성 요약
 
 ### 🔧 PM2 프로세스 관리
@@ -68,12 +70,13 @@ DailyMeal 프로젝트의 모든 기술 문서와 가이드를 모아둔 곳입�
 1. [**ENV_INTEGRATION_REPORT.md**](./ENV_INTEGRATION_REPORT.md) - 환경 변수 통합 내역
 2. [**ENV_ANALYSIS.md**](./ENV_ANALYSIS.md) - 환경 변수 파일 상세 분석
 3. [**DEV_ENV_CONFLICT.md**](./DEV_ENV_CONFLICT.md) - 개발 환경 충돌 해결 과정
-4. [**CLEANUP_SUMMARY.md**](./CLEANUP_SUMMARY.md) - 스크립트 정리 내역
-5. [**ECOSYSTEM_BUILD_SOLUTION.md**](./ECOSYSTEM_BUILD_SOLUTION.md) - 빌드 문제 해결
-6. [**PM2_NAMING_STRATEGY.md**](./PM2_NAMING_STRATEGY.md) - 네이밍 전략
-7. [**LOCALHOST_CLEANUP.md**](./LOCALHOST_CLEANUP.md) - 하드코딩 제거
-8. [**SCENARIOS.md**](./SCENARIOS.md) - 시나리오별 가이드
-9. [**SUMMARY.md**](./SUMMARY.md) - 문서 재구성 요약
+4. [**SCRIPTS_REORGANIZATION.md**](./SCRIPTS_REORGANIZATION.md) - Shell 스크립트 재구성
+5. [**CLEANUP_SUMMARY.md**](./CLEANUP_SUMMARY.md) - 스크립트 정리 내역
+6. [**ECOSYSTEM_BUILD_SOLUTION.md**](./ECOSYSTEM_BUILD_SOLUTION.md) - 빌드 문제 해결
+7. [**PM2_NAMING_STRATEGY.md**](./PM2_NAMING_STRATEGY.md) - 네이밍 전략
+8. [**LOCALHOST_CLEANUP.md**](./LOCALHOST_CLEANUP.md) - 하드코딩 제거
+9. [**SCENARIOS.md**](./SCENARIOS.md) - 시나리오별 가이드
+10. [**SUMMARY.md**](./SUMMARY.md) - 문서 재구성 요약
 
 ---
 

@@ -9,16 +9,16 @@
   },
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:pm2": "./start-pm2.sh",
+    "dev:pm2": "./bin/start-pm2.sh",
     "dev:backend": "cd backend && npm run start:dev",
     "dev:frontend": "cd frontend && npm run dev",
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
     "build:all": "cd frontend && npm run build && cd ../backend && npm run build",
-    "deploy": "./deploy.sh",
-    "setup": "./dev-setup.sh",
-    "stop": "./stop-pm2.sh all",
-    "stop:dev": "./stop-pm2.sh dev",
-    "stop:prod": "./stop-pm2.sh prod",
+    "deploy": "./bin/deploy.sh",
+    "setup": "./bin/dev-setup.sh",
+    "stop": "./bin/stop-pm2.sh all",
+    "stop:dev": "./bin/stop-pm2.sh dev",
+    "stop:prod": "./bin/stop-pm2.sh prod",
     "lint:all": "cd frontend && npm run lint && cd ../backend && npm run lint"
   },
   "devDependencies": {

@@ -1,7 +1,13 @@
 #!/bin/bash
 # DailyMeal 로컬 개발 서버 시작 (PM2 사용)
 
+# 프로젝트 루트 디렉토리로 이동
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
+
 echo "🔧 DailyMeal 로컬 개발 서버 시작 (PM2)..."
+echo "📂 프로젝트 루트: $PROJECT_ROOT"
 
 # 환경 변수 설정
 export NODE_ENV=development
