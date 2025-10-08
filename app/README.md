@@ -2,12 +2,21 @@
 
 DailyMeal 웹사이트를 WebView로 감싼 크로스 플랫폼 모바일 앱입니다.
 
+## 📖 상세 문서
+
+모바일 앱 개발 및 배포에 필요한 가이드:
+
+- [� **모바일 앱 배포**](./DEPLOYMENT.md) - EAS Build, APK/AAB 빌드, 앱스토어 배포
+- [�🔥 **방화벽 설정**](../docs/FIREWALL_SETUP.md) - WSL2 개발 환경 필수 설정
+- [🌐 **네트워크 구조**](../docs/NETWORK_ARCHITECTURE.md) - 시스템 아키텍처
+- [📖 **전체 문서**](../docs/README.md) - 모든 문서 보기
+
 ## ⚠️ 중요: 방화벽 설정 필요
 
 WSL2 환경에서 개발 시 Windows 방화벽 설정이 필요합니다.  
-**→ [방화벽 설정 가이드](../FIREWALL_SETUP.md) 참고**
+**→ [방화벽 설정 가이드](../docs/FIREWALL_SETUP.md) 참고**
 
-## 🚀 시작하기
+## 🚀 빠른 시작
 
 ### 1. 의존성 설치
 ```bash
@@ -39,9 +48,14 @@ npx expo start
 
 ## 📱 빌드
 
-### Android APK 빌드
+### Android APK 빌드 (Preview)
 ```bash
 eas build --platform android --profile preview
+```
+
+### Android AAB 빌드 (Production)
+```bash
+eas build --platform android --profile production
 ```
 
 ### iOS 빌드 (macOS + Apple Developer 계정 필요)
@@ -49,51 +63,126 @@ eas build --platform android --profile preview
 eas build --platform ios --profile preview
 ```
 
-## ⚙️ 설정
+## 🛠️ 기술 스택
 
-### 웹사이트 URL 변경
-`App.js` 파일에서 `WEB_URL` 상수를 수정:
-```javascript
-const WEB_URL = __DEV__ 
-  ? 'http://localhost:3000'  // 개발 모드
-  : 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com'; // 프로덕션 (실제 도메인으로 변경)
+- **Framework**: Expo SDK 54
+- **Language**: TypeScript
+- **WebView**: React Native WebView 13.15.0
+- **Build**: EAS Build
+
+## 📂 주요 구조
+
+```
+app/
+├── app/
+│   ├── _layout.tsx      # 루트 레이아웃
+│   └── index.tsx        # 메인 화면 (WebView)
+├── assets/              # 이미지, 아이콘
+├── app.json             # Expo 설정
+└── eas.json             # EAS Build 설정
 ```
 
-### 앱 이름 및 패키지명 변경
-`app.json` 파일 수정:
+## 🔧 개발 명령어
+
+```bash
+# 의존성 설치
+npm install
+
+# 개발 서버 시작
+npx expo start
+
+# Android 실행
+npx expo start --android
+
+# iOS 실행
+npx expo start --ios
+
+# 웹 실행
+npx expo start --web
+
+# 타입 체크
+npx tsc --noEmit
+```
+
+## 📝 환경 설정
+
+### app.json
 ```json
 {
   "expo": {
     "name": "DailyMeal",
     "slug": "dailymeal",
-    "ios": {
-      "bundleIdentifier": "com.dailymeal.app"
-    },
-    "android": {
-      "package": "com.dailymeal.app"
+    "version": "1.0.0",
+    "scheme": "dailymeal",
+    "web": {
+      "bundler": "metro",
+      "output": "static"
     }
   }
 }
 ```
 
-## 📋 요구사항
+### eas.json
+```json
+{
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "aab"
+      }
+    }
+  }
+}
+```
 
-- Node.js 18 이상
-- npm 또는 yarn
-- Android Studio (Android 빌드 시)
-- Xcode (iOS 빌드 시, macOS만)
-- Expo Go 앱 (테스트용)
+## 🌐 WebView URL 설정
 
-## 🔧 문제 해결
+앱의 WebView는 다음 URL을 로드합니다:
 
-### Android 로컬 테스트 시 "Unable to connect" 오류
-- `App.js`의 `WEB_URL`을 `http://10.0.2.2:3000` (Android 에뮬레이터) 또는 실제 IP 주소로 변경
+- **개발**: `http://172.21.114.94:3000` (WSL2)
+- **프로덕션**: `https://dailymeal.jynius.com`
 
-### iOS 시뮬레이터에서 localhost 연결 불가
-- `http://localhost:3000` 대신 컴퓨터의 실제 IP 주소 사용 (예: `http://192.168.1.100:3000`)
+URL 변경은 `app/index.tsx` 파일에서 수정하세요.
 
-## 📚 참고 문서
+## 📦 빌드 결과물
 
-- [Expo 문서](https://docs.expo.dev/)
-- [React Native WebView](https://github.com/react-native-webview/react-native-webview)
-- [EAS Build](https://docs.expo.dev/build/introduction/)
+### Android
+- **Preview**: `dailymeal-preview.apk` (테스트용)
+- **Production**: `dailymeal-production.aab` (Google Play 업로드용)
+
+### iOS
+- **Preview**: `.ipa` 파일 (TestFlight 배포용)
+- **Production**: `.ipa` 파일 (App Store 제출용)
+
+## 🔍 트러블슈팅
+
+### 방화벽 문제
+WSL2에서 Windows 방화벽이 연결을 차단하는 경우:
+```powershell
+# PowerShell (관리자 권한)
+New-NetFirewallRule -DisplayName "WSL2 React Native" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 3000,8000,8081,19000-19006
+```
+
+자세한 내용은 [방화벽 설정 가이드](../docs/FIREWALL_SETUP.md) 참조
+
+### Expo Go 연결 안 됨
+1. 방화벽 규칙 확인
+2. 같은 Wi-Fi 네트워크 사용 확인
+3. `npx expo start --tunnel` 시도
+
+### 빌드 실패
+```bash
+# 캐시 삭제 후 재빌드
+eas build:cancel
+eas build --platform android --profile preview --clear-cache
+```
+
+---
+
+**Expo 공식 문서**: https://docs.expo.dev/  
+**React Native WebView**: https://github.com/react-native-webview/react-native-webview
