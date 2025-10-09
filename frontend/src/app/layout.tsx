@@ -16,9 +16,11 @@ export const metadata: Metadata = {
   keywords: ["식단", "음식", "기록", "맛집", "리뷰", "소셜", "공유"],
   manifest: "/manifest.json",
   appleWebApp: {
-    capable: true,
     statusBarStyle: "default",
     title: "DailyMeal",
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
   },
   openGraph: {
     title: "DailyMeal - 식단 기록 앱",

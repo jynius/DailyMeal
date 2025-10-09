@@ -30,7 +30,6 @@ export function useKakaoMap() {
       return
     }
 
-    const script = document.createElement('script')
     const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY
 
     if (!apiKey || apiKey === 'your_kakao_map_api_key_here') {
@@ -40,16 +39,20 @@ export function useKakaoMap() {
       return
     }
 
+    const script = document.createElement('script')
     script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`
     script.async = true
 
     script.onload = () => {
-      window.kakao.maps.load(() => {
-        setIsLoaded(true)
-      })
+      if (window.kakao && window.kakao.maps) {
+        window.kakao.maps.load(() => {
+          setIsLoaded(true)
+        })
+      }
     }
 
     script.onerror = () => {
+      console.error('카카오 지도 로드 실패')
       setError('카카오 지도 로드 실패')
     }
 
@@ -57,7 +60,7 @@ export function useKakaoMap() {
 
     return () => {
       // 컴포넌트 언마운트시 스크립트 정리
-      if (document.head.contains(script)) {
+      if (script && document.head.contains(script)) {
         document.head.removeChild(script)
       }
     }

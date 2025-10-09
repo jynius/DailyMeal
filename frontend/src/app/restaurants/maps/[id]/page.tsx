@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -10,13 +10,12 @@ import type { RestaurantMap, Restaurant } from '@/types/restaurant'
 import { useToast } from '@/components/ui/toast'
 
 interface MapPageProps {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 export default function RestaurantMapPage({ params }: MapPageProps) {
   const router = useRouter()
   const toast = useToast()
-  const resolvedParams = use(params)
   const [mapData, setMapData] = useState<RestaurantMap | null>(null)
   const [loading, setLoading] = useState(true)
   const [showShareModal, setShowShareModal] = useState(false)
@@ -24,7 +23,7 @@ export default function RestaurantMapPage({ params }: MapPageProps) {
   useEffect(() => {
     const fetchMapData = async () => {
       try {
-        const { id } = resolvedParams
+        const { id } = params
         
         // TODO: 실제 API 연동
         // const result = await restaurantMapApi.getById(id)
@@ -94,7 +93,7 @@ export default function RestaurantMapPage({ params }: MapPageProps) {
     }
 
     fetchMapData()
-  }, [resolvedParams, toast])
+  }, [params, toast])
 
   const shareData = mapData ? {
     title: `${mapData.title} - DailyMeal 맛집지도`,

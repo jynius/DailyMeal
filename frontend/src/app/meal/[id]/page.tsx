@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { MealShareButton } from '@/components/meal-share-button'
+import { BackButton } from '@/components/back-button'
 
 interface MealPageProps {
   params: { id: string }
@@ -149,12 +150,7 @@ export default async function MealPage({ params }: MealPageProps) {
       <div className="max-w-2xl mx-auto px-4">
         {/* 뒤로 가기 버튼 */}
         <div className="mb-6">
-          <button 
-            onClick={() => window.history.back()}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            ← 뒤로 가기
-          </button>
+          <BackButton />
         </div>
 
         {/* 메인 컨텐츠 */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { ArrowLeft, MapPin, Star, Calendar, Share, Navigation } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -10,12 +10,11 @@ import { ShareModal } from '@/components/share-modal'
 import { KakaoMap } from '@/components/kakao-map'
 
 interface RestaurantPageProps {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 export default function RestaurantPage({ params }: RestaurantPageProps) {
   const router = useRouter()
-  const resolvedParams = use(params)
   const [restaurant, setRestaurant] = useState<RestaurantDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [showShareModal, setShowShareModal] = useState(false)
@@ -24,7 +23,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
     try {
       // 실제 API 호출 대신 샘플 데이터 사용
       const sampleRestaurant: RestaurantDetail = {
-        id: resolvedParams.id,
+        id: params.id,
         name: '홍대 이탈리안 레스토랑',
         address: '서울시 마포구 홍익로 123',
         latitude: 37.5565,
@@ -74,7 +73,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
     } finally {
       setLoading(false)
     }
-  }, [resolvedParams.id])
+  }, [params.id])
 
   useEffect(() => {
     fetchRestaurantDetail()
@@ -146,6 +145,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
               alt={restaurant.name}
               fill
               className="object-cover"
+              priority
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -319,6 +319,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
                       width={64}
                       height={64}
                       className="object-cover w-full h-full"
+                      priority={false}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">

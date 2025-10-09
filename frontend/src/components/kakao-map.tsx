@@ -28,7 +28,7 @@ export function KakaoMap({
 }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const { isLoaded, error } = useKakaoMap()
-    const [mapState, setMapState] = useState<{
+  const [mapState, setMapState] = useState<{
     map: unknown | null
     initialized: boolean
   }>({
@@ -108,23 +108,17 @@ export function KakaoMap({
     }
   }, [markers, map])
 
-  // API 키가 없거나 에러 발생시 더미 지도
+  // 🔧 API 키 에러시 간단한 안내 메시지 (모든 Hook 호출 후)
   if (error) {
     return (
-      <div className={`${className} bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center`}>
-        <MapPin size={48} className="text-gray-400 mb-4" />
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-gray-600 mb-2">지도 미리보기</h3>
-          <p className="text-sm text-gray-500 mb-4">
-            카카오 지도 API 키를 설정하면<br />
-            실제 지도가 표시됩니다
-          </p>
-          {markers.length > 0 && (
-            <div className="text-xs text-gray-400">
-              📍 {markers.length}개의 위치가 있습니다
-            </div>
-          )}
-        </div>
+      <div className={`${className} bg-gray-50 rounded-lg flex flex-col items-center justify-center`}>
+        <MapPin size={40} className="text-gray-400 mb-3" />
+        <p className="text-sm text-gray-600 text-center px-4">
+          카카오 지도를 사용할 수 없습니다
+        </p>
+        <p className="text-xs text-gray-500 text-center px-4 mt-1">
+          API 키 설정이 필요합니다
+        </p>
       </div>
     )
   }
