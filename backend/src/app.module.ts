@@ -8,8 +8,10 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { MealRecordsModule } from './meal-records/meal-records.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { FriendsModule } from './friends/friends.module';
 import { User } from './entities/user.entity';
 import { MealRecord } from './entities/meal-record.entity';
+import { Friendship } from './entities/friendship.entity';
 import { AppLoggerService, PackageLogger } from './common/logger.service';
 import { loggerConfig } from './common/logger.config';
 import { RealTimeModule } from './realtime/realtime.module';
@@ -24,7 +26,7 @@ import { RealTimeModule } from './realtime/realtime.module';
       (() => {
         const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
         const common = {
-          entities: [User, MealRecord],
+          entities: [User, MealRecord, Friendship],
           synchronize: process.env.NODE_ENV !== 'production',
           logging: process.env.NODE_ENV === 'development',
         };
@@ -56,6 +58,7 @@ import { RealTimeModule } from './realtime/realtime.module';
     AuthModule,
     MealRecordsModule,
     RestaurantsModule,
+    FriendsModule,
     RealTimeModule,
   ],
   controllers: [AppController],

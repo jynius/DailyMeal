@@ -117,6 +117,8 @@ export default function Home() {
             <h1 className="text-2xl font-bold">DailyMeal</h1>
             <p className="text-blue-100 text-sm">오늘도 맛있는 하루 되세요!</p>
           </div>
+          
+          {/* 장식 아이콘 */}
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
             <Sparkles size={20} className="text-white" />
           </div>
@@ -263,15 +265,15 @@ export default function Home() {
               href="/search" 
               className="bg-white p-3 rounded-xl text-center shadow-sm border border-gray-100 hover:shadow-md transition-all"
             >
-              <Users size={20} className="text-orange-500 mx-auto mb-1" />
-              <span className="text-xs font-medium text-gray-700">검색</span>
+              <MapPin size={20} className="text-green-500 mx-auto mb-1" />
+              <span className="text-xs font-medium text-gray-700">맛집</span>
             </Link>
             
             <Link 
               href="/profile" 
               className="bg-white p-3 rounded-xl text-center shadow-sm border border-gray-100 hover:shadow-md transition-all"
             >
-              <TrendingUp size={20} className="text-green-500 mx-auto mb-1" />
+              <TrendingUp size={20} className="text-blue-500 mx-auto mb-1" />
               <span className="text-xs font-medium text-gray-700">통계</span>
             </Link>
           </div>

@@ -116,35 +116,81 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
       {/* 사진 갤러리 */}
       {photos.length > 0 && (
         <div className="relative">
-          <div className="aspect-square bg-gray-100">
-            <Image
-              src={photos[currentPhotoIndex].startsWith('http') 
-                ? photos[currentPhotoIndex]
-                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${photos[currentPhotoIndex]}`
-              }
-              alt={meal.name}
-              width={800}
-              height={800}
-              className="w-full h-full object-cover"
-              priority
-            />
+          <div className="aspect-square bg-gray-100 relative overflow-hidden">
+            {/* 현재 사진 */}
+            {photos.map((photoUrl, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
+                  index === currentPhotoIndex ? 'translate-x-0' : index < currentPhotoIndex ? '-translate-x-full' : 'translate-x-full'
+                }`}
+              >
+                <Image
+                  src={photoUrl.startsWith('http') 
+                    ? photoUrl
+                    : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${photoUrl}`
+                  }
+                  alt={`${meal.name} ${index + 1}`}
+                  width={800}
+                  height={800}
+                  className="w-full h-full object-cover"
+                  priority={index === 0}
+                />
+              </div>
+            ))}
           </div>
           
-          {/* 사진 인디케이터 */}
+          {/* 네비게이션 버튼 (2장 이상일 때만) */}
           {photos.length > 1 && (
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-              {photos.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentPhotoIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === currentPhotoIndex 
-                      ? 'bg-white w-6' 
-                      : 'bg-white/50'
-                  }`}
-                />
-              ))}
-            </div>
+            <>
+              <button
+                onClick={() => setCurrentPhotoIndex(prev => prev === 0 ? photos.length - 1 : prev - 1)}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors z-10"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <button
+                onClick={() => setCurrentPhotoIndex(prev => prev === photos.length - 1 ? 0 : prev + 1)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors z-10"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+              
+              {/* 페이지 인디케이터 */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium z-10">
+                {currentPhotoIndex + 1} / {photos.length}
+              </div>
+              
+              {/* 썸네일 미리보기 */}
+              <div className="absolute bottom-16 left-0 right-0 px-4">
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide justify-center">
+                  {photos.map((photoUrl, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentPhotoIndex(index)}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        index === currentPhotoIndex ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-60'
+                      }`}
+                    >
+                      <Image
+                        src={photoUrl.startsWith('http') 
+                          ? photoUrl
+                          : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${photoUrl}`
+                        }
+                        alt={`썸네일 ${index + 1}`}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}

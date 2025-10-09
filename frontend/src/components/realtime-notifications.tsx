@@ -67,42 +67,40 @@ export function RealTimeNotifications() {
 
   return (
     <>
-      {/* 알림 버튼 */}
-      <div className="fixed top-4 right-4 z-50">
-        <div className="flex items-center gap-2 mb-2">
-          {/* 연결 상태 표시 */}
-          <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-            isConnected 
-              ? 'bg-green-100 text-green-700' 
-              : 'bg-red-100 text-red-700'
-          }`}>
-            <div className={`w-2 h-2 rounded-full animate-pulse ${
-              isConnected ? 'bg-green-500' : 'bg-red-500'
-            }`} />
-            {isConnected ? '실시간 연결됨' : '오프라인'}
-          </div>
-          
-          {/* 사용자 수 */}
+      {/* Floating 상태 표시 - 우측 상단에 나란히 */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        {/* 연결 상태 + 사용자 수 통합 */}
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg ${
+          isConnected 
+            ? 'bg-green-500 text-white' 
+            : 'bg-gray-500 text-white'
+        }`}>
+          <div className={`w-2 h-2 rounded-full ${
+            isConnected ? 'bg-white animate-pulse' : 'bg-white/70'
+          }`} />
+          <span>{isConnected ? '연결됨' : '오프라인'}</span>
           {isConnected && (
-            <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+            <>
+              <div className="w-px h-3 bg-white/30" />
               <Users size={12} />
-              {connectedUsers}
-            </div>
+              <span>{connectedUsers}</span>
+            </>
           )}
         </div>
 
-        <Button
+        {/* 알림 버튼 - 높이 통일 */}
+        <button
           onClick={() => setIsOpen(!isOpen)}
-          className="relative bg-white text-gray-700 shadow-lg hover:shadow-xl border hover:bg-gray-50"
-          size="icon"
+          className="relative bg-white text-gray-700 shadow-lg hover:shadow-xl border hover:bg-gray-50 rounded-full transition-all flex items-center justify-center"
+          style={{ minWidth: 'auto', minHeight: 'auto', width: '28px', height: '28px', padding: '0' }}
         >
-          <Bell size={20} />
+          <Bell size={16} />
           {unreadCount > 0 && (
-            <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium" style={{ fontSize: '10px' }}>
               {unreadCount > 9 ? '9+' : unreadCount}
             </div>
           )}
-        </Button>
+        </button>
       </div>
 
       {/* 알림 패널 */}

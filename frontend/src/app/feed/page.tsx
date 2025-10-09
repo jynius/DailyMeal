@@ -148,6 +148,7 @@ export default function FeedPage() {
               key={meal.id} 
               {...meal} 
               createdAt={formatDate(meal.createdAt)}
+              onEvaluated={fetchMeals}  // 평가 완료 시 목록 새로고침
             />
           ))
         )}

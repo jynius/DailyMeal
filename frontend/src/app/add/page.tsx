@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Camera, X } from 'lucide-react'
+import { ArrowLeft, Camera, X, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useAlert } from '@/components/ui/alert'
@@ -11,6 +11,10 @@ import { useToast } from '@/components/ui/toast'
 interface FormData {
   name: string
   photos: File[]
+  latitude?: number
+  longitude?: number
+  address?: string
+  location?: string
 }
 
 export default function AddMealPage() {
@@ -37,11 +41,18 @@ export default function AddMealPage() {
 
   const [formData, setFormData] = useState<FormData>({
     name: generateMealName(),
-    photos: []
+    photos: [],
+    latitude: undefined,
+    longitude: undefined,
+    address: undefined,
+    location: undefined,
   })
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMobile, setIsMobile] = useState<boolean>(false)
+  const [gpsPermission, setGpsPermission] = useState<'prompt' | 'granted' | 'denied'>('prompt')
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
   const router = useRouter()
   const { showAlert } = useAlert()
   const toast = useToast()
@@ -74,6 +85,95 @@ export default function AddMealPage() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // GPS 위치 자동 수집
+  useEffect(() => {
+    const requestLocation = async () => {
+      // 이미 위치 정보가 있으면 스킵
+      if (formData.latitude && formData.longitude) {
+        return
+      }
+
+      // 위치 서비스 지원 확인
+      if (!navigator.geolocation) {
+        console.log('이 브라우저는 위치 서비스를 지원하지 않습니다.')
+        return
+      }
+
+      // 위치 권한 확인 (가능한 경우)
+      if (navigator.permissions) {
+        try {
+          const permission = await navigator.permissions.query({ name: 'geolocation' })
+          setGpsPermission(permission.state as 'prompt' | 'granted' | 'denied')
+          
+          // 이미 거부된 경우 요청하지 않음
+          if (permission.state === 'denied') {
+            console.log('위치 권한이 거부되었습니다.')
+            return
+          }
+        } catch (error) {
+          console.log('권한 확인 실패:', error)
+        }
+      }
+
+      // 위치 정보 요청
+      setIsGettingLocation(true)
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords
+          
+          console.log('📍 GPS 위치 수집:', { latitude, longitude })
+          
+          setFormData(prev => ({
+            ...prev,
+            latitude,
+            longitude
+          }))
+
+          // 백엔드 API를 통한 역지오코딩
+          try {
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/geocode/reverse?lat=${latitude}&lon=${longitude}`
+            )
+            const data = await response.json()
+            if (data.success && data.address) {
+              const shortAddress = data.address.split(',').slice(0, 2).join(',')
+              setFormData(prev => ({
+                ...prev,
+                address: data.address,
+                location: shortAddress
+              }))
+              console.log('📍 주소:', shortAddress)
+              toast.success(`현재 위치: ${shortAddress}`, '위치 정보')
+            }
+          } catch (error) {
+            console.error('역지오코딩 실패:', error)
+            toast.error('주소를 가져오는데 실패했습니다.', '위치 정보')
+          }
+
+          setGpsPermission('granted')
+          setIsGettingLocation(false)
+        },
+        (error) => {
+          console.error('위치 가져오기 실패:', error)
+          setGpsPermission('denied')
+          setIsGettingLocation(false)
+          
+          // 사용자가 명시적으로 거부한 경우만 알림
+          if (error.code === error.PERMISSION_DENIED) {
+            toast.warning('위치 권한이 거부되어 GPS 정보를 수집할 수 없습니다.', '위치 정보')
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      )
+    }
+
+    requestLocation()
+  }, []) // 컴포넌트 마운트 시 한 번만 실행
+
   const handlePhotosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     
@@ -95,6 +195,8 @@ export default function AddMealPage() {
         newPreviews.push(reader.result as string)
         if (newPreviews.length === files.length) {
           setPhotoPreviews(prev => [...prev, ...newPreviews])
+          // 마지막 추가된 사진으로 자동 이동
+          setCurrentPhotoIndex(formData.photos.length + files.length - 1)
         }
       }
       reader.readAsDataURL(file)
@@ -115,6 +217,11 @@ export default function AddMealPage() {
       photos: prev.photos.filter((_, i) => i !== index)
     }))
     setPhotoPreviews(prev => prev.filter((_, i) => i !== index))
+    
+    // 현재 인덱스 조정
+    if (currentPhotoIndex >= photoPreviews.length - 1) {
+      setCurrentPhotoIndex(Math.max(0, photoPreviews.length - 2))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,15 +250,31 @@ export default function AddMealPage() {
         data.append('photos', photo)
       })
 
+      // GPS 정보 추가 (있을 경우)
+      if (formData.latitude) {
+        data.append('latitude', formData.latitude.toString())
+      }
+      if (formData.longitude) {
+        data.append('longitude', formData.longitude.toString())
+      }
+      if (formData.address) {
+        data.append('address', formData.address)
+      }
+      if (formData.location) {
+        data.append('location', formData.location)
+      }
+
       // 디버깅: FormData 내용 확인
       console.log('📤 Sending FormData:')
       console.log('  - name:', formData.name.trim())
       console.log('  - photos count:', formData.photos.length)
+      console.log('  - GPS:', formData.latitude, formData.longitude)
+      console.log('  - location:', formData.location)
       for (let pair of data.entries()) {
         console.log(`  - ${pair[0]}:`, pair[1])
       }
 
-      // 식사 기록 제출 (사진과 제목만)
+      // 식사 기록 제출 (사진, 제목, GPS 정보)
       const result = await mealRecordsApi.createWithFiles(data)
       
       if (result) {
@@ -186,6 +309,23 @@ export default function AddMealPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 space-y-6">
+        {/* GPS 상태 표시 */}
+        {isGettingLocation && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+            <span className="text-sm text-blue-700">현재 위치 가져오는 중...</span>
+          </div>
+        )}
+        
+        {formData.location && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="flex items-center gap-2">
+              <MapPin size={16} className="text-green-600" />
+              <span className="text-sm text-green-700">📍 {formData.location}</span>
+            </div>
+          </div>
+        )}
+        
         {/* 제목 (자동 생성) */}
         <div className="space-y-2">
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -216,58 +356,130 @@ export default function AddMealPage() {
               className="hidden"
               id="photo-upload"
             />
-            <label
-              htmlFor="photo-upload"
-              className={`block w-full aspect-square border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-                formData.photos.length === 0 
-                  ? 'border-red-300 hover:border-red-400 bg-red-50' 
-                  : 'border-gray-300 hover:border-blue-400'
-              }`}
-              style={{ 
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent',
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-                minHeight: '120px'
-              }}
-            >
-              {photoPreviews.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2 p-2 h-full">
-                  {photoPreviews.slice(0, 3).map((preview, index) => (
-                    <div key={index} className="relative">
+            
+            {/* 사진이 있을 때: 캐러셀 (보기 전용) */}
+            {photoPreviews.length > 0 ? (
+              <div className="w-full aspect-square border-2 border-gray-300 rounded-lg overflow-hidden relative">
+                {/* 현재 이미지 표시 (캐러셀) */}
+                <div className="relative h-full overflow-hidden">
+                  {photoPreviews.map((preview, index) => (
+                    <div
+                      key={index}
+                      className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
+                        index === currentPhotoIndex ? 'translate-x-0' : index < currentPhotoIndex ? '-translate-x-full' : 'translate-x-full'
+                      }`}
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={preview}
                         alt={`미리보기 ${index + 1}`}
-                        className="w-full h-full object-cover rounded"
+                        className="w-full h-full object-cover"
                       />
+                    </div>
+                  ))}
+                  
+                  {/* 삭제 버튼 */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      removePhoto(currentPhotoIndex)
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 shadow-lg hover:bg-red-600 transition-colors z-10"
+                  >
+                    <X size={20} />
+                  </button>
+                  
+                  {/* 좌우 네비게이션 버튼 (2장 이상일 때만) */}
+                  {photoPreviews.length > 1 && (
+                    <>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
-                          removePhoto(index)
+                          setCurrentPhotoIndex(prev => 
+                            prev === 0 ? photoPreviews.length - 1 : prev - 1
+                          )
                         }}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors z-10"
                       >
-                        <X size={16} />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
                       </button>
-                    </div>
-                  ))}
-                  {photoPreviews.length > 3 && (
-                    <div className="flex items-center justify-center bg-gray-100 rounded">
-                      <span className="text-sm text-gray-600">+{photoPreviews.length - 3}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setCurrentPhotoIndex(prev => 
+                            prev === photoPreviews.length - 1 ? 0 : prev + 1
+                          )
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors z-10"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* 페이지 인디케이터 */}
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm z-10">
+                    {currentPhotoIndex + 1} / {photoPreviews.length}
+                  </div>
+                  
+                  {/* 썸네일 미리보기 (하단) */}
+                  {photoPreviews.length > 1 && (
+                    <div className="absolute bottom-10 left-0 right-0 px-2">
+                      <div className="flex gap-1 overflow-x-auto scrollbar-hide justify-center">
+                        {photoPreviews.map((preview, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              setCurrentPhotoIndex(index)
+                            }}
+                            className={`flex-shrink-0 w-12 h-12 rounded overflow-hidden border-2 transition-all ${
+                              index === currentPhotoIndex ? 'border-white scale-110' : 'border-transparent opacity-60'
+                            }`}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={preview}
+                              alt={`썸네일 ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full space-y-2">
-                  <Camera size={48} className="text-gray-400" />
-                  <p className="text-sm text-gray-500">사진을 선택하거나 촬영하세요</p>
-                  <p className="text-xs text-red-400">최소 1장 필수</p>
-                </div>
-              )}
-            </label>
+              </div>
+            ) : (
+              /* 사진이 없을 때: 업로드 영역 */
+              <label
+                htmlFor="photo-upload"
+                className="block w-full aspect-square border-2 border-dashed border-red-300 hover:border-red-400 bg-red-50 rounded-lg cursor-pointer transition-colors flex flex-col items-center justify-center space-y-2"
+                style={{ 
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                  minHeight: '120px'
+                }}
+              >
+                <Camera size={48} className="text-gray-400" />
+                <p className="text-sm text-gray-500">사진을 선택하거나 촬영하세요</p>
+                <p className="text-xs text-red-400">최소 1장 필수</p>
+              </label>
+            )}
             
             {formData.photos.length > 0 && (
               <Button

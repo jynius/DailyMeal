@@ -3,7 +3,8 @@
 import { ReactNode } from 'react'
 import { AlertProvider } from '@/components/ui/alert'
 import { ToastProvider } from '@/components/ui/toast'
-import { SocketProvider } from '@/contexts/socket-context'  // socket-simple → socket-context
+import { SocketProvider } from '@/contexts/socket-context'
+import { RealTimeNotifications } from '@/components/realtime-notifications'
 
 interface ProvidersProps {
   children: ReactNode
@@ -14,6 +15,7 @@ export function Providers({ children }: ProvidersProps) {
     <AlertProvider>
       <ToastProvider>
         <SocketProvider>
+          <RealTimeNotifications />
           {children}
         </SocketProvider>
       </ToastProvider>

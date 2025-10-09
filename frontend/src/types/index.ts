@@ -4,6 +4,7 @@ export interface MealRecord {
   id: string
   name: string
   photo?: string
+  photos?: string[]  // 여러 사진 지원
   location?: string
   rating?: number
   memo?: string
