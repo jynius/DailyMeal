@@ -2,76 +2,47 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Star, MapPin, Edit, Trash2 } from 'lucide-react'
+import { ArrowLeft, Star, MapPin, Share2 } from 'lucide-react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { useAlert } from '@/components/ui/alert'
+import { useToast } from '@/components/ui/toast'
+import { ShareModal } from '@/components/share-modal'
+import { createShare } from '@/lib/api/share'
 import Image from 'next/image'
-
-interface MealRecord {
-  id: string
-  name: string
-  photo?: string
-  photos?: string[]
-  location?: string
-  rating?: number
-  memo?: string
-  price?: number
-  createdAt: string
-  updatedAt: string
-}
+import type { MealRecord } from '@/types'
 
 export default function MealDetailPage({ params }: { params: { id: string } }) {
   const [meal, setMeal] = useState<MealRecord | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareUrl, setShareUrl] = useState<string>('')
+  const [isCreatingShare, setIsCreatingShare] = useState(false)
   const router = useRouter()
   const { showAlert } = useAlert()
+  const toast = useToast()
+
+  const fetchMeal = async () => {
+    try {
+      const resolvedParams = await params
+      const { mealRecordsApi } = await import('@/lib/api/client')
+      const data = await mealRecordsApi.getOne(resolvedParams.id)
+      setMeal(data)
+    } catch (error) {
+      console.error('Failed to fetch meal:', error)
+      showAlert({
+        title: '오류',
+        message: '식사 기록을 불러오는데 실패했습니다.',
+        type: 'error'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchMeal = async () => {
-      try {
-        const resolvedParams = await params
-        const { mealRecordsApi } = await import('@/lib/api/client')
-        const data = await mealRecordsApi.getOne(resolvedParams.id)
-        setMeal(data)
-      } catch (error) {
-        console.error('Failed to fetch meal:', error)
-        showAlert({
-          title: '오류',
-          message: '식사 기록을 불러오는데 실패했습니다.',
-          type: 'error'
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-    
     fetchMeal()
   }, [params, showAlert])
-
-  const handleDelete = async () => {
-    showAlert({
-      title: '삭제 확인',
-      message: '이 식사 기록을 삭제하시겠습니까?',
-      type: 'warning',
-      onConfirm: async () => {
-        try {
-          const resolvedParams = await params
-          const { mealRecordsApi } = await import('@/lib/api/client')
-          await mealRecordsApi.delete(resolvedParams.id)
-          router.push('/feed')
-        } catch (error) {
-          console.error('Failed to delete meal:', error)
-          showAlert({
-            title: '삭제 실패',
-            message: '식사 기록 삭제에 실패했습니다.',
-            type: 'error'
-          })
-        }
-      }
-    })
-  }
 
   if (loading) {
     return (
@@ -100,17 +71,42 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
   const photos = meal.photos && meal.photos.length > 0 ? meal.photos : (meal.photo ? [meal.photo] : [])
   const hasRating = meal.rating !== undefined && meal.rating !== null && meal.rating > 0
 
+  const handleShare = async () => {
+    try {
+      setIsCreatingShare(true)
+      const result = await createShare(meal.id)
+      setShareUrl(result.url)
+      
+      // 클립보드에 복사
+      await navigator.clipboard.writeText(result.url)
+      toast.success('공유 링크가 복사되었습니다!')
+      
+      setShowShareModal(true)
+    } catch (error) {
+      console.error('Failed to create share link:', error)
+      toast.error('공유 링크 생성에 실패했습니다.')
+    } finally {
+      setIsCreatingShare(false)
+    }
+  }
+
+  const shareData = {
+    title: `${meal.name} - DailyMeal`,
+    description: meal.memo || `${meal.name} 식사 기록`,
+    url: shareUrl || (typeof window !== 'undefined' ? `${window.location.origin}/meal/${meal.id}` : ''),
+    imageUrl: photos.length > 0 ? photos[0] : undefined
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* 헤더 */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
-        <Link href="/feed">
-          <ArrowLeft size={24} className="text-gray-600" />
-        </Link>
-        <h1 className="text-lg font-semibold">식사 기록</h1>
-        <button onClick={handleDelete} className="text-red-500">
-          <Trash2 size={20} />
-        </button>
+      <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-10">
+        <div className="flex items-center gap-3">
+          <Link href="/feed">
+            <ArrowLeft size={24} className="text-gray-600" />
+          </Link>
+          <h1 className="text-lg font-semibold flex-1">식사 기록</h1>
+        </div>
       </div>
 
       {/* 사진 갤러리 */}
@@ -145,7 +141,7 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
             <>
               <button
                 onClick={() => setCurrentPhotoIndex(prev => prev === 0 ? photos.length - 1 : prev - 1)}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors z-10"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-black/70 transition-colors z-[5]"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="15 18 9 12 15 6"></polyline>
@@ -153,7 +149,7 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
               </button>
               <button
                 onClick={() => setCurrentPhotoIndex(prev => prev === photos.length - 1 ? 0 : prev + 1)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors z-10"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-black/70 transition-colors z-[5]"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="9 18 15 12 9 6"></polyline>
@@ -161,7 +157,7 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
               </button>
               
               {/* 페이지 인디케이터 */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium z-10">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium z-[5]">
                 {currentPhotoIndex + 1} / {photos.length}
               </div>
               
@@ -197,81 +193,106 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
 
       {/* 정보 섹션 */}
       <div className="p-4 space-y-4">
-        {/* 제목 & 날짜 */}
+        {/* 동행자 (사진 바로 다음) */}
+        <div className="flex items-center text-sm text-gray-700 pb-3 border-b border-gray-200">
+          <span className="mr-2">
+            {meal.companionNames ? '👥' : '🙋'}
+          </span>
+          <span>{meal.companionNames || '혼밥'}</span>
+        </div>
+
+        {/* 제목, 가격, 액션 버튼 */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{meal.name}</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            {new Date(meal.createdAt).toLocaleDateString('ko-KR', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
-          </p>
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">{meal.name}</h2>
+              {meal.price && (
+                <div className="text-lg font-semibold text-blue-600 mb-2">
+                  ₩{meal.price.toLocaleString()}
+                </div>
+              )}
+              {/* 식당 이름과 날짜/시간 */}
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                {meal.location && (
+                  <>
+                    <div className="flex items-center">
+                      <MapPin size={14} className="mr-1" />
+                      <span className="font-medium">{meal.location}</span>
+                    </div>
+                    <span className="text-gray-400">•</span>
+                  </>
+                )}
+                <span>
+                  {new Date(meal.createdAt).toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 ml-3">
+              <button 
+                onClick={handleShare}
+                disabled={isCreatingShare}
+                className="text-gray-600 hover:text-blue-500 transition-colors p-2 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                aria-label="공유하기"
+              >
+                {isCreatingShare ? (
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                ) : (
+                  <Share2 size={22} />
+                )}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* 평가 상태 */}
         {hasRating ? (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">평가</span>
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={20}
-                    className={`${
-                      i < meal.rating! ? 'text-yellow-500 fill-current' : 'text-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
+          <div className="space-y-3">
+            {/* 별점 */}
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  size={24}
+                  className={`${
+                    i < meal.rating! ? 'text-yellow-500 fill-current' : 'text-gray-300'
+                  }`}
+                />
+              ))}
+              <span className="ml-2 text-lg font-semibold text-gray-700">
+                {meal.rating}/5
+              </span>
             </div>
             
-            {meal.location && (
-              <div className="flex items-center text-sm text-gray-600 mb-1">
-                <MapPin size={14} className="mr-1" />
-                {meal.location}
-              </div>
-            )}
-            
-            {meal.price && (
-              <div className="text-sm text-gray-600 mb-1">
-                💰 ₩{meal.price.toLocaleString()}
-              </div>
-            )}
-            
+            {/* 메모 */}
             {meal.memo && (
-              <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">
-                {meal.memo}
-              </p>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  {meal.memo}
+                </p>
+              </div>
             )}
           </div>
         ) : (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-800 mb-3">
-              ⭐ 아직 평가하지 않은 식사입니다
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+            <p className="text-sm text-gray-600">
+              아직 평가하지 않은 식사입니다.
             </p>
-            <Link href={`/meal/${meal.id}/evaluate`}>
-              <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">
-                <Star size={16} className="mr-2" />
-                평가하기
-              </Button>
-            </Link>
           </div>
         )}
-
-        {/* 수정 버튼 (이미 평가한 경우) */}
-        {hasRating && (
-          <Link href={`/meal/${meal.id}/evaluate`}>
-            <Button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700">
-              <Edit size={16} className="mr-2" />
-              평가 수정하기
-            </Button>
-          </Link>
-        )}
       </div>
+
+      {/* 공유 모달 */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        shareData={shareData}
+      />
     </div>
   )
 }

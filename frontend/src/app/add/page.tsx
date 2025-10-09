@@ -300,12 +300,11 @@ export default function AddMealPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
+      <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center gap-3 z-10">
         <Link href="/feed">
           <ArrowLeft size={24} className="text-gray-600" />
         </Link>
         <h1 className="text-lg font-semibold">식사 사진 등록</h1>
-        <div className="w-6" />
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 space-y-6">

@@ -1,10 +1,15 @@
-import { Star, MapPin, Clock, Share, Edit } from 'lucide-react'
+import { Star, MapPin, Clock, Share2, Edit, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ShareModal } from './share-modal'
 import { EvaluateModal } from './evaluate-modal'
+import { useAlert } from './ui/alert'
+import { useToast } from './ui/toast'
+import { mealRecordsApi } from '@/lib/api/client'
+import { createShare } from '@/lib/api/share'
 import { ROUTES } from '@/lib/constants'
+import type { MealRecord } from '@/types'
 
 interface MealCardProps {
   id: string
@@ -16,7 +21,10 @@ interface MealCardProps {
   memo?: string
   createdAt: string
   price?: number
+  companionNames?: string
+  category?: string
   onEvaluated?: () => void  // 평가 완료 후 콜백
+  onDeleted?: () => void  // 삭제 후 콜백
 }
 
 export function MealCard({
@@ -29,19 +37,67 @@ export function MealCard({
   memo,
   createdAt,
   price,
+  companionNames,
+  category,
   onEvaluated,
+  onDeleted,
 }: MealCardProps) {
   const [showShareModal, setShowShareModal] = useState(false)
   const [showEvaluateModal, setShowEvaluateModal] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [shareUrl, setShareUrl] = useState<string>('')
+  const [isCreatingShare, setIsCreatingShare] = useState(false)
+  const { showAlert, showConfirm } = useAlert()
+  const toast = useToast()
+  
+  // 현재 meal 데이터를 수정 모드로 전달하기 위해 구성
+  const mealData: MealRecord | null = rating ? {
+    id,
+    name,
+    photo,
+    photos,
+    location,
+    rating,
+    memo,
+    price,
+    companionNames,
+    category: category as 'home' | 'delivery' | 'restaurant',
+    createdAt,
+    updatedAt: createdAt,
+    userId: '' // 실제 userId는 필요 없음 (수정 시 사용 안 함)
+  } : null
 
   // photos 배열 우선, 없으면 photo 사용
   const photoList = photos && photos.length > 0 ? photos : (photo ? [photo] : [])
 
-  const handleShare = (e: React.MouseEvent) => {
+  const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault() // Link 클릭 방지
     e.stopPropagation()
-    setShowShareModal(true)
+    
+    console.log('🔄 Share button clicked for meal:', id)
+    console.log('🔑 Current token:', localStorage.getItem('token')?.substring(0, 30) + '...')
+    
+    setIsCreatingShare(true)
+    try {
+      console.log('📤 Calling createShare API...')
+      // 공유 링크 생성
+      const result = await createShare(id)
+      console.log('✅ Share link created:', result)
+      setShareUrl(result.url)
+      
+      // 링크 복사
+      await navigator.clipboard.writeText(result.url)
+      toast.success('공유 링크가 복사되었습니다! 📋')
+      
+      // ShareModal 열기 (추가 공유 옵션용)
+      setShowShareModal(true)
+    } catch (error) {
+      console.error('❌ Failed to create share link:', error)
+      console.error('Error details:', JSON.stringify(error, null, 2))
+      toast.error('공유 링크 생성에 실패했습니다.')
+    } finally {
+      setIsCreatingShare(false)
+    }
   }
 
   const handleEvaluate = (e: React.MouseEvent) => {
@@ -50,10 +106,37 @@ export function MealCard({
     setShowEvaluateModal(true)
   }
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    showConfirm({
+      title: '삭제 확인',
+      message: '이 식사 기록을 삭제하시겠습니까?',
+      onConfirm: async () => {
+        try {
+          await mealRecordsApi.delete(id)
+          if (onDeleted) {
+            onDeleted()
+          } else if (onEvaluated) {
+            onEvaluated() // 삭제 후에도 목록 새로고침
+          }
+        } catch (error) {
+          console.error('Failed to delete meal:', error)
+          showAlert({
+            title: '삭제 실패',
+            message: '식사 기록 삭제에 실패했습니다.',
+            type: 'error'
+          })
+        }
+      }
+    })
+  }
+
   const shareData = {
     title: `${name} - DailyMeal`,
     description: memo || `${name} 식사 기록`,
-    url: `${typeof window !== 'undefined' ? window.location.origin : ''}${ROUTES.MEAL(id)}`,
+    url: shareUrl || `${typeof window !== 'undefined' ? window.location.origin : ''}${ROUTES.MEAL(id)}`,
     imageUrl: photoList[0]
   }
 
@@ -103,17 +186,17 @@ export function MealCard({
               <>
                 <button
                   onClick={handlePrevPhoto}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70 transition-colors z-10"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/70 transition-colors z-[5]"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="15 18 9 12 15 6"></polyline>
                   </svg>
                 </button>
                 <button
                   onClick={handleNextPhoto}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70 transition-colors z-10"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/70 transition-colors z-[5]"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
                 </button>
@@ -134,71 +217,102 @@ export function MealCard({
       
       {/* Content */}
       <div className="p-3 sm:p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="font-semibold text-gray-900 truncate text-sm sm:text-base flex-1 mr-2">{name}</h4>
-          {rating && rating > 0 ? (
-            <div className="flex items-center flex-shrink-0">
-              {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i} 
-                  size={14} 
-                  className={`${
-                    i < rating 
-                      ? "text-yellow-400 fill-current" 
-                      : "text-gray-300"
-                  } sm:w-4 sm:h-4`} 
-                />
-              ))}
-            </div>
-          ) : (
-            <span className="text-xs text-gray-400 flex-shrink-0">미평가</span>
+        {/* 동행자 (맨 위) */}
+        <div className="flex items-center text-xs text-gray-700 mb-2 pb-2 border-b border-gray-100">
+          <span className="mr-1.5">
+            {companionNames ? '👥' : '🙋'}
+          </span>
+          <span className="truncate">{companionNames || '혼밥'}</span>
+        </div>
+
+        {/* 식사 이름 */}
+        <h4 className="font-bold text-gray-900 text-base sm:text-lg mb-1">{name}</h4>
+        
+        {/* 가격 */}
+        {price && (
+          <div className="text-base font-semibold text-blue-600 mb-2">
+            ₩{price.toLocaleString()}
+          </div>
+        )}
+        
+        {/* 식당 이름 & 날짜 */}
+        <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+          {location && (
+            <>
+              <div className="flex items-center">
+                <MapPin size={12} className="mr-1" />
+                <span className="font-medium truncate max-w-[120px]">{location}</span>
+              </div>
+              <span className="text-gray-400">•</span>
+            </>
           )}
+          <div className="flex items-center">
+            <Clock size={12} className="mr-1" />
+            <span>{createdAt}</span>
+          </div>
         </div>
         
-        {location && (
-          <div className="flex items-center text-sm text-gray-500 mb-2">
-            <MapPin size={14} className="mr-1 flex-shrink-0" />
-            <span className="truncate">{location}</span>
+        {/* 별점 */}
+        {rating && rating > 0 && (
+          <div className="flex items-center gap-1 mb-2">
+            {[...Array(5)].map((_, i) => (
+              <Star 
+                key={i} 
+                size={16} 
+                className={`${
+                  i < rating 
+                    ? "text-yellow-500 fill-current" 
+                    : "text-gray-300"
+                }`} 
+              />
+            ))}
+            <span className="ml-1 text-sm font-semibold text-gray-700">
+              {rating}/5
+            </span>
           </div>
         )}
         
-        {price && (
-          <div className="text-sm text-gray-600 mb-2">
-            <span className="font-medium">₩{price.toLocaleString()}</span>
-          </div>
-        )}
-        
+        {/* 메모 */}
         {memo && (
           <p className="text-sm text-gray-600 mb-3 line-clamp-2">
             {memo}
           </p>
         )}
         
-        <div className="flex items-center justify-between text-xs text-gray-400">
-          <div className="flex items-center">
-            <Clock size={12} className="mr-1" />
-            {createdAt}
-          </div>
-          <div className="flex items-center gap-2">
-            {/* 평가하기 버튼 (미평가 시) */}
-            {(!rating || rating === 0) && (
-              <button
-                onClick={handleEvaluate}
-                className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors text-xs font-medium"
-                title="평가하기"
-              >
-                <Edit size={12} />
-                평가
-              </button>
+        {/* 액션 버튼들 */}
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+          {/* 평가/수정 버튼 */}
+          <button
+            onClick={handleEvaluate}
+            className="flex items-center gap-1 px-2 py-1.5 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-xs font-medium"
+            title={rating ? "수정하기" : "평가하기"}
+          >
+            <Edit size={14} />
+            {rating ? "수정" : "평가"}
+          </button>
+          
+          {/* 공유 버튼 */}
+          <button
+            onClick={handleShare}
+            disabled={isCreatingShare}
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+            title="공유하기"
+          >
+            {isCreatingShare ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+            ) : (
+              <Share2 size={16} className="text-gray-600" />
             )}
-            <button
-              onClick={handleShare}
-              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-              title="공유하기"
-            >
-              <Share size={14} className="text-gray-500" />
-            </button>
-          </div>
+          </button>
+          
+          {/* 삭제 버튼 */}
+          <button
+            onClick={handleDelete}
+            className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"
+            title="삭제하기"
+          >
+            <Trash2 size={16} className="text-gray-600 hover:text-red-500" />
+          </button>
         </div>
       </div>
     </div>
@@ -218,6 +332,7 @@ export function MealCard({
       onClose={() => setShowEvaluateModal(false)}
       mealId={id}
       mealName={name}
+      existingMeal={mealData}
       onSuccess={onEvaluated}
     />
     </>

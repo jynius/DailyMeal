@@ -22,7 +22,7 @@ export class UsersController {
   // 내 프로필 조회
   @Get('me')
   async getMyProfile(@Request() req) {
-    return this.usersService.getUserProfile(req.user.userId);
+    return this.usersService.getUserProfile(req.user.id);
   }
 
   // 프로필 업데이트
@@ -31,23 +31,23 @@ export class UsersController {
     @Request() req,
     @Body() updateData: { username?: string; email?: string; bio?: string },
   ) {
-    return this.usersService.updateProfile(req.user.userId, updateData);
+    return this.usersService.updateProfile(req.user.id, updateData);
   }
 
-  // 프로필 이미지 업로드
+    // 프로필 이미지 업로드
   @Post('me/profile-image')
   @UseInterceptors(FileInterceptor('file'))
   async uploadProfileImage(
     @Request() req,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.usersService.uploadProfileImage(req.user.userId, file);
+    return this.usersService.uploadProfileImage(req.user.id, file);
   }
 
   // 사용자 통계 조회
   @Get('me/statistics')
   async getStatistics(@Request() req) {
-    return this.usersService.getUserStatistics(req.user.userId);
+    return this.usersService.getUserStatistics(req.user.id);
   }
 
   // 비밀번호 변경
@@ -57,7 +57,7 @@ export class UsersController {
     @Body() passwordData: { currentPassword: string; newPassword: string },
   ) {
     return this.usersService.changePassword(
-      req.user.userId,
+      req.user.id,
       passwordData.currentPassword,
       passwordData.newPassword,
     );
@@ -66,13 +66,13 @@ export class UsersController {
   // 계정 삭제
   @Delete('me')
   async deleteAccount(@Request() req, @Body() body: { password: string }) {
-    return this.usersService.deleteAccount(req.user.userId, body.password);
+    return this.usersService.deleteAccount(req.user.id, body.password);
   }
 
   // 설정 조회
   @Get('me/settings')
   async getSettings(@Request() req) {
-    return this.usersService.getUserSettings(req.user.userId);
+    return this.usersService.getUserSettings(req.user.id);
   }
 
   // 설정 업데이트
@@ -81,6 +81,6 @@ export class UsersController {
     @Request() req,
     @Body() settings: any,
   ) {
-    return this.usersService.updateUserSettings(req.user.userId, settings);
+    return this.usersService.updateUserSettings(req.user.id, settings);
   }
 }

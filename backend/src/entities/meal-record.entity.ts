@@ -47,6 +47,22 @@ export class MealRecord {
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   price: number;
 
+  // 식사 카테고리 (집밥, 배달, 식당)
+  @Column({ 
+    type: 'varchar',
+    nullable: true,
+    default: 'restaurant'
+  })
+  category: 'home' | 'delivery' | 'restaurant';
+
+  // 같이 식사한 사람들 (친구 ID 배열)
+  @Column('simple-json', { nullable: true })
+  companionIds: string[];
+
+  // 같이 식사한 사람들 (텍스트)
+  @Column({ nullable: true, length: 200 })
+  companionNames: string;
+
   @Column('uuid')
   userId: string;
 

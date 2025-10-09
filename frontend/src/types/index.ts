@@ -9,6 +9,12 @@ export interface MealRecord {
   rating?: number
   memo?: string
   price?: number
+  category?: 'home' | 'delivery' | 'restaurant'  // 식사 카테고리
+  companionIds?: string[]  // 같이 식사한 친구 ID
+  companionNames?: string  // 같이 식사한 사람 이름 (텍스트)
+  latitude?: number
+  longitude?: number
+  address?: string
   createdAt: string
   updatedAt: string
   userId: string
@@ -29,6 +35,25 @@ export interface User {
   name: string
   profileImage?: string
   createdAt: string
+}
+
+// 친구 관련
+export interface Friendship {
+  id: string
+  userId: string
+  friendId: string
+  status: 'pending' | 'accepted' | 'rejected' | 'blocked'
+  notificationEnabled: boolean
+  createdAt: string
+  updatedAt: string
+  friend?: User
+}
+
+export interface Friend {
+  id: string
+  email: string
+  name: string
+  profileImage?: string
 }
 
 export interface ApiResponse<T> {

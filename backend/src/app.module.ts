@@ -10,10 +10,13 @@ import { MealRecordsModule } from './meal-records/meal-records.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { FriendsModule } from './friends/friends.module';
 import { UsersModule } from './users/users.module';
+import { ShareModule } from './share/share.module';
 import { User } from './entities/user.entity';
 import { MealRecord } from './entities/meal-record.entity';
 import { Friendship } from './entities/friendship.entity';
 import { UserSettings } from './entities/user-settings.entity';
+import { MealShare } from './entities/meal-share.entity';
+import { ShareTracking } from './entities/share-tracking.entity';
 import { AppLoggerService, PackageLogger } from './common/logger.service';
 import { loggerConfig } from './common/logger.config';
 import { RealTimeModule } from './realtime/realtime.module';
@@ -28,7 +31,7 @@ import { RealTimeModule } from './realtime/realtime.module';
       (() => {
         const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
         const common = {
-          entities: [User, MealRecord, Friendship, UserSettings],
+          entities: [User, MealRecord, Friendship, UserSettings, MealShare, ShareTracking],
           synchronize: process.env.NODE_ENV !== 'production',
           logging: process.env.NODE_ENV === 'development',
         };
@@ -62,6 +65,7 @@ import { RealTimeModule } from './realtime/realtime.module';
     RestaurantsModule,
     FriendsModule,
     UsersModule,
+    ShareModule,
     RealTimeModule,
   ],
   controllers: [AppController],

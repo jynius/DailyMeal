@@ -3,7 +3,10 @@
 import { useState } from 'react'
 import { APP_CONFIG } from '@/lib/constants'
 import { authApi, tokenManager } from '@/lib/api/client'
+import { connectFriend } from '@/lib/api/share'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/ui/toast'
+import { useAlert } from '@/components/ui/alert'
 
 interface AuthFormProps {
   onSuccess?: () => void
@@ -18,6 +21,40 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const toast = useToast()
+  const { showAlert } = useAlert()
+
+  const handleAuthSuccess = async (token: string, message: string) => {
+    // 토큰 저장
+    tokenManager.set(token)
+    
+    // 공유를 통한 친구 연결 처리
+    const shareRef = typeof window !== 'undefined' ? sessionStorage.getItem('shareRef') : null
+    
+    if (shareRef) {
+      try {
+        const result = await connectFriend(shareRef)
+        if (result.success) {
+          toast.success('친구가 추가되었습니다! 🎉')
+        }
+      } catch (err) {
+        console.error('Failed to connect friend:', err)
+        // 친구 연결 실패해도 로그인은 성공
+      } finally {
+        // ref 제거
+        sessionStorage.removeItem('shareRef')
+      }
+    }
+    
+    showAlert({
+      title: '로그인 성공',
+      message,
+      confirmText: '확인',
+      onConfirm: () => {
+        onSuccess?.()
+      }
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,11 +76,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         })
       }
 
-      // 토큰 저장
-      tokenManager.set(result.token)
-      
-      alert(result.message)
-      onSuccess?.()
+      await handleAuthSuccess(result.token, result.message)
     } catch (err: unknown) {
       const error = err as Error
       setError(error.message || '인증에 실패했습니다.')
@@ -74,8 +107,9 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       }
 
       tokenManager.set(result.token)
-      alert('데모 계정으로 로그인되었습니다!')
-      onSuccess?.()
+      
+      // 친구 연결 처리 및 알림
+      await handleAuthSuccess(result.token, '데모 계정으로 로그인되었습니다!')
     } catch (err: unknown) {
       const error = err as Error
       setError(error.message || '데모 로그인에 실패했습니다.')

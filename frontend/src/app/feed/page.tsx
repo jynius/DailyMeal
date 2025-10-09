@@ -181,17 +181,13 @@ export default function FeedPage() {
             </button>
           </div>
         ) : (() => {
-          // 필터링 로직
+          // 필터링 로직 - rating만으로 평가 여부 판단
           let filteredMeals = meals;
           
           if (filter === 'rated') {
-            filteredMeals = meals.filter(meal => 
-              meal.rating && meal.price && meal.location
-            );
+            filteredMeals = meals.filter(meal => meal.rating);
           } else if (filter === 'unrated') {
-            filteredMeals = meals.filter(meal => 
-              !meal.rating || !meal.price || !meal.location
-            );
+            filteredMeals = meals.filter(meal => !meal.rating);
           }
           
           return filteredMeals.length === 0 ? (

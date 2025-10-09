@@ -171,4 +171,29 @@ export class MealRecordsService {
       uniqueLocations: parseInt(uniqueLocationsResult?.uniqueLocations || '0'),
     };
   }
+
+  async getFrequentLocations(userId: string) {
+    const locations = await this.mealRecordRepository
+      .createQueryBuilder('mealRecord')
+      .select('mealRecord.location', 'location')
+      .addSelect('COUNT(*)', 'count')
+      .addSelect('MAX(mealRecord.latitude)', 'latitude')
+      .addSelect('MAX(mealRecord.longitude)', 'longitude')
+      .addSelect('MAX(mealRecord.address)', 'address')
+      .where('mealRecord.userId = :userId', { userId })
+      .andWhere('mealRecord.location IS NOT NULL')
+      .andWhere('mealRecord.location != :empty', { empty: '' })
+      .groupBy('mealRecord.location')
+      .orderBy('count', 'DESC')
+      .limit(20)
+      .getRawMany();
+
+    return locations.map(loc => ({
+      location: loc.location,
+      count: parseInt(loc.count),
+      latitude: loc.latitude ? parseFloat(loc.latitude) : undefined,
+      longitude: loc.longitude ? parseFloat(loc.longitude) : undefined,
+      address: loc.address || undefined,
+    }));
+  }
 }

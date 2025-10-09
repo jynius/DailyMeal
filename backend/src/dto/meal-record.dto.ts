@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsNumber, Min, Max, IsArray, IsIn } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
@@ -77,6 +77,45 @@ export class CreateMealRecordDto {
   @IsOptional()
   @IsString()
   address?: string;
+
+  @ApiProperty({ 
+    example: 'restaurant', 
+    description: '식사 카테고리 (home: 집밥, delivery: 배달, restaurant: 식당)',
+    enum: ['home', 'delivery', 'restaurant'],
+    required: false 
+  })
+  @IsOptional()
+  @IsIn(['home', 'delivery', 'restaurant'])
+  category?: 'home' | 'delivery' | 'restaurant';
+
+  @ApiProperty({ 
+    example: ['uuid-1', 'uuid-2'], 
+    description: '같이 식사한 친구 ID 배열',
+    required: false,
+    type: [String]
+  })
+  @IsOptional()
+  @IsArray()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return [];
+      }
+    }
+    return value;
+  })
+  companionIds?: string[];
+
+  @ApiProperty({ 
+    example: '철수, 영희', 
+    description: '같이 식사한 사람 이름 (텍스트)',
+    required: false 
+  })
+  @IsOptional()
+  @IsString()
+  companionNames?: string;
 }
 
 export class UpdateMealRecordDto {
@@ -155,4 +194,33 @@ export class UpdateMealRecordDto {
   @IsOptional()
   @IsString()
   address?: string;
+
+  @ApiProperty({ 
+    example: 'restaurant', 
+    description: '식사 카테고리 (home: 집밥, delivery: 배달, restaurant: 식당)',
+    enum: ['home', 'delivery', 'restaurant'],
+    required: false 
+  })
+  @IsOptional()
+  @IsIn(['home', 'delivery', 'restaurant'])
+  category?: 'home' | 'delivery' | 'restaurant';
+
+  @ApiProperty({ 
+    example: ['uuid-1', 'uuid-2'], 
+    description: '같이 식사한 친구 ID 배열',
+    required: false,
+    type: [String]
+  })
+  @IsOptional()
+  @IsArray()
+  companionIds?: string[];
+
+  @ApiProperty({ 
+    example: '철수, 영희', 
+    description: '같이 식사한 사람 이름 (텍스트)',
+    required: false 
+  })
+  @IsOptional()
+  @IsString()
+  companionNames?: string;
 }

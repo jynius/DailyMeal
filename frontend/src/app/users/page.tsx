@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Users, UserPlus, UserCheck, Search, Bell, BellOff } from 'lucide-react'
 import { BottomNavigation } from '@/components/bottom-navigation'
 import { Button } from '@/components/ui/button'
+import { useAlert } from '@/components/ui/alert'
 import { friendsApi } from '@/lib/api/friends'
 import type { 
   User, 
@@ -20,6 +21,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<'friends' | 'received' | 'sent' | 'search'>('friends')
+  const { showConfirm } = useAlert()
 
   useEffect(() => {
     fetchInitialData()
@@ -256,6 +258,7 @@ export default function UsersPage() {
             searchQuery={searchQuery}
             onRemove={(id) => handleFriendAction(id, 'remove')}
             onNotificationToggle={handleNotificationToggle}
+            showConfirm={showConfirm}
           />
         )}
         
@@ -271,6 +274,7 @@ export default function UsersPage() {
           <SentRequestsList 
             requests={sentRequests}
             onCancel={(id) => handleFriendAction(id, 'cancel')}
+            showConfirm={showConfirm}
           />
         )}
         
@@ -292,12 +296,14 @@ function FriendsList({
   friends, 
   searchQuery,
   onRemove, 
-  onNotificationToggle 
+  onNotificationToggle,
+  showConfirm
 }: { 
   friends: User[]
   searchQuery: string
   onRemove: (id: string) => void
   onNotificationToggle: (id: string) => void
+  showConfirm: (options: any) => void
 }) {
   if (friends.length === 0) {
     return (
@@ -369,9 +375,13 @@ function FriendsList({
               variant="outline"
               size="sm"
               onClick={() => {
-                if (confirm(`${friend.username}님을 친구 목록에서 삭제하시겠습니까?`)) {
-                  onRemove(friend.id)
-                }
+                showConfirm({
+                  title: '친구 삭제',
+                  message: `${friend.username}님을 친구 목록에서 삭제하시겠습니까?`,
+                  confirmText: '삭제',
+                  cancelText: '취소',
+                  onConfirm: () => onRemove(friend.id)
+                })
               }}
               className="w-full gap-2 text-green-600 border-green-300 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-colors"
             >
@@ -479,10 +489,12 @@ function ReceivedRequestsList({
 // 보낸 친구 요청 목록 컴포넌트
 function SentRequestsList({ 
   requests, 
-  onCancel 
+  onCancel,
+  showConfirm
 }: { 
   requests: SentRequest[]
   onCancel: (friendId: string) => void
+  showConfirm: (options: any) => void
 }) {
   if (requests.length === 0) {
     return (
@@ -553,9 +565,13 @@ function SentRequestsList({
               variant="outline"
               size="sm"
               onClick={() => {
-                if (confirm(`${request.username}님에게 보낸 친구 요청을 취소하시겠습니까?`)) {
-                  onCancel(request.friendId)
-                }
+                showConfirm({
+                  title: '요청 취소',
+                  message: `${request.username}님에게 보낸 친구 요청을 취소하시겠습니까?`,
+                  confirmText: '취소하기',
+                  cancelText: '닫기',
+                  onConfirm: () => onCancel(request.friendId)
+                })
               }}
               className="w-full text-gray-600 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-300"
             >

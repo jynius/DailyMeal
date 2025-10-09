@@ -3,7 +3,7 @@ import { APP_CONFIG } from '@/lib/constants'
 
 const API_BASE_URL = APP_CONFIG.API_BASE_URL
 
-import type { MealRecord, User } from '@/types'
+import type { MealRecord, User, Friend } from '@/types'
 
 export interface CreateMealRecordData {
   name: string
@@ -15,6 +15,9 @@ export interface CreateMealRecordData {
   latitude?: number
   longitude?: number
   address?: string
+  category?: 'home' | 'delivery' | 'restaurant'
+  companionIds?: string[]
+  companionNames?: string
 }
 
 // 토큰 관리
@@ -40,7 +43,7 @@ export const tokenManager = {
 }
 
 // API 요청 헬퍼
-async function apiRequest<T>(
+export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
@@ -64,6 +67,8 @@ async function apiRequest<T>(
 
   try {
     console.log(`🌐 API Request: ${options.method || 'GET'} ${API_BASE_URL}${endpoint}`)
+    console.log('🔑 Token:', token ? `${token.substring(0, 20)}...` : 'None')
+    console.log('📋 Headers:', headers)
     if (isFormData) {
       console.log('📦 Body: FormData')
     } else if (options.body) {
@@ -225,5 +230,40 @@ export const mealRecordsApi = {
       avgRating: string
       uniqueLocations: number
     }>('/meal-records/statistics')
+  },
+}
+
+// 친구 API
+export const friendsApi = {
+  // 친구 목록 조회
+  getFriends: async () => {
+    return apiRequest<Friend[]>('/friends')
+  },
+
+  // 친구 검색
+  searchUsers: async (query: string) => {
+    return apiRequest<Friend[]>(`/friends/search?query=${encodeURIComponent(query)}`)
+  },
+
+  // 친구 요청 보내기
+  sendRequest: async (email: string) => {
+    return apiRequest<{ message: string }>('/friends/request', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    })
+  },
+}
+
+// 장소 API (자주 가는 장소 목록 조회)
+export const locationsApi = {
+  // 자주 가는 장소 목록 (meal-records에서 추출)
+  getFrequentLocations: async () => {
+    return apiRequest<Array<{
+      location: string
+      count: number
+      latitude?: number
+      longitude?: number
+      address?: string
+    }>>('/meal-records/locations/frequent')
   },
 }

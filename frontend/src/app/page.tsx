@@ -180,16 +180,11 @@ export default function Home() {
         <div className="px-6 py-2">
           {/* 미평가 식사 섹션 */}
           {(() => {
-            const unratedMeal = meals.find(meal => 
-              !meal.rating || !meal.price || !meal.location
-            );
+            // rating이 없는 항목만 미평가로 간주
+            const unratedMeals = meals.filter(meal => !meal.rating);
+            const unratedMeal = unratedMeals[0];
             
             if (!unratedMeal) return null;
-            
-            const hasRating = !!unratedMeal.rating;
-            const hasPrice = !!unratedMeal.price;
-            const hasLocation = !!unratedMeal.location;
-            const unratedCount = [!hasRating, !hasPrice, !hasLocation].filter(Boolean).length;
             
             return (
               <div className="mb-6">
@@ -197,7 +192,7 @@ export default function Home() {
                   <h2 className="text-lg font-bold text-gray-900">평가 완료하기</h2>
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-1 bg-orange-100 text-orange-600 text-xs rounded-full font-medium">
-                      미평가 {unratedCount}개
+                      미평가 {unratedMeals.length}개
                     </span>
                     <Link
                       href="/feed?filter=unrated"
@@ -210,7 +205,7 @@ export default function Home() {
                 </div>
                 
                 <div className="bg-white rounded-2xl shadow-sm border border-orange-200 overflow-hidden">
-                  <MealCard {...unratedMeal} />
+                  <MealCard {...unratedMeal} onEvaluated={fetchMeals} />
                 </div>
               </div>
             );
@@ -218,9 +213,10 @@ export default function Home() {
           
           {/* 최근 평가 완료된 식사 섹션 */}
           {(() => {
-            const ratedMeals = meals.filter(meal => 
-              meal.rating && meal.price && meal.location
-            ).slice(0, 3);
+            // rating이 있는 항목만 평가 완료로 간주
+            const ratedMeals = meals
+              .filter(meal => meal.rating)
+              .slice(0, 3);
             
             if (ratedMeals.length === 0) return null;
             
@@ -251,21 +247,27 @@ export default function Home() {
                           <h3 className="font-semibold text-gray-900 mb-2 truncate">{meal.name}</h3>
                           
                           {/* 위치 정보 */}
-                          <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
-                            <MapPin size={14} className="flex-shrink-0" />
-                            <span className="truncate">{meal.location}</span>
-                          </div>
+                          {meal.location && (
+                            <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
+                              <MapPin size={14} className="flex-shrink-0" />
+                              <span className="truncate">{meal.location}</span>
+                            </div>
+                          )}
                           
                           <div className="flex items-center gap-3 text-sm flex-wrap">
                             {/* 평점 */}
-                            <span className="text-yellow-500 font-medium">
-                              {'⭐'.repeat(meal.rating!)}
-                            </span>
+                            {meal.rating && (
+                              <span className="text-yellow-500 font-medium">
+                                {'⭐'.repeat(meal.rating)}
+                              </span>
+                            )}
                             
                             {/* 가격 */}
-                            <span className="text-gray-600">
-                              {meal.price!.toLocaleString()}원
-                            </span>
+                            {meal.price && (
+                              <span className="text-gray-600">
+                                {meal.price.toLocaleString()}원
+                              </span>
+                            )}
                             
                             {/* 작성 시간 */}
                             <span className="text-gray-400 text-xs ml-auto">

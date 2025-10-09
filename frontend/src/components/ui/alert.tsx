@@ -109,8 +109,11 @@ export function AlertProvider({ children }: { children: ReactNode }) {
       <Dialog.Root open={alertState.isOpen} onOpenChange={(open) => !open && handleCancel()}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 z-50 animate-in fade-in duration-200" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6 bg-white rounded-lg shadow-xl z-50 animate-in fade-in zoom-in duration-200">
-            <div className={`flex items-start gap-4 p-4 rounded-lg border ${getColorClass()}`}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <Dialog.Content 
+              className="w-full max-w-md p-6 bg-white rounded-lg shadow-xl animate-in fade-in zoom-in duration-200"
+            >
+              <div className={`flex items-start gap-4 p-4 rounded-lg border ${getColorClass()}`}>
               <div className="flex-shrink-0">
                 {getIcon()}
               </div>
@@ -160,6 +163,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
               </button>
             </Dialog.Close>
           </Dialog.Content>
+          </div>
         </Dialog.Portal>
       </Dialog.Root>
     </AlertContext.Provider>

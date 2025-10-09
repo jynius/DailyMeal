@@ -127,6 +127,13 @@ export class MealRecordsController {
     return this.mealRecordsService.getStatistics(req.user.id);
   }
 
+  @Get('locations/frequent')
+  @ApiOperation({ summary: '자주 가는 장소 목록 조회' })
+  @ApiResponse({ status: 200, description: '자주 가는 장소 목록 조회 성공' })
+  getFrequentLocations(@Request() req: any) {
+    return this.mealRecordsService.getFrequentLocations(req.user.id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: '식사 기록 상세 조회' })
   @ApiResponse({ status: 200, description: '식사 기록 상세 조회 성공' })

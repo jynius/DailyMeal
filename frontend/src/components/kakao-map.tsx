@@ -60,6 +60,13 @@ export function KakaoMap({
     }
   }
 
+  // 컴포넌트 마운트시 현재 위치 자동 가져오기
+  useEffect(() => {
+    if (isLoaded && map && !currentPosition) {
+      getCurrentLocation()
+    }
+  }, [isLoaded, map, currentPosition])
+
   // 지도 초기화
   useEffect(() => {
     if (isLoaded && mapRef.current && !map) {

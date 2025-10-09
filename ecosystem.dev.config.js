@@ -17,6 +17,9 @@ module.exports = {
         DB_PASSWORD: process.env.DB_PASSWORD,
         DB_NAME: process.env.DB_NAME,
         JWT_SECRET: process.env.JWT_SECRET,
+        ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
+        FRONTEND_URL: process.env.FRONTEND_URL,
+        API_BASE_URL: process.env.API_BASE_URL,
         UPLOAD_DIR: process.env.UPLOAD_DIR || './uploads',
         UPLOAD_MAX_FILE_SIZE: process.env.UPLOAD_MAX_FILE_SIZE || '5242880',
         UPLOAD_MAX_FILES: process.env.UPLOAD_MAX_FILES || '5'
