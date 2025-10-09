@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { User, Settings, Calendar, LogOut, Edit2, Camera, Save, X } from 'lucide-react'
 import { BottomNavigation } from '@/components/bottom-navigation'
 import { tokenManager } from '@/lib/api/client'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
+import { profileApi, UserProfile } from '@/lib/api/profile'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -14,27 +15,41 @@ export default function ProfilePage() {
 
   // 편집 모드
   const [isEditing, setIsEditing] = useState(false)
+  const [loading, setLoading] = useState(true)
   
-  // 프로필 데이터 (나중에 API에서 가져오기)
-  const [profile, setProfile] = useState({
-    name: '사용자님',
-    email: 'user@example.com',
-    bio: '맛집 탐방이 취미입니다 🍽️',
-    avatar: null as string | null,
-    stats: {
-      totalReviews: 24,
-      restaurantCount: 12,
-      friendCount: 8,
-    }
-  })
+  // 프로필 데이터
+  const [profile, setProfile] = useState<UserProfile | null>(null)
 
   // 임시 편집 데이터
   const [editData, setEditData] = useState({
-    name: profile.name,
-    email: profile.email,
-    bio: profile.bio,
-    avatar: profile.avatar,
+    name: '',
+    email: '',
+    bio: '',
+    avatar: null as string | null,
   })
+
+  // 프로필 데이터 가져오기
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await profileApi.getProfile()
+        setProfile(data)
+        setEditData({
+          name: data.username,
+          email: data.email,
+          bio: data.bio || '',
+          avatar: data.profileImage || null,
+        })
+      } catch (error) {
+        console.error('프로필 로딩 실패:', error)
+        toast.error('프로필을 불러올 수 없습니다', '오류')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfile()
+  }, [])
 
   const handleLogout = () => {
     tokenManager.remove()
@@ -59,36 +74,84 @@ export default function ProfilePage() {
   }
 
   const handleSave = async () => {
-    // TODO: API 호출하여 저장
-    setProfile(prev => ({
-      ...prev,
-      name: editData.name,
-      email: editData.email,
-      bio: editData.bio,
-      avatar: editData.avatar,
-    }))
-    setIsEditing(false)
-    toast.success('프로필이 업데이트되었습니다', '저장 완료')
+    if (!profile) return
+    
+    try {
+      // 이미지가 변경된 경우 먼저 업로드
+      let imageUrl = editData.avatar
+      if (editData.avatar && editData.avatar.startsWith('data:')) {
+        // Base64 이미지를 File 객체로 변환
+        const blob = await fetch(editData.avatar).then(r => r.blob())
+        const file = new File([blob], 'profile.jpg', { type: 'image/jpeg' })
+        const uploadResult = await profileApi.uploadProfileImage(file)
+        imageUrl = uploadResult.profileImage
+      }
+
+      // 프로필 정보 업데이트
+      const updatedProfile = await profileApi.updateProfile({
+        username: editData.name,
+        email: editData.email,
+        bio: editData.bio,
+      })
+
+      setProfile(updatedProfile)
+      setEditData({
+        name: updatedProfile.username,
+        email: updatedProfile.email,
+        bio: updatedProfile.bio || '',
+        avatar: updatedProfile.profileImage || null,
+      })
+      setIsEditing(false)
+      toast.success('프로필이 업데이트되었습니다', '저장 완료')
+    } catch (error) {
+      console.error('프로필 저장 실패:', error)
+      toast.error('프로필 저장에 실패했습니다', '오류')
+    }
   }
 
   const handleCancel = () => {
+    if (!profile) return
+    
     setEditData({
-      name: profile.name,
+      name: profile.username,
       email: profile.email,
-      bio: profile.bio,
-      avatar: profile.avatar,
+      bio: profile.bio || '',
+      avatar: profile.profileImage || null,
     })
     setIsEditing(false)
   }
 
   const startEdit = () => {
+    if (!profile) return
+    
     setEditData({
-      name: profile.name,
+      name: profile.username,
       email: profile.email,
-      bio: profile.bio,
-      avatar: profile.avatar,
+      bio: profile.bio || '',
+      avatar: profile.profileImage || null,
     })
     setIsEditing(true)
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">프로필 로딩 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">프로필을 불러올 수 없습니다</p>
+        </div>
+      </div>
+    )
   }
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
@@ -114,9 +177,9 @@ export default function ProfilePage() {
               isEditing ? 'cursor-pointer hover:opacity-80' : ''
             }`}
           >
-            {(isEditing ? editData.avatar : profile.avatar) ? (
+            {(isEditing ? editData.avatar : profile.profileImage) ? (
               <img 
-                src={isEditing ? editData.avatar! : profile.avatar!}
+                src={isEditing ? editData.avatar! : profile.profileImage!}
                 alt="Profile"
                 className="w-20 h-20 rounded-full object-cover"
               />
@@ -174,7 +237,7 @@ export default function ProfilePage() {
             ) : (
               <>
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-xl font-bold text-gray-900">{profile.name}</h2>
+                  <h2 className="text-xl font-bold text-gray-900">{profile.username}</h2>
                   <button
                     onClick={startEdit}
                     className="p-1 hover:bg-gray-100 rounded-full transition-colors"
@@ -184,7 +247,7 @@ export default function ProfilePage() {
                   </button>
                 </div>
                 <p className="text-gray-600 text-sm mb-1">{profile.email}</p>
-                <p className="text-gray-500 text-sm">{profile.bio}</p>
+                <p className="text-gray-500 text-sm">{profile.bio || '소개가 없습니다'}</p>
               </>
             )}
           </div>
@@ -211,7 +274,7 @@ export default function ProfilePage() {
       <div className="p-4 space-y-1">
         {[
           { icon: Settings, label: '설정', href: '/settings', desc: '프라이버시, 알림, 장소 관리' },
-          { icon: Calendar, label: '월간 통계', href: '/statistics', desc: '평가 분석 및 방문 기록' },
+          { icon: Calendar, label: '통계', href: '/statistics', desc: '평가 분석 및 방문 기록' },
         ].map((item, index) => (
           <button
             key={index}

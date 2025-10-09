@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, Bell, Lock, MapPin, Home, Briefcase, Save } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
+import { profileApi } from '@/lib/api/profile'
 
 export default function SettingsPage() {
   const router = useRouter()
   const toast = useToast()
+  const [loading, setLoading] = useState(true)
 
   const [settings, setSettings] = useState({
     // 알림 설정
@@ -31,9 +33,31 @@ export default function SettingsPage() {
     }
   })
 
-  const handleSave = () => {
-    // TODO: API 호출
-    toast.success('설정이 저장되었습니다', '저장 완료')
+  // 설정 데이터 가져오기
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await profileApi.getSettings()
+        setSettings(data)
+      } catch (error) {
+        console.error('설정 로딩 실패:', error)
+        toast.error('설정을 불러올 수 없습니다', '오류')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSettings()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSave = async () => {
+    try {
+      await profileApi.updateSettings(settings)
+      toast.success('설정이 저장되었습니다', '저장 완료')
+    } catch (error) {
+      console.error('설정 저장 실패:', error)
+      toast.error('설정 저장에 실패했습니다', '오류')
+    }
   }
 
   const handleLocationSet = async (type: 'home' | 'office') => {

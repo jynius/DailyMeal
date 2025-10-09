@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { MealRecord } from './meal-record.entity';
+import { UserSettings } from './user-settings.entity';
 
 @Entity('users')
 export class User {
@@ -25,6 +27,9 @@ export class User {
   @Column({ nullable: true })
   profileImage: string;
 
+  @Column({ type: 'text', nullable: true })
+  bio: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -33,4 +38,7 @@ export class User {
 
   @OneToMany(() => MealRecord, (mealRecord) => mealRecord.user)
   mealRecords: MealRecord[];
+
+  @OneToOne('UserSettings', 'user', { cascade: true })
+  settings: UserSettings;
 }
