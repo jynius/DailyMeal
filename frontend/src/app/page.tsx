@@ -38,9 +38,9 @@ export default function Home() {
       const result = await mealRecordsApi.getAll()
       
       if (Array.isArray(result)) {
-        setMeals(result.slice(0, 3)) // 최신 3개만 표시
+        setMeals(result) // 전체 데이터 가져오기
       } else if (result.data) {
-        setMeals(result.data.slice(0, 3)) // 최신 3개만 표시
+        setMeals(result.data) // 전체 데이터 가져오기
       }
     } catch (error) {
       console.error('식사 기록 로딩 실패:', error)
@@ -112,33 +112,30 @@ export default function Home() {
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-24">
       {/* Header with Gradient */}
       <header className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-6 sticky top-0 z-10 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">DailyMeal</h1>
-            <p className="text-blue-100 text-sm">오늘도 맛있는 하루 되세요!</p>
-          </div>
-          
+        <div className="flex items-center gap-3">
           {/* 장식 아이콘 */}
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
             <Sparkles size={20} className="text-white" />
           </div>
+          
+          <h1 className="text-2xl font-bold">DailyMeal</h1>
         </div>
       </header>
 
       {/* 빠른 액션 카드들 */}
       <div className="px-6 py-4">
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <Link href="/add" className="group">
+          <Link href="/statistics" className="group">
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
               <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
-                <Camera size={20} className="text-blue-600" />
+                <TrendingUp size={20} className="text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">식사 기록</h3>
-              <p className="text-xs text-gray-500">오늘 먹은 음식을 기록해보세요</p>
+              <h3 className="font-semibold text-gray-900 mb-1">통계</h3>
+              <p className="text-xs text-gray-500">나의 식사 기록을 분석해보세요</p>
             </div>
           </Link>
 
-          <Link href="/restaurants" className="group">
+          <Link href="/search" className="group">
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
               <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mb-3">
                 <MapPin size={20} className="text-green-600" />
@@ -147,55 +144,6 @@ export default function Home() {
               <p className="text-xs text-gray-500">주변 음식점을 찾아보세요</p>
             </div>
           </Link>
-        </div>
-
-        {/* 실시간 활동 섹션 */}
-        {isConnected && (
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <h3 className="font-semibold text-gray-900">실시간 활동</h3>
-              <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                <Users size={10} />
-                {connectedUsers}
-              </div>
-            </div>
-            
-            {notifications.filter(n => ['NEW_MEAL', 'NEW_RESTAURANT'].includes(n.type)).slice(0, 3).length > 0 ? (
-              <div className="space-y-2">
-                {notifications
-                  .filter(n => ['NEW_MEAL', 'NEW_RESTAURANT'].includes(n.type))
-                  .slice(0, 3)
-                  .map(notification => (
-                    <div key={notification.id} className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 rounded-lg border border-blue-100">
-                      <div className="flex items-center gap-2">
-                        <Zap size={14} className="text-blue-500" />
-                        <span className="text-sm font-medium text-gray-900">
-                          {notification.type === 'NEW_MEAL' 
-                            ? `새로운 식사: ${notification.data.name}` 
-                            : `새로운 음식점: ${notification.data.name}`
-                          }
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1 ml-6">
-                        {new Date(notification.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                  ))
-                }
-              </div>
-            ) : (
-              <div className="bg-gray-50 p-4 rounded-lg text-center">
-                <Zap size={16} className="text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">아직 실시간 활동이 없습니다</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* AI 추천 메뉴 섹션 */}
-        <div className="mb-6">
-          <AIMenuRecommendation />
         </div>
       </div>
 
@@ -230,53 +178,122 @@ export default function Home() {
         </div>
       ) : (
         <div className="px-6 py-2">
-          {/* 섹션 헤더 */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">최근 식사</h2>
-            <Link 
-              href="/feed" 
-              className="flex items-center text-blue-500 text-sm font-medium hover:text-blue-600"
-            >
-              전체보기
-              <ArrowRight size={16} className="ml-1" />
-            </Link>
-          </div>
-          
-          {/* 식사 기록 카드들 */}
-          <div className="space-y-3">
-            {meals.map((meal) => (
-              <div key={meal.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <MealCard {...meal} />
+          {/* 미평가 식사 섹션 */}
+          {(() => {
+            const unratedMeal = meals.find(meal => 
+              !meal.rating || !meal.price || !meal.location
+            );
+            
+            if (!unratedMeal) return null;
+            
+            const hasRating = !!unratedMeal.rating;
+            const hasPrice = !!unratedMeal.price;
+            const hasLocation = !!unratedMeal.location;
+            const unratedCount = [!hasRating, !hasPrice, !hasLocation].filter(Boolean).length;
+            
+            return (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-bold text-gray-900">평가 완료하기</h2>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-1 bg-orange-100 text-orange-600 text-xs rounded-full font-medium">
+                      미평가 {unratedCount}개
+                    </span>
+                    <Link
+                      href="/feed?filter=unrated"
+                      className="flex items-center text-orange-600 hover:text-orange-700 text-sm font-medium"
+                    >
+                      평가하기
+                      <ArrowRight size={16} className="ml-1" />
+                    </Link>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-2xl shadow-sm border border-orange-200 overflow-hidden">
+                  <MealCard {...unratedMeal} />
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })()}
+          
+          {/* 최근 평가 완료된 식사 섹션 */}
+          {(() => {
+            const ratedMeals = meals.filter(meal => 
+              meal.rating && meal.price && meal.location
+            ).slice(0, 3);
+            
+            if (ratedMeals.length === 0) return null;
+            
+            return (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-gray-900">최근 식사</h2>
+                  <Link 
+                    href="/feed?filter=rated" 
+                    className="flex items-center text-blue-500 text-sm font-medium hover:text-blue-600"
+                  >
+                    전체보기
+                    <ArrowRight size={16} className="ml-1" />
+                  </Link>
+                </div>
+                
+                {/* 식사 기록 리스트 (텍스트만) */}
+                <div className="space-y-2">
+                  {ratedMeals.map((meal) => (
+                    <Link 
+                      key={meal.id} 
+                      href={`/feed`}
+                      className="block bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          {/* 식당 이름 */}
+                          <h3 className="font-semibold text-gray-900 mb-2 truncate">{meal.name}</h3>
+                          
+                          {/* 위치 정보 */}
+                          <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
+                            <MapPin size={14} className="flex-shrink-0" />
+                            <span className="truncate">{meal.location}</span>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 text-sm flex-wrap">
+                            {/* 평점 */}
+                            <span className="text-yellow-500 font-medium">
+                              {'⭐'.repeat(meal.rating!)}
+                            </span>
+                            
+                            {/* 가격 */}
+                            <span className="text-gray-600">
+                              {meal.price!.toLocaleString()}원
+                            </span>
+                            
+                            {/* 작성 시간 */}
+                            <span className="text-gray-400 text-xs ml-auto">
+                              {new Date(meal.createdAt).toLocaleString('ko-KR', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mt-1" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      )}
 
-          {/* 더 많은 액션들 */}
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            <Link 
-              href="/restaurants/map/create" 
-              className="bg-white p-3 rounded-xl text-center shadow-sm border border-gray-100 hover:shadow-md transition-all"
-            >
-              <MapPin size={20} className="text-purple-500 mx-auto mb-1" />
-              <span className="text-xs font-medium text-gray-700">맛집맵</span>
-            </Link>
-            
-            <Link 
-              href="/search" 
-              className="bg-white p-3 rounded-xl text-center shadow-sm border border-gray-100 hover:shadow-md transition-all"
-            >
-              <MapPin size={20} className="text-green-500 mx-auto mb-1" />
-              <span className="text-xs font-medium text-gray-700">맛집</span>
-            </Link>
-            
-            <Link 
-              href="/profile" 
-              className="bg-white p-3 rounded-xl text-center shadow-sm border border-gray-100 hover:shadow-md transition-all"
-            >
-              <TrendingUp size={20} className="text-blue-500 mx-auto mb-1" />
-              <span className="text-xs font-medium text-gray-700">통계</span>
-            </Link>
-          </div>
+      {/* AI 추천 메뉴 섹션 - 맨 아래로 이동 */}
+      {isAuthenticated && (
+        <div className="px-6 pb-4">
+          <AIMenuRecommendation />
         </div>
       )}
 

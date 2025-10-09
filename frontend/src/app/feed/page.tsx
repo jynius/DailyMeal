@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { MealCard } from '@/components/meal-card'
 import { BottomNavigation } from '@/components/bottom-navigation'
 import { Button } from '@/components/ui/button'
@@ -10,11 +11,24 @@ import { Users, Filter, Zap } from 'lucide-react'
 import type { MealRecord } from '@/types'
 
 export default function FeedPage() {
+  const searchParams = useSearchParams()
   const [meals, setMeals] = useState<MealRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [filter, setFilter] = useState<'all' | 'following' | 'nearby'>('all')
+  const [filter, setFilter] = useState<'all' | 'rated' | 'unrated'>('all')
   const { notifications, connectedUsers, isConnected } = useSocket()
+
+  // URL 파라미터에서 초기 필터 설정
+  useEffect(() => {
+    const filterParam = searchParams.get('filter')
+    if (filterParam === 'unrated') {
+      setFilter('unrated')
+    } else if (filterParam === 'rated') {
+      setFilter('rated')
+    } else if (filterParam === 'all') {
+      setFilter('all')
+    }
+  }, [searchParams])
 
   // 데이터 가져오기 함수
   const fetchMeals = async () => {
@@ -117,7 +131,41 @@ export default function FeedPage() {
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
       {/* Header */}
       <header className="bg-white border-b px-4 py-3 sticky top-0 z-10">
-        <h1 className="text-xl font-bold text-gray-900">나의 식단</h1>
+        <h1 className="text-xl font-bold text-gray-900 mb-3">나의 식단</h1>
+        
+        {/* 필터 버튼 */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              filter === 'all'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            전체
+          </button>
+          <button
+            onClick={() => setFilter('rated')}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              filter === 'rated'
+                ? 'bg-green-500 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            평가완료
+          </button>
+          <button
+            onClick={() => setFilter('unrated')}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              filter === 'unrated'
+                ? 'bg-orange-500 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            미평가
+          </button>
+        </div>
       </header>
 
       {/* Content */}
@@ -132,26 +180,49 @@ export default function FeedPage() {
               다시 시도
             </button>
           </div>
-        ) : meals.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500 mb-4">아직 기록된 식사가 없습니다.</p>
-            <a 
-              href="/add" 
-              className="inline-block bg-blue-500 text-white px-4 py-2 rounded-lg"
-            >
-              첫 번째 식사 기록하기
-            </a>
-          </div>
-        ) : (
-          meals.map((meal) => (
-            <MealCard 
-              key={meal.id} 
-              {...meal} 
-              createdAt={formatDate(meal.createdAt)}
-              onEvaluated={fetchMeals}  // 평가 완료 시 목록 새로고침
-            />
-          ))
-        )}
+        ) : (() => {
+          // 필터링 로직
+          let filteredMeals = meals;
+          
+          if (filter === 'rated') {
+            filteredMeals = meals.filter(meal => 
+              meal.rating && meal.price && meal.location
+            );
+          } else if (filter === 'unrated') {
+            filteredMeals = meals.filter(meal => 
+              !meal.rating || !meal.price || !meal.location
+            );
+          }
+          
+          return filteredMeals.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 mb-4">
+                {filter === 'unrated' 
+                  ? '미평가 식사가 없습니다. 모두 평가를 완료하셨네요! 🎉'
+                  : filter === 'rated'
+                  ? '평가 완료된 식사가 없습니다.'
+                  : '아직 기록된 식사가 없습니다.'}
+              </p>
+              {filter === 'all' && (
+                <a 
+                  href="/add" 
+                  className="inline-block bg-blue-500 text-white px-4 py-2 rounded-lg"
+                >
+                  첫 번째 식사 기록하기
+                </a>
+              )}
+            </div>
+          ) : (
+            filteredMeals.map((meal) => (
+              <MealCard 
+                key={meal.id} 
+                {...meal} 
+                createdAt={formatDate(meal.createdAt)}
+                onEvaluated={fetchMeals}  // 평가 완료 시 목록 새로고침
+              />
+            ))
+          );
+        })()}
       </div>
 
       <BottomNavigation />

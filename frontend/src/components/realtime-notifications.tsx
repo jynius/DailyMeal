@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, X, Users, Camera, MapPin, Heart, MessageCircle } from 'lucide-react'
+import { Bell, X, Users, Camera, MapPin, Heart, MessageCircle, Zap } from 'lucide-react'
 import { useSocket } from '@/contexts/socket-context'
 import { Button } from '@/components/ui/button'
 
@@ -9,6 +9,11 @@ export function RealTimeNotifications() {
   const { notifications, clearNotifications, connectedUsers, isConnected } = useSocket()
   const [isOpen, setIsOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+
+  // 실시간 활동 필터링 (NEW_MEAL, NEW_RESTAURANT)
+  const realtimeActivities = notifications.filter(n => 
+    ['NEW_MEAL', 'NEW_RESTAURANT'].includes(n.type)
+  ).slice(0, 10)
 
   useEffect(() => {
     setUnreadCount(notifications.filter(n => !n.read).length)
@@ -69,12 +74,16 @@ export function RealTimeNotifications() {
     <>
       {/* Floating 상태 표시 - 우측 상단에 나란히 */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-        {/* 연결 상태 + 사용자 수 통합 */}
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg ${
-          isConnected 
-            ? 'bg-green-500 text-white' 
-            : 'bg-gray-500 text-white'
-        }`}>
+        {/* 연결 상태 + 사용자 수 - 버튼으로 변경 */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg transition-all hover:shadow-xl ${
+            isConnected 
+              ? 'bg-green-500 text-white hover:bg-green-600' 
+              : 'bg-gray-500 text-white hover:bg-gray-600'
+          }`}
+          style={{ minHeight: 'auto', height: '28px' }}
+        >
           <div className={`w-2 h-2 rounded-full ${
             isConnected ? 'bg-white animate-pulse' : 'bg-white/70'
           }`} />
@@ -84,9 +93,15 @@ export function RealTimeNotifications() {
               <div className="w-px h-3 bg-white/30" />
               <Users size={12} />
               <span>{connectedUsers}</span>
+              {/* 실시간 활동 뱃지 */}
+              {realtimeActivities.length > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 border-2 border-white animate-pulse">
+                  {realtimeActivities.length}
+                </div>
+              )}
             </>
           )}
-        </div>
+        </button>
 
         {/* 알림 버튼 - 높이 통일 */}
         <button
@@ -105,60 +120,60 @@ export function RealTimeNotifications() {
 
       {/* 알림 패널 */}
       {isOpen && (
-        <div className="fixed top-20 right-4 w-80 max-h-96 bg-white rounded-lg shadow-xl border z-50 overflow-hidden">
+        <div className="fixed top-16 right-4 w-80 max-h-[500px] bg-white rounded-2xl shadow-2xl border z-50 overflow-hidden">
           {/* 헤더 */}
-          <div className="flex items-center justify-between p-4 border-b bg-gray-50">
-            <h3 className="font-semibold text-gray-900">실시간 알림</h3>
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {notifications.length > 0 && (
-                <Button
-                  onClick={clearNotifications}
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs"
-                >
-                  모두 지우기
-                </Button>
-              )}
-              <Button
-                onClick={() => setIsOpen(false)}
-                variant="ghost"
-                size="icon"
-                className="w-6 h-6"
-              >
-                <X size={14} />
-              </Button>
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <h3 className="font-semibold">실시간 활동</h3>
+              <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                {connectedUsers}명 접속중
+              </span>
             </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="hover:bg-white/10 rounded-lg p-1 transition-colors"
+            >
+              <X size={18} />
+            </button>
           </div>
 
           {/* 알림 목록 */}
-          <div className="overflow-y-auto max-h-80">
-            {notifications.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                <Bell size={24} className="mx-auto mb-2 opacity-50" />
-                <p className="text-sm">아직 알림이 없습니다</p>
+          <div className="overflow-y-auto max-h-[420px]">
+            {realtimeActivities.length === 0 ? (
+              <div className="p-8 text-center">
+                <Users size={32} className="text-gray-300 mx-auto mb-3" />
+                <p className="text-sm text-gray-500">
+                  아직 실시간 활동이 없습니다
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  곧 새로운 활동이 표시됩니다
+                </p>
               </div>
             ) : (
-              notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                    !notification.read ? 'bg-blue-50' : ''
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    {getNotificationIcon(notification.type)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 line-clamp-2">
-                        {getNotificationMessage(notification)}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatTime(notification.timestamp)}
-                      </p>
+              <div className="p-2 space-y-2">
+                {realtimeActivities.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 rounded-lg border border-blue-100 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start gap-2">
+                      <Zap size={14} className="text-blue-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {notification.type === 'NEW_MEAL'
+                            ? `새로운 식사: ${notification.data.name || '알 수 없음'}`
+                            : `새로운 음식점: ${notification.data.name || '알 수 없음'}`
+                          }
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatTime(notification.timestamp)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         </div>
