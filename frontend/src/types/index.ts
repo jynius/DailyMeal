@@ -5,7 +5,7 @@ export interface MealRecord {
   name: string
   photo?: string
   location?: string
-  rating: number
+  rating?: number
   memo?: string
   price?: number
   createdAt: string
@@ -17,7 +17,7 @@ export interface CreateMealRequest {
   name: string
   photo: File
   location?: string
-  rating: number
+  rating?: number
   memo?: string
   price?: number
 }

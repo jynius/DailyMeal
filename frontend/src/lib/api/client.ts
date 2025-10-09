@@ -63,6 +63,13 @@ async function apiRequest<T>(
   const timeoutId = setTimeout(() => controller.abort(), APP_CONFIG.API_TIMEOUT)
 
   try {
+    console.log(`🌐 API Request: ${options.method || 'GET'} ${API_BASE_URL}${endpoint}`)
+    if (isFormData) {
+      console.log('📦 Body: FormData')
+    } else if (options.body) {
+      console.log('📦 Body:', options.body)
+    }
+    
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
@@ -71,14 +78,32 @@ async function apiRequest<T>(
 
     clearTimeout(timeoutId) // 성공시 타임아웃 제거
 
+    console.log(`📡 Response: ${response.status} ${response.statusText}`)
+
     if (!response.ok) {
+      // 인증 오류 처리 (401, 403)
+      if (response.status === 401 || response.status === 403) {
+        // 토큰 제거
+        tokenManager.remove()
+        
+        // 로그인 페이지로 리다이렉트 (클라이언트 사이드에서만)
+        if (typeof window !== 'undefined') {
+          window.location.href = '/'
+        }
+        
+        throw new Error('인증이 필요합니다. 로그인 페이지로 이동합니다.')
+      }
+      
       const error = await response.json().catch(() => ({ 
         error: '서버 오류가 발생했습니다' 
       }))
+      console.error('❌ API Error:', error)
       throw new Error(error.error || error.message || '요청 실패')
     }
 
-    return response.json()
+    const data = await response.json()
+    console.log('✅ API Success:', data)
+    return data
   } catch (error: unknown) {
     const err = error as Error
     clearTimeout(timeoutId) // 오류시 타임아웃 제거

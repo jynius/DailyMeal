@@ -1,225 +1,230 @@
-import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft, Star, MapPin, Edit, Trash2 } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { useAlert } from '@/components/ui/alert'
 import Image from 'next/image'
-import { MealShareButton } from '@/components/meal-share-button'
-import { BackButton } from '@/components/back-button'
 
-interface MealPageProps {
-  params: { id: string }
-}
-
-interface MealData {
+interface MealRecord {
   id: string
-  title: string
-  description: string
-  imageUrl: string
-  calories: number
+  name: string
+  photo?: string
+  photos?: string[]
+  location?: string
+  rating?: number
+  memo?: string
+  price?: number
   createdAt: string
-  user: {
-    id: string
-    name: string
-    profileImage?: string
-  }
-  tags: string[]
+  updatedAt: string
 }
 
-// 🔥 SSR: 서버에서 메타데이터 생성 (공유 최적화)
-export async function generateMetadata({ params }: MealPageProps): Promise<Metadata> {
-  try {
-    const resolvedParams = await params
-    const meal = await fetchMealData(resolvedParams.id)
-    
-    if (!meal) {
-      return {
-        title: 'Meal Not Found - DailyMeal',
-        description: 'The meal you are looking for could not be found.'
+export default function MealDetailPage({ params }: { params: { id: string } }) {
+  const [meal, setMeal] = useState<MealRecord | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const router = useRouter()
+  const { showAlert } = useAlert()
+
+  useEffect(() => {
+    const fetchMeal = async () => {
+      try {
+        const resolvedParams = await params
+        const { mealRecordsApi } = await import('@/lib/api/client')
+        const data = await mealRecordsApi.getOne(resolvedParams.id)
+        setMeal(data)
+      } catch (error) {
+        console.error('Failed to fetch meal:', error)
+        showAlert({
+          title: '오류',
+          message: '식사 기록을 불러오는데 실패했습니다.',
+          type: 'error'
+        })
+      } finally {
+        setLoading(false)
       }
     }
-
-    return {
-      title: `${meal.user.name}님의 ${meal.title} - DailyMeal`,
-      description: `${meal.description} | 칼로리: ${meal.calories}kcal | ${meal.tags.join(', ')}`,
-      
-      // Open Graph (Facebook, 카카오톡 등)
-      openGraph: {
-        title: `${meal.user.name}님의 맛있는 식사`,
-        description: `${meal.title}\n${meal.description}\n📊 칼로리: ${meal.calories}kcal`,
-        images: [
-          {
-            url: meal.imageUrl.startsWith('http') 
-              ? meal.imageUrl 
-              : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${meal.imageUrl}`,
-            width: 1200,
-            height: 630,
-            alt: meal.title,
-          }
-        ],
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/meal/${resolvedParams.id}`,
-        siteName: 'DailyMeal',
-        type: 'article',
-        publishedTime: meal.createdAt,
-      },
-      
-      // Twitter
-      twitter: {
-        card: 'summary_large_image',
-        title: `${meal.user.name}님의 ${meal.title}`,
-        description: meal.description,
-        images: [meal.imageUrl.startsWith('http') 
-          ? meal.imageUrl 
-          : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${meal.imageUrl}`
-        ],
-      },
-      
-      // 추가 SEO
-      keywords: ['식단', '음식', '칼로리', '건강', ...meal.tags],
-      authors: [{ name: meal.user.name }],
-      category: 'Food & Health',
-    }
-  } catch (error) {
-    console.error('Failed to generate metadata:', error)
-    return {
-      title: 'Error - DailyMeal',
-      description: 'An error occurred while loading the meal information.'
-    }
-  }
-}
-
-async function fetchMealData(id: string): Promise<MealData | null> {
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    const response = await fetch(`${apiUrl}/meal-records/${id}`, {
-      // SSR에서는 캐시를 사용하지 않음 (최신 데이터)
-      cache: 'no-store'
-    })
     
-    if (!response.ok) {
-      console.log(`API Response: ${response.status} ${response.statusText}`)
-      // 404인 경우 샘플 데이터 반환
-      if (response.status === 404) {
-        return {
-          id: id,
-          title: '크림파스타',
-          description: '맛있는 크림파스타를 먹었습니다. 부드러운 크림소스와 알단테 면이 정말 좋았어요!',
-          imageUrl: '/uploads/sample-pasta.jpg',
-          calories: 650,
-          tags: ['파스타', '이탈리안', '크림'],
-          user: {
-            id: 'sample-user',
-            name: '샘플 사용자',
-            profileImage: '/default-profile.jpg'
-          },
-          createdAt: new Date().toISOString()
+    fetchMeal()
+  }, [params, showAlert])
+
+  const handleDelete = async () => {
+    showAlert({
+      title: '삭제 확인',
+      message: '이 식사 기록을 삭제하시겠습니까?',
+      type: 'warning',
+      onConfirm: async () => {
+        try {
+          const resolvedParams = await params
+          const { mealRecordsApi } = await import('@/lib/api/client')
+          await mealRecordsApi.delete(resolvedParams.id)
+          router.push('/feed')
+        } catch (error) {
+          console.error('Failed to delete meal:', error)
+          showAlert({
+            title: '삭제 실패',
+            message: '식사 기록 삭제에 실패했습니다.',
+            type: 'error'
+          })
         }
       }
-      return null
-    }
-    
-    return await response.json()
-  } catch (error) {
-    console.error('Failed to fetch meal data:', error)
-    // 네트워크 오류시에도 샘플 데이터 반환
-    return {
-      id: id,
-      title: '김치찌개',
-      description: '집에서 만든 김치찌개입니다. 엄마 손맛이 그리워서 만들어봤는데 성공했어요!',
-      imageUrl: '/uploads/sample-kimchi.jpg', 
-      calories: 420,
-      tags: ['한식', '찌개', '집밥'],
-      user: {
-        id: 'demo-user',
-        name: '데모 사용자',
-        profileImage: '/default-profile.jpg'
-      },
-      createdAt: new Date().toISOString()
-    }
+    })
   }
-}
 
-// 🔥 SSR: 서버에서 페이지 렌더링 (실시간 데이터)
-export default async function MealPage({ params }: MealPageProps) {
-  const resolvedParams = await params
-  const meal = await fetchMealData(resolvedParams.id)
-  
-  if (!meal) {
-    notFound()
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    )
   }
+
+  if (!meal) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">식사 기록을 찾을 수 없습니다.</p>
+          <Link href="/feed" className="text-blue-500 mt-4 inline-block">
+            피드로 돌아가기
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const photos = meal.photos && meal.photos.length > 0 ? meal.photos : (meal.photo ? [meal.photo] : [])
+  const hasRating = meal.rating !== undefined && meal.rating !== null && meal.rating > 0
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto px-4">
-        {/* 뒤로 가기 버튼 */}
-        <div className="mb-6">
-          <BackButton />
-        </div>
+    <div className="min-h-screen bg-white">
+      {/* 헤더 */}
+      <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
+        <Link href="/feed">
+          <ArrowLeft size={24} className="text-gray-600" />
+        </Link>
+        <h1 className="text-lg font-semibold">식사 기록</h1>
+        <button onClick={handleDelete} className="text-red-500">
+          <Trash2 size={20} />
+        </button>
+      </div>
 
-        {/* 메인 컨텐츠 */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {/* 사용자 정보 */}
-          <div className="p-6 border-b">
-            <div className="flex items-center space-x-3">
-              {meal.user.profileImage && (
-                <Image
-                  src={meal.user.profileImage}
-                  alt={meal.user.name}
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-              )}
-              <div>
-                <h3 className="font-semibold">{meal.user.name}</h3>
-                <p className="text-gray-500 text-sm">
-                  {new Date(meal.createdAt).toLocaleDateString('ko-KR')}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 음식 이미지 */}
-          <div className="relative aspect-square">
+      {/* 사진 갤러리 */}
+      {photos.length > 0 && (
+        <div className="relative">
+          <div className="aspect-square bg-gray-100">
             <Image
-              src={meal.imageUrl.startsWith('http') 
-                ? meal.imageUrl 
-                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${meal.imageUrl}`
+              src={photos[currentPhotoIndex].startsWith('http') 
+                ? photos[currentPhotoIndex]
+                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${photos[currentPhotoIndex]}`
               }
-              alt={meal.title}
-              fill
-              className="object-cover"
+              alt={meal.name}
+              width={800}
+              height={800}
+              className="w-full h-full object-cover"
               priority
             />
           </div>
-
-          {/* 음식 정보 */}
-          <div className="p-6">
-            <h1 className="text-2xl font-bold mb-2">{meal.title}</h1>
-            <p className="text-gray-700 mb-4">{meal.description}</p>
-            
-            {/* 칼로리 정보 */}
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="bg-blue-100 px-3 py-1 rounded-full">
-                <span className="text-blue-800 font-medium">📊 {meal.calories} kcal</span>
-              </div>
+          
+          {/* 사진 인디케이터 */}
+          {photos.length > 1 && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+              {photos.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPhotoIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === currentPhotoIndex 
+                      ? 'bg-white w-6' 
+                      : 'bg-white/50'
+                  }`}
+                />
+              ))}
             </div>
+          )}
+        </div>
+      )}
 
-            {/* 태그 */}
-            {meal.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {meal.tags.map((tag, index) => (
-                  <span 
-                    key={index}
-                    className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+      {/* 정보 섹션 */}
+      <div className="p-4 space-y-4">
+        {/* 제목 & 날짜 */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">{meal.name}</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {new Date(meal.createdAt).toLocaleDateString('ko-KR', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </p>
         </div>
 
-        {/* 공유 버튼 */}
-        <MealShareButton meal={meal} />
+        {/* 평가 상태 */}
+        {hasRating ? (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700">평가</span>
+              <div className="flex items-center">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    size={20}
+                    className={`${
+                      i < meal.rating! ? 'text-yellow-500 fill-current' : 'text-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            {meal.location && (
+              <div className="flex items-center text-sm text-gray-600 mb-1">
+                <MapPin size={14} className="mr-1" />
+                {meal.location}
+              </div>
+            )}
+            
+            {meal.price && (
+              <div className="text-sm text-gray-600 mb-1">
+                💰 ₩{meal.price.toLocaleString()}
+              </div>
+            )}
+            
+            {meal.memo && (
+              <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">
+                {meal.memo}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800 mb-3">
+              ⭐ 아직 평가하지 않은 식사입니다
+            </p>
+            <Link href={`/meal/${meal.id}/evaluate`}>
+              <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">
+                <Star size={16} className="mr-2" />
+                평가하기
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {/* 수정 버튼 (이미 평가한 경우) */}
+        {hasRating && (
+          <Link href={`/meal/${meal.id}/evaluate`}>
+            <Button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700">
+              <Edit size={16} className="mr-2" />
+              평가 수정하기
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   )

@@ -81,12 +81,14 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     
     console.log('🔌 Attempting to connect to Socket.IO server:', serverUrl);
     
-    // Socket.IO 연결 - 간단한 설정으로 시작
+    // Socket.IO 연결 - 에러에 강한 설정
     const newSocket = io(serverUrl, {
-      withCredentials: false, // 일단 false로 시도
+      withCredentials: false,
       transports: ['polling', 'websocket'], // polling을 먼저 시도
       timeout: 10000,
-      reconnection: false, // 일단 자동 재연결 비활성화
+      reconnection: true, // 자동 재연결 활성화
+      reconnectionDelay: 5000, // 5초 후 재연결
+      reconnectionAttempts: 3, // 최대 3번 시도
       forceNew: true
     })
 
@@ -94,7 +96,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // 연결 이벤트
     newSocket.on('connect', () => {
-      console.log('✅ Socket connected successfully:', newSocket.id)
+      console.log('✅ Socket connected:', newSocket.id)
       setIsConnected(true)
 
       // 사용자 인증 (토큰이 있을 경우)
@@ -113,13 +115,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     })
 
     newSocket.on('disconnect', (reason) => {
-      console.log('❌ Socket disconnected:', reason)
+      console.log('Socket disconnected:', reason)
       setIsConnected(false)
     })
 
     newSocket.on('connect_error', (error) => {
-      console.error('🚫 Socket connection error:', error)
-      setIsConnected(false)
+      console.warn('Socket connection error (will retry):', error.message)
+      // 에러를 조용히 처리 - 사용자에게 알림 없음
     })
 
     // 연결된 사용자 수 업데이트

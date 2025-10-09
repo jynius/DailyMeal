@@ -18,15 +18,17 @@ export class CreateMealRecordDto {
 
   @ApiProperty({ 
     example: 4, 
-    description: '별점 (1-5점)',
+    description: '별점 (1-5점) - 나중에 평가 가능',
     minimum: 1,
-    maximum: 5
+    maximum: 5,
+    required: false
   })
+  @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(5)
-  @Transform(({ value }) => parseInt(value))
-  rating: number;
+  @Transform(({ value }) => value ? parseInt(value) : undefined)
+  rating?: number;
 
   @ApiProperty({ 
     example: '정말 맛있었어요!', 

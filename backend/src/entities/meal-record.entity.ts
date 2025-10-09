@@ -38,7 +38,7 @@ export class MealRecord {
   @Column({ nullable: true })
   address: string;
 
-  @Column('int')
+  @Column('int', { nullable: true })
   rating: number;
 
   @Column({ nullable: true, length: 200 })

@@ -16,42 +16,48 @@ export default function FeedPage() {
   const [filter, setFilter] = useState<'all' | 'following' | 'nearby'>('all')
   const { notifications, connectedUsers, isConnected } = useSocket()
 
-  useEffect(() => {
-    const fetchMeals = async () => {
-      try {
-        // 짧은 딜레이를 추가하여 API 클라이언트 안정화
-        await new Promise(resolve => setTimeout(resolve, 100))
-        
-        // 임시로 로그인한 사용자가 없어도 빈 배열을 보여주도록 처리
-        const result = await mealRecordsApi.getAll()
-        if (Array.isArray(result)) {
-          setMeals(result)
-        } else if (result.data) {
-          setMeals(result.data)
-        }
-      } catch (err: unknown) {
-        const error = err as Error
-        console.error('식사 기록 로딩 실패:', error)
-        
-        // 연결 오류의 경우 재시도 로직
-        if (error.message?.includes('ERR_CONNECTION_REFUSED') || 'code' in error && error.code === 'ECONNREFUSED') {
-          setTimeout(() => {
-            window.location.reload()
-          }, 1000)
-          return
-        }
-        
-        // 인증 오류인 경우 샘플 데이터 표시
-        if (error.message?.includes('unauthorized') || error.message?.includes('401')) {
-          setMeals(getSampleMeals())
-        } else {
-          setError(error.message || '식사 기록을 불러올 수 없습니다.')
-        }
-      } finally {
+  // 데이터 가져오기 함수
+  const fetchMeals = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // 토큰 확인
+      const token = localStorage.getItem('token')
+      if (!token) {
+        console.warn('No token found, showing sample data')
+        setMeals(getSampleMeals())
         setLoading(false)
+        return
       }
+      
+      console.log('🔄 Fetching meals from API...')
+      
+      const result = await mealRecordsApi.getAll()
+      console.log('✅ Meals fetched:', result)
+      
+      if (Array.isArray(result)) {
+        setMeals(result)
+      } else if (result.data) {
+        setMeals(result.data)
+      }
+    } catch (err: unknown) {
+      const error = err as Error
+      console.error('❌ 식사 기록 로딩 실패:', error)
+      
+      // 인증 오류인 경우 샘플 데이터 표시
+      if (error.message?.includes('unauthorized') || error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        console.warn('Authentication failed, showing sample data')
+        setMeals(getSampleMeals())
+      } else {
+        setError(error.message || '식사 기록을 불러올 수 없습니다.')
+      }
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchMeals()
   }, [])
 
@@ -120,7 +126,7 @@ export default function FeedPage() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
             <p className="text-red-600">{error}</p>
             <button 
-              onClick={() => window.location.reload()} 
+              onClick={() => fetchMeals()} 
               className="mt-2 text-red-500 underline"
             >
               다시 시도

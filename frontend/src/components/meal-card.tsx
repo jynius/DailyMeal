@@ -10,7 +10,7 @@ interface MealCardProps {
   name: string
   photo?: string
   location?: string
-  rating: number
+  rating?: number
   memo?: string
   createdAt: string
   price?: number
@@ -67,19 +67,23 @@ export function MealCard({
       <div className="p-3 sm:p-4">
         <div className="flex items-center justify-between mb-2">
           <h4 className="font-semibold text-gray-900 truncate text-sm sm:text-base flex-1 mr-2">{name}</h4>
-          <div className="flex items-center flex-shrink-0">
-            {[...Array(5)].map((_, i) => (
-              <Star 
-                key={i} 
-                size={14} 
-                className={`${
-                  i < rating 
-                    ? "text-yellow-400 fill-current" 
-                    : "text-gray-300"
-                } sm:w-4 sm:h-4`} 
-              />
-            ))}
-          </div>
+          {rating && rating > 0 ? (
+            <div className="flex items-center flex-shrink-0">
+              {[...Array(5)].map((_, i) => (
+                <Star 
+                  key={i} 
+                  size={14} 
+                  className={`${
+                    i < rating 
+                      ? "text-yellow-400 fill-current" 
+                      : "text-gray-300"
+                  } sm:w-4 sm:h-4`} 
+                />
+              ))}
+            </div>
+          ) : (
+            <span className="text-xs text-gray-400 flex-shrink-0">미평가</span>
+          )}
         </div>
         
         {location && (
