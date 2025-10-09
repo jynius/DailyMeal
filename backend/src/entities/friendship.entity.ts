@@ -20,6 +20,12 @@ export class Friendship {
   })
   status: FriendshipStatus;
 
+  @Column({
+    type: 'boolean',
+    default: false
+  })
+  notificationEnabled: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
