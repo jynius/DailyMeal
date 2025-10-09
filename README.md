@@ -4,8 +4,11 @@
 
 ## ✨ 주요 기능
 
-### 📱 **2단계 식사 기록 시스템** (신규!)
-- 📸 **1단계**: 사진만 찍고 즉시 저장 (자동 제목 생성)
+### 📱 **2단계 식사 기록 시스템** (신규!)#### 🆕 최신 업데이트
+- [⭐ **Socket.IO 구조 정리**](./docs/SOCKET_IO_FINAL.md) - 실시간 통신 최적화 (NEW!)
+- [⭐ **2단계 식사 기록 시스템**](./docs/TWO_PHASE_MEAL_SYSTEM.md) - 사진 등록과 평가 분리!
+- [🔐 **JWT 인증 문제 해결**](./docs/JWT_AUTH_FIX.md) - PM2 환경 변수 및 자동 리다이렉션
+- [� **평가 선택적 업데이트**](./docs/RATING_OPTIONAL_UPDATE.md) - 기술 구현 상세📸 **1단계**: 사진만 찍고 즉시 저장 (자동 제목 생성)
 - ⭐ **2단계**: 나중에 평가 추가 (평점, 메모, 위치 등)
 - 🎯 **간편함**: 바쁠 때는 사진만, 여유있을 때 상세 평가
 - � **미평가 표시**: 아직 평가하지 않은 식사를 한눈에 확인
@@ -62,8 +65,18 @@ docs/
 │   ├── RATING_OPTIONAL_UPDATE.md        # 평가 선택적 업데이트
 │   └── SCENARIOS.md                     # 사용자 시나리오
 │
-└── 🔍 문제 해결 & 최적화 (1개)
-    └── LOCALHOST_CLEANUP.md
+├── 🔧 기술 최적화 (3개) 🆕
+│   ├── SOCKET_IO_FINAL.md ⭐            # Socket.IO 구조 정리 (NEW!)
+│   ├── SOCKET_IO_ANALYSIS.md            # Socket.IO 분석 과정
+│   └── UPLOAD_PATH_REFACTORING.md       # 업로드 경로 리팩토링
+│
+└── 🔍 문제 해결 (6개)
+    ├── LOCALHOST_CLEANUP.md             # Localhost 클린업
+    ├── JWT_TOKEN_ERROR_FIX.md           # JWT 인증 문제 해결
+    ├── KAKAO_MAP_401_FIX.md             # 카카오 맵 인증 문제
+    ├── POSTGRES_MIGRATION_REPORT.md     # PostgreSQL 마이그레이션 보고서
+    └── DATABASE_DOCUMENTATION_REPORT.md # DB 문서화 보고서
+```
 
 bin/  # 스크립트 (11개)
 ├── check-build.sh              # 빌드 상태 확인 (Linux/macOS)
