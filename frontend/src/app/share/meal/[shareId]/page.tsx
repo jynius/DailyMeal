@@ -114,7 +114,7 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
       {/* 헤더 */}
       <header className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-center max-w-2xl mx-auto">
-          <h1 className="text-lg font-semibold text-gray-900">공유된 맛집</h1>
+          <h1 className="text-lg font-semibold text-gray-900">DailyMeal</h1>
         </div>
       </header>
 
@@ -138,18 +138,18 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
               )}
               <div>
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold text-gray-900">{meal.sharerName}</span>님이 공유한 맛집
+                  <span className="font-semibold text-gray-900">{meal.sharerName}</span>님의 식사 기록
                 </p>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <Eye size={14} />
-                  <span>{meal.viewCount}명이 봤어요</span>
+                  <span>{meal.viewCount}명이 확인했어요</span>
                 </div>
               </div>
             </div>
             <div className="flex gap-2">
               <Link href="/login" className="flex-1">
                 <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">
-                  로그인하고 친구 되기
+                  로그인하고 친구 추가
                 </Button>
               </Link>
               <Link href="/signup" className="flex-1">
@@ -222,8 +222,8 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
             <div className="flex-1 min-w-0">
               <h2 className="text-2xl font-bold text-gray-900 mb-1">{meal.name}</h2>
               {meal.price && (
-                <div className="text-lg font-semibold text-blue-600 mb-2">
-                  ₩{meal.price.toLocaleString()}
+                <div className="text-base text-gray-600 mb-2">
+                  참고 가격: ₩{meal.price.toLocaleString()}
                 </div>
               )}
               {/* 식당 이름 & 날짜 */}
