@@ -166,9 +166,9 @@ export default function UsersPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
-      <header className="bg-white sticky top-0 z-10 shadow-sm">
+      <header className="bg-white sticky top-0 z-10 shadow-sm pt-safe">
         <div className="px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">친구</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4 mt-2">친구</h1>
           
           {/* 친구 요청 알림 */}
           {friendRequests.length > 0 && activeTab !== 'received' && (

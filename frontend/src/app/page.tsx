@@ -162,8 +162,8 @@ export default function Home() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-24">
       {/* Header with Gradient */}
-      <header className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-6 sticky top-0 z-10 shadow-lg">
-        <div className="flex items-center gap-3">
+      <header className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-6 sticky top-0 z-10 shadow-lg pt-safe">
+        <div className="flex items-center gap-3 mt-2">
           {/* 장식 아이콘 */}
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
             <Sparkles size={20} className="text-white" />

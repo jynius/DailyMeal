@@ -119,8 +119,8 @@ function FeedContent() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10">
-        <h1 className="text-xl font-bold text-gray-900 mb-3">나의 식단</h1>
+      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 pt-safe">
+        <h1 className="text-xl font-bold text-gray-900 mb-3 mt-2">나의 식단</h1>
         
         {/* 필터 버튼 */}
         <div className="flex gap-2">

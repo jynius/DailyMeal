@@ -52,8 +52,8 @@ export default function StatisticsPage() {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
-      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10">
-        <div className="flex items-center gap-3">
+      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 pt-safe">
+        <div className="flex items-center gap-3 mt-2">
           <button onClick={() => router.back()}>
             <ArrowLeft size={24} className="text-gray-600" />
           </button>

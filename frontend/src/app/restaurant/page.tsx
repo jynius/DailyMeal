@@ -179,8 +179,8 @@ export default function RestaurantsPage() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10">
-        <h1 className="text-xl font-bold text-gray-900">맛집</h1>
+      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 pt-safe">
+        <h1 className="text-xl font-bold text-gray-900 mt-2">맛집</h1>
       </header>
 
       {/* 인기 맛집 */}

@@ -106,11 +106,11 @@ export default function SettingsPage() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-6">
       {/* Header */}
-      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
-        <button onClick={() => router.back()}>
+      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 flex items-center gap-3 pt-safe">
+        <button onClick={() => router.back()} className="mt-2">
           <ArrowLeft size={24} className="text-gray-600" />
         </button>
-        <h1 className="text-xl font-bold text-gray-900">설정</h1>
+        <h1 className="text-xl font-bold text-gray-900 mt-2">설정</h1>
       </header>
 
       <div className="p-4 space-y-4">

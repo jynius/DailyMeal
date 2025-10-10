@@ -118,8 +118,8 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
       {shareId && <AppDeepLink shareId={shareId} />}
 
       {/* 헤더 */}
-      <header className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-center max-w-2xl mx-auto">
+      <header className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 pt-safe">
+        <div className="flex items-center justify-center max-w-2xl mx-auto mt-2">
           <h1 className="text-lg font-semibold text-gray-900">DailyMeal</h1>
         </div>
       </header>

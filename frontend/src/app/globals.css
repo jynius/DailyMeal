@@ -7,6 +7,15 @@
   --foreground: #171717;
 }
 
+/* Safe Area Insets - 모바일 앱 상단 여백 */
+.pt-safe {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+}
+
+.pb-safe-bottom {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
 /* 라인 클램프 유틸리티 */
 .line-clamp-1 {
   overflow: hidden;
