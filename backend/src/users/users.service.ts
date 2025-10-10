@@ -13,6 +13,10 @@ import { UserSettings } from '../entities/user-settings.entity';
 import * as bcrypt from 'bcryptjs';
 import * as fs from 'fs';
 import * as path from 'path';
+import {
+  createUploadPath,
+  ensureDirectoryExists,
+} from '../common/upload.utils';
 
 @Injectable()
 export class UsersService {
@@ -127,23 +131,24 @@ export class UsersService {
       }
     }
 
-    // 새 이미지 저장
-    const uploadDir = path.join(process.cwd(), 'uploads', 'profiles');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
+    // 새 이미지 저장 (사용자 해시 기반 분산)
     const filename = `${userId}-${Date.now()}${path.extname(file.originalname)}`;
-    const filepath = path.join(uploadDir, filename);
+    const { dirPath, urlPath } = createUploadPath(filename, {
+      uploadDir: process.env.UPLOAD_DIR || './uploads',
+      category: 'profiles',
+      userId,
+      useDate: false, // 프로필은 날짜별 불필요
+      useUserHash: true, // 사용자별 해시 폴더 사용
+    });
 
+    ensureDirectoryExists(dirPath);
+    const filepath = path.join(dirPath, filename);
     fs.writeFileSync(filepath, file.buffer);
 
-    const profileImageUrl = `/uploads/profiles/${filename}`;
-    user.profileImage = profileImageUrl;
-
+    user.profileImage = urlPath;
     await this.userRepository.save(user);
 
-    return { profileImage: profileImageUrl };
+    return { profileImage: urlPath };
   }
 
   // 사용자 통계 조회

@@ -33,6 +33,10 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { AppLoggerService } from '../common/logger.service';
+import {
+  createUploadPath,
+  ensureDirectoryExists,
+} from '../common/upload.utils';
 
 // 파일 업로드 설정 (환경 변수)
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
@@ -54,7 +58,16 @@ export class MealRecordsController {
   @UseInterceptors(
     FilesInterceptor('photos', UPLOAD_MAX_FILES, {
       storage: diskStorage({
-        destination: UPLOAD_DIR,
+        destination: (req, file, callback) => {
+          // 날짜별 폴더 생성 (예: /data/upload/meals/2025/10/11)
+          const { dirPath } = createUploadPath('', {
+            uploadDir: UPLOAD_DIR,
+            category: 'meals',
+            useDate: true,
+          });
+          ensureDirectoryExists(dirPath);
+          callback(null, dirPath);
+        },
         filename: (req, file, callback) => {
           const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
           callback(null, uniqueName);
@@ -86,12 +99,18 @@ export class MealRecordsController {
     );
     this.logger.debug(`📁 Files received: ${files?.length || 0}`);
 
-    // 다중 사진 경로 처리
+    // 다중 사진 경로 처리 (날짜별 폴더 구조 반영)
     const photoPaths: string[] = [];
     if (files && files.length > 0) {
       files.forEach((file) => {
-        photoPaths.push(`/uploads/${file.filename}`);
-        this.logger.debug(`Photo uploaded: ${file.filename}`);
+        // file.path는 전체 경로, 여기서 /uploads 이후만 추출
+        const { urlPath } = createUploadPath(file.filename, {
+          uploadDir: UPLOAD_DIR,
+          category: 'meals',
+          useDate: true,
+        });
+        photoPaths.push(urlPath);
+        this.logger.debug(`Photo uploaded: ${urlPath}`);
       });
     }
 

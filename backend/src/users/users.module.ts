@@ -12,7 +12,7 @@ import { UserSettings } from '../entities/user-settings.entity';
   imports: [
     TypeOrmModule.forFeature([User, MealRecord, Friendship, UserSettings]),
     MulterModule.register({
-      dest: './uploads/profiles',
+      dest: `${process.env.UPLOAD_DIR || './uploads'}/profiles`,
     }),
   ],
   controllers: [UsersController],
