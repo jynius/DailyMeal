@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "dailymeal",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -14,7 +15,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dailymeal.app"
+      "bundleIdentifier": "com.dailymeal.app",
+      "associatedDomains": [
+        "applinks:dailymeal.app",
+        "applinks:www.dailymeal.app"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -28,6 +33,27 @@
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "dailymeal.app",
+              "pathPrefix": "/share"
+            },
+            {
+              "scheme": "dailymeal",
+              "host": "share"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
       ]
     },
     "web": {

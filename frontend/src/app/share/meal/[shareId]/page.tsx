@@ -6,6 +6,7 @@ import { Star, MapPin, Share2, Users as UsersIcon, Eye } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ShareModal } from '@/components/share-modal'
+import { AppDeepLink } from '@/components/app-deep-link'
 import { getPublicMeal, trackView, getOrCreateSessionId, type PublicMealResponse } from '@/lib/api/share'
 import { Button } from '@/components/ui/button'
 
@@ -20,6 +21,7 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [showShareModal, setShowShareModal] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [shareId, setShareId] = useState<string>('')
   
   const searchParams = useSearchParams()
   const ref = searchParams.get('ref')
@@ -43,17 +45,18 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
       setError(null)
       
       const resolvedParams = await params
-      const shareId = resolvedParams.shareId
+      const currentShareId = resolvedParams.shareId
+      setShareId(currentShareId) // 상태에 저장
       
       // 공개 Meal 조회
-      const data = await getPublicMeal(shareId)
+      const data = await getPublicMeal(currentShareId)
       setMeal(data)
 
       // 조회 추적 (ref가 있을 때만)
       if (ref) {
         const sessionId = getOrCreateSessionId()
         trackView({
-          shareId,
+          shareId: currentShareId,
           ref,
           sessionId,
         }).catch(err => console.error('Failed to track view:', err))
@@ -111,6 +114,9 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
 
   return (
     <div className="min-h-screen bg-white pb-20">
+      {/* Deep Link 시도 (모바일에서만) */}
+      {shareId && <AppDeepLink shareId={shareId} />}
+
       {/* 헤더 */}
       <header className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-center max-w-2xl mx-auto">

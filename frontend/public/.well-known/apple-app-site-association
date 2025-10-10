@@ -1,0 +1,21 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.com.dailymeal.app",
+        "paths": [
+          "/share/*",
+          "/share/meal/*",
+          "/profile/*",
+          "/restaurant/*"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TEAM_ID.com.dailymeal.app"
+    ]
+  }
+}
