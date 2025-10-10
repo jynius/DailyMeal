@@ -164,24 +164,28 @@ export default function Home() {
 
       {/* 빠른 액션 카드들 */}
       <div className="px-6 py-4">
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4">
           <Link href="/statistics" className="group">
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
-                <TrendingUp size={20} className="text-blue-600" />
+            <div className="bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <TrendingUp size={20} className="text-blue-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 pl-2">통계</h3>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">통계</h3>
-              <p className="text-xs text-gray-500">나의 식사 기록을 분석해보세요</p>
+              <p className="text-xs text-gray-500 mt-1">식사 기록을 분석해보세요.</p>
             </div>
           </Link>
 
           <Link href="/search" className="group">
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mb-3">
-                <MapPin size={20} className="text-green-600" />
+            <div className="bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                  <MapPin size={20} className="text-green-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 pl-2">맛집 탐색</h3>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">맛집 탐색</h3>
-              <p className="text-xs text-gray-500">주변 음식점을 찾아보세요</p>
+              <p className="text-xs text-gray-500 mt-1">주변 음식점을 찾아보세요.</p>
             </div>
           </Link>
         </div>
@@ -283,35 +287,37 @@ export default function Home() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          {/* 식당 이름 */}
-                          <h3 className="font-semibold text-gray-900 mb-2 truncate">{meal.name}</h3>
+                          {/* 동행자 (맨 위) */}
+                          <div className="flex items-center text-xs text-gray-700 mb-2 pb-2 border-b border-gray-100">
+                            <span className="mr-1.5">
+                              {meal.companionNames ? '👥' : '🙋'}
+                            </span>
+                            <span className="truncate">{meal.companionNames || '혼밥'}</span>
+                          </div>
+
+                          {/* 식사 이름 */}
+                          <h3 className="font-bold text-gray-900 mb-1 truncate">{meal.name}</h3>
                           
-                          {/* 위치 정보 */}
-                          {meal.location && (
-                            <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
-                              <MapPin size={14} className="flex-shrink-0" />
-                              <span className="truncate">{meal.location}</span>
+                          {/* 가격 */}
+                          {meal.price && (
+                            <div className="text-base font-semibold text-blue-600 mb-2">
+                              ₩{meal.price.toLocaleString()}
                             </div>
                           )}
                           
-                          <div className="flex items-center gap-3 text-sm flex-wrap">
-                            {/* 평점 */}
-                            {meal.rating && (
-                              <span className="text-yellow-500 font-medium">
-                                {'⭐'.repeat(meal.rating)}
-                              </span>
+                          {/* 식당 이름 & 날짜 */}
+                          <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                            {meal.location && (
+                              <>
+                                <div className="flex items-center">
+                                  <MapPin size={12} className="mr-1 flex-shrink-0" />
+                                  <span className="font-medium truncate">{meal.location}</span>
+                                </div>
+                                <span className="text-gray-400">•</span>
+                              </>
                             )}
-                            
-                            {/* 가격 */}
-                            {meal.price && (
-                              <span className="text-gray-600">
-                                {meal.price.toLocaleString()}원
-                              </span>
-                            )}
-                            
-                            {/* 작성 시간 */}
-                            <span className="text-gray-400 text-xs ml-auto">
-                              {new Date(meal.createdAt).toLocaleString('ko-KR', {
+                            <span className="whitespace-nowrap">
+                              {new Date(meal.createdAt).toLocaleDateString('ko-KR', {
                                 month: 'short',
                                 day: 'numeric',
                                 hour: '2-digit',
@@ -319,6 +325,20 @@ export default function Home() {
                               })}
                             </span>
                           </div>
+                          
+                          {/* 별점 */}
+                          {meal.rating && (
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <span key={i} className={i < meal.rating! ? "text-yellow-500" : "text-gray-300"}>
+                                  ⭐
+                                </span>
+                              ))}
+                              <span className="ml-1 text-sm font-semibold text-gray-700">
+                                {meal.rating}/5
+                              </span>
+                            </div>
+                          )}
                         </div>
                         
                         <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mt-1" />
