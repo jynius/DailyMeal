@@ -36,14 +36,14 @@ async function seedData() {
 
     const users = [
       {
-        id: 'demo-user-uuid-0001',
+        id: '00000000-0000-0000-0000-000000000001',
         email: 'demo@dailymeal.com',
         password: demoPassword,
         name: '데모 사용자',
         bio: 'DailyMeal 데모 계정입니다. 자유롭게 테스트해보세요!',
       },
       {
-        id: 'test-user-uuid-0002',
+        id: '00000000-0000-0000-0000-000000000002',
         email: 'test@dailymeal.com',
         password: testPassword,
         name: '테스트',
@@ -73,7 +73,7 @@ async function seedData() {
         price: 8000,
         category: 'restaurant',
         address: '서울시 강남구',
-        userId: 'demo-user-uuid-0001',
+        userId: '00000000-0000-0000-0000-000000000001',
       },
       {
         name: '비빔밥',
@@ -83,7 +83,7 @@ async function seedData() {
         price: 9000,
         category: 'restaurant',
         address: '서울시 종로구',
-        userId: 'demo-user-uuid-0001',
+        userId: '00000000-0000-0000-0000-000000000001',
       },
       {
         name: '치킨',
@@ -92,7 +92,7 @@ async function seedData() {
         memo: '치믈리에 추천!',
         price: 18000,
         category: 'delivery',
-        userId: 'demo-user-uuid-0001',
+        userId: '00000000-0000-0000-0000-000000000001',
       },
     ];
 
@@ -122,7 +122,7 @@ async function seedData() {
       `INSERT INTO friendships ("userId", "friendId", status, "createdAt", "updatedAt")
        VALUES ($1, $2, 'accepted', NOW(), NOW())
        ON CONFLICT DO NOTHING`,
-      ['demo-user-uuid-0001', 'test-user-uuid-0002']
+      ['00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002']
     );
     console.log('  ✅ demo ↔ test 친구 관계');
 
