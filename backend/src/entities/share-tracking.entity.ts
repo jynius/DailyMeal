@@ -42,7 +42,7 @@ export class ShareTracking {
   @CreateDateColumn()
   viewedAt: Date; // 조회 시간
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   convertedAt: Date; // 로그인/가입한 시점
 
   @Column({ type: 'boolean', default: false })

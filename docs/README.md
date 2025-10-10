@@ -25,7 +25,9 @@ DailyMeal 프로젝트의 모든 기술 문서와 가이드를 모아둔 곳입�
 
 ### 🗄️ 데이터베이스
 - [**DATABASE.md**](./DATABASE.md) - 데이터베이스 구조 및 관리 가이드 📊
+- [**POSTGRES_SETUP_GUIDE.md**](./POSTGRES_SETUP_GUIDE.md) ⭐ - PostgreSQL 설치 및 초기 설정 (NEW!)
 - [**POSTGRES_MIGRATION.md**](./POSTGRES_MIGRATION.md) - PostgreSQL 마이그레이션 가이드 🔄
+- [**POSTGRES_MIGRATION_COMPLETE.md**](./POSTGRES_MIGRATION_COMPLETE.md) - 마이그레이션 완료 보고서
 - [**WHEN_TO_MIGRATE_POSTGRES.md**](./WHEN_TO_MIGRATE_POSTGRES.md) - 마이그레이션 타이밍 가이드 ⏰
 
 ### 🌐 네트워크 & 인프라

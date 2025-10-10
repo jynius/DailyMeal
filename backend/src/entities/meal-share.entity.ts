@@ -28,7 +28,7 @@ export class MealShare {
   @Column({ type: 'int', default: 0 })
   viewCount: number; // 조회 수
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   expiresAt: Date; // 만료 시간 (30일 후)
 
   @Column({ type: 'boolean', default: true })

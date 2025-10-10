@@ -26,36 +26,18 @@ import { RealTimeModule } from './realtime/realtime.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // DB 설정: 기본은 SQLite, 환경변수(DB_TYPE=postgres)로 Postgres 사용
-    TypeOrmModule.forRoot(
-      (() => {
-        const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
-        const common = {
-          entities: [User, MealRecord, Friendship, UserSettings, MealShare, ShareTracking],
-          synchronize: process.env.NODE_ENV !== 'production',
-          logging: process.env.NODE_ENV === 'development',
-        };
-
-        if (dbType === 'postgres' || dbType === 'postgresql') {
-          return {
-            type: 'postgres' as const,
-            host: process.env.DB_HOST || 'localhost',
-            port: parseInt(process.env.DB_PORT || '5432'),
-            username: process.env.DB_USERNAME || 'postgres',
-            password: process.env.DB_PASSWORD || 'password',
-            database: process.env.DB_NAME || 'dailymeal',
-            ...common,
-          };
-        }
-
-        // 기본: sqlite (파일 경로: backend/data/dev.sqlite)
-        return {
-          type: 'sqlite' as const,
-          database: join(__dirname, '..', 'data', 'dev.sqlite'),
-          ...common,
-        };
-      })(),
-    ),
+    // PostgreSQL 데이터베이스 설정
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432'),
+      username: process.env.DB_USERNAME || 'postgres',
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME || 'dailymeal',
+      entities: [User, MealRecord, Friendship, UserSettings, MealShare, ShareTracking],
+      synchronize: false, // 프로덕션에서는 절대 true로 설정하지 말것
+      logging: process.env.NODE_ENV === 'development',
+    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', process.env.UPLOAD_DIR || 'uploads'),
       serveRoot: '/uploads',

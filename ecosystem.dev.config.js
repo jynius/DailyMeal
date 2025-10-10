@@ -9,8 +9,8 @@ module.exports = {
       args: 'run start:dev',  // ← TypeScript watch 모드
       cwd: './backend',
       env: {
-        NODE_ENV: process.env.NODE_ENV || 'development',
-        PORT: process.env.PORT || 8000,
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT,
         DB_HOST: process.env.DB_HOST,
         DB_PORT: process.env.DB_PORT,
         DB_USERNAME: process.env.DB_USERNAME,
@@ -20,9 +20,9 @@ module.exports = {
         ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
         FRONTEND_URL: process.env.FRONTEND_URL,
         API_BASE_URL: process.env.API_BASE_URL,
-        UPLOAD_DIR: process.env.UPLOAD_DIR || './uploads',
-        UPLOAD_MAX_FILE_SIZE: process.env.UPLOAD_MAX_FILE_SIZE || '5242880',
-        UPLOAD_MAX_FILES: process.env.UPLOAD_MAX_FILES || '5'
+        UPLOAD_DIR: process.env.UPLOAD_DIR,
+        UPLOAD_MAX_FILE_SIZE: process.env.UPLOAD_MAX_FILE_SIZE,
+        UPLOAD_MAX_FILES: process.env.UPLOAD_MAX_FILES
       },
       instances: 1,
       exec_mode: 'fork',
@@ -46,11 +46,11 @@ module.exports = {
       args: 'run dev',  // ← Next.js dev 모드 (Hot Reload)
       cwd: './frontend',
       env: {
-        NODE_ENV: process.env.NODE_ENV || 'development',
+        NODE_ENV: process.env.NODE_ENV,
         PORT: 3000,
-        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-        NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-        NEXT_PUBLIC_KAKAO_API_KEY : process.env.NEXT_PUBLIC_KAKAO_API_KEY
+        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+        NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+        NEXT_PUBLIC_KAKAO_API_KEY: process.env.NEXT_PUBLIC_KAKAO_API_KEY
       },
       instances: 1,
       exec_mode: 'fork',

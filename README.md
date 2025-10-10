@@ -60,9 +60,11 @@ docs/
 │   ├── PM2_NAMING_STRATEGY.md
 │   └── PM2_SCRIPT_GUIDE.md
 │
-├── 🗄️ 데이터베이스 (3개)
+├── 🗄️ 데이터베이스 (5개)
 │   ├── DATABASE.md                      # DB 구조 및 관리 📊
-│   ├── POSTGRES_MIGRATION.md            # PostgreSQL 마이그레이션 🔄
+│   ├── POSTGRES_SETUP_GUIDE.md ⭐        # PostgreSQL 설치 및 초기 설정 (NEW!)
+│   ├── POSTGRES_MIGRATION.md            # PostgreSQL 마이그레이션 가이드 🔄
+│   ├── POSTGRES_MIGRATION_COMPLETE.md   # 마이그레이션 완료 보고서
 │   └── WHEN_TO_MIGRATE_POSTGRES.md      # 마이그레이션 타이밍 ⏰
 │
 ├── 🌐 네트워크 & 인프라 (4개)
@@ -107,9 +109,11 @@ bin/  # 스크립트 (11개)
 ### 🎯 빠른 링크
 
 #### 🆕 최신 업데이트
+- [⭐ **PostgreSQL 설치 가이드**](./docs/POSTGRES_SETUP_GUIDE.md) - 신규 서버에서 PostgreSQL 설치 자동화 (2025-10-10)
+- [⭐ **PostgreSQL 마이그레이션 완료**](./docs/POSTGRES_MIGRATION_COMPLETE.md) - SQLite → PostgreSQL 16 성공!
+- [⭐ **Socket.IO 구조 정리**](./docs/SOCKET_IO_FINAL.md) - 실시간 통신 최적화
 - [⭐ **2단계 식사 기록 시스템**](./docs/TWO_PHASE_MEAL_SYSTEM.md) - 사진 등록과 평가 분리!
-- [� **JWT 인증 문제 해결**](./docs/JWT_AUTH_FIX.md) - PM2 환경 변수 및 자동 리다이렉션
-- [�📝 **평가 선택적 업데이트**](./docs/RATING_OPTIONAL_UPDATE.md) - 기술 구현 상세
+- [🔐 **JWT 인증 문제 해결**](./docs/JWT_AUTH_FIX.md) - PM2 환경 변수 및 자동 리다이렉션
 
 #### 필수 문서 (처음 시작하시나요?)
 - [⭐ **환경 변수 설정**](./docs/ENVIRONMENT_SETUP.md) - 가장 먼저 읽어야 할 문서!
@@ -188,7 +192,8 @@ Windows + WSL2 환경에서 개발하는 경우, 추가 네트워크 설정이 �
 ### Backend
 - **Framework**: NestJS 11.x
 - **Language**: TypeScript
-- **Database**: SQLite (개발), PostgreSQL (프로덕션)
+- **Database**: ~~SQLite (개발)~~, **PostgreSQL 16** ✅ (프로덕션)
+- **ORM**: TypeORM 0.3.27
 - **Authentication**: JWT + Passport
 - **Real-time**: Socket.IO
 - **File Upload**: Multer
@@ -296,6 +301,17 @@ Windows + WSL2 환경에서 개발하는 경우, 추가 네트워크 설정이 �
 ---
 
 ## 📝 최근 해결된 이슈들
+
+### 2025.10.10 - PostgreSQL 마이그레이션 완료 🎉
+- ✅ **PostgreSQL 16 설치**: Ubuntu 24.04에 PostgreSQL 설치 및 설정
+- ✅ **데이터베이스 생성**: dailymeal DB 및 사용자 권한 설정
+- ✅ **마이그레이션 스크립트 업데이트**: 6개 테이블 전체 구조 반영
+  - users (bio 컬럼 추가)
+  - meal_records (category, companionIds, companionNames 추가)
+  - friendships, user_settings, meal_shares, share_tracking (완전 지원)
+- ✅ **데이터 마이그레이션**: 3명 사용자, 26개 식사 기록, 3개 공유 성공
+- ✅ **환경 변수 설정**: backend/.env에 PostgreSQL 연결 정보 업데이트
+- ✅ **문서 정리**: 루트 디렉토리 md 파일들을 docs로 이동
 
 ### 2025.10.08 - 문서 구조 개선
 - ✅ **문서 정리**: 모든 기술 문서를 `docs/` 폴더로 통합 (13개 파일)
