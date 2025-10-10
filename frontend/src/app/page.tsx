@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Camera, TrendingUp, MapPin, Users, Sparkles, ArrowRight, Zap } from 'lucide-react'
 import { BottomNavigation } from "@/components/bottom-navigation";
-import { AuthForm } from "@/components/auth/auth-form";
 import { tokenManager, mealRecordsApi } from "@/lib/api/client";
 import type { MealRecord } from "@/types";
 import { MealCard } from "@/components/meal-card";
@@ -18,10 +18,12 @@ export default function Home() {
   const [meals, setMeals] = useState<MealRecord[]>([])
   const [mealsLoading, setMealsLoading] = useState(false)
   const { notifications, isConnected, connectedUsers } = useSocket()
+  const router = useRouter()
 
   useEffect(() => {
     const token = tokenManager.get()
-    setIsAuthenticated(!!token)
+    const authenticated = !!token
+    setIsAuthenticated(authenticated)
     setIsLoading(false)
   }, [])
 
@@ -50,11 +52,6 @@ export default function Home() {
     }
   }
 
-  const handleAuthSuccess = () => {
-    setIsAuthenticated(true)
-    // 로그인 후 식사 기록을 불러옴 (useEffect에서 자동 실행됨)
-  }
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
@@ -66,43 +63,73 @@ export default function Home() {
     )
   }
 
+  // 비로그인 상태: 랜딩 페이지 표시
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 safe-area">
-        {/* Hero Section */}
-        <div className="px-4 sm:px-6 pt-safe-top pb-6 text-center">
-          <div className="mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mb-4 shadow-lg touch-target">
-              <Sparkles size={28} className="text-white sm:w-8 sm:h-8" />
+      <div className="min-h-screen bg-gradient-to-b from-blue-500 to-blue-600 text-white">
+        <div className="max-w-md mx-auto px-6 py-12">
+          <div className="text-center mb-12">
+            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Sparkles size={40} className="text-white" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">DailyMeal</h1>
-            <p className="text-gray-600 text-base sm:text-lg px-2">매일의 맛있는 순간을 기록하고 공유하세요</p>
+            <h1 className="text-4xl font-bold mb-4">DailyMeal</h1>
+            <p className="text-xl text-blue-100">
+              매일의 맛있는 순간을<br />기록하고 공유하세요
+            </p>
           </div>
 
-          {/* Features */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
-            <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 touch-target">
-              <Camera size={20} className="text-blue-500 mx-auto mb-2 sm:w-6 sm:h-6" />
-              <p className="text-xs sm:text-sm font-medium text-gray-700">사진 기록</p>
+          <div className="space-y-4 mb-12">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Camera size={24} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">식사 기록</h3>
+                  <p className="text-blue-100 text-sm">사진과 함께 오늘의 식사를 남겨보세요</p>
+                </div>
+              </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 touch-target">
-              <MapPin size={20} className="text-green-500 mx-auto mb-2 sm:w-6 sm:h-6" />
-              <p className="text-xs sm:text-sm font-medium text-gray-700">맛집 공유</p>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <TrendingUp size={24} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">통계 분석</h3>
+                  <p className="text-blue-100 text-sm">나의 식사 패턴을 한눈에 확인하세요</p>
+                </div>
+              </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 touch-target">
-              <TrendingUp size={20} className="text-purple-500 mx-auto mb-2 sm:w-6 sm:h-6" />
-              <p className="text-xs sm:text-sm font-medium text-gray-700">통계 분석</p>
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 touch-target">
-              <Users size={20} className="text-orange-500 mx-auto mb-2 sm:w-6 sm:h-6" />
-              <p className="text-xs sm:text-sm font-medium text-gray-700">소셜 공유</p>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Users size={24} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">친구와 공유</h3>
+                  <p className="text-blue-100 text-sm">맛집 정보를 친구들과 나눠보세요</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Auth Form */}
-        <div className="px-4 sm:px-6 pb-safe-bottom">
-          <AuthForm onSuccess={handleAuthSuccess} />
+          <div className="space-y-3">
+            <Link 
+              href="/signup"
+              className="block w-full bg-white text-blue-600 text-center py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-colors"
+            >
+              시작하기
+            </Link>
+            <Link 
+              href="/login"
+              className="block w-full bg-white/10 backdrop-blur-sm text-white text-center py-4 rounded-xl font-semibold text-lg hover:bg-white/20 transition-colors border border-white/30"
+            >
+              로그인
+            </Link>
+          </div>
         </div>
       </div>
     )

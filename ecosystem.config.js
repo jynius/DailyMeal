@@ -40,7 +40,7 @@ module.exports = {
         PORT: 3000,
         NEXT_PUBLIC_API_URL: '/api',
         NEXT_PUBLIC_SITE_URL: 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com',
-        NEXT_PUBLIC_KAKAO_MAP_API_KEY: '197d152438e3a21af616caac12a6db11'
+        NEXT_PUBLIC_KAKAO_API_KEY : '197d152438e3a21af616caac12a6db11'
       },
       instances: 1,
       exec_mode: 'fork',

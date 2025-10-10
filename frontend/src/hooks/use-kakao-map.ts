@@ -30,7 +30,7 @@ export function useKakaoMap() {
       return
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY
+    const apiKey = process.env.NEXT_PUBLIC_KAKAO_API_KEY 
 
     if (!apiKey || apiKey === 'your_kakao_map_api_key_here') {
       // 개발 환경에서는 더미 지도 사용

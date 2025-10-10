@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { MapPin, Star, Map as MapIcon, List } from 'lucide-react'
 import { BottomNavigation } from '@/components/bottom-navigation'
 import { KakaoMap } from '@/components/kakao-map'
+import { useRequireAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
 
 interface Restaurant {
@@ -23,6 +24,7 @@ interface Restaurant {
 type SortOption = 'recent' | 'count' | 'rating'
 
 export default function RestaurantsPage() {
+  const { isAuthenticated, isLoading: authLoading } = useRequireAuth()
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [popularRestaurants, setPopularRestaurants] = useState<Restaurant[]>([])
   const [loading, setLoading] = useState(true)
@@ -52,8 +54,10 @@ export default function RestaurantsPage() {
 
   // 식당 데이터 로드 (식사 기록에서 자동 생성)
   useEffect(() => {
-    fetchRestaurants()
-  }, [])
+    if (isAuthenticated) {
+      fetchRestaurants()
+    }
+  }, [isAuthenticated])
 
   const fetchRestaurants = async () => {
     try {
@@ -154,6 +158,23 @@ export default function RestaurantsPage() {
         return list
     }
   })()
+
+  // 인증 로딩 중
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">인증 확인 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // 인증되지 않은 경우
+  if (!isAuthenticated) {
+    return null
+  }
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">

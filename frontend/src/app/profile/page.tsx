@@ -6,9 +6,11 @@ import { BottomNavigation } from '@/components/bottom-navigation'
 import { tokenManager } from '@/lib/api/client'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
+import { useRequireAuth } from '@/hooks/use-auth'
 import { profileApi, UserProfile } from '@/lib/api/profile'
 
 export default function ProfilePage() {
+  const { isAuthenticated, isLoading: authLoading } = useRequireAuth()
   const router = useRouter()
   const toast = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -30,6 +32,8 @@ export default function ProfilePage() {
 
   // 프로필 데이터 가져오기
   useEffect(() => {
+    if (!isAuthenticated) return
+
     const fetchProfile = async () => {
       try {
         const data = await profileApi.getProfile()
@@ -49,11 +53,28 @@ export default function ProfilePage() {
     }
 
     fetchProfile()
-  }, [])
+  }, [isAuthenticated])
+
+  // 인증 로딩 중
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">인증 확인 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // 인증되지 않은 경우
+  if (!isAuthenticated) {
+    return null
+  }
 
   const handleLogout = () => {
     tokenManager.remove()
-    router.push('/')
+    router.push('/login')
   }
 
   const handleImageClick = () => {

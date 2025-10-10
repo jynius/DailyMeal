@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { PWAInstaller } from "@/components/pwa-installer";
-import { RealTimeNotifications } from "@/components/realtime-notifications";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -46,9 +46,29 @@ export default function RootLayout({
   return (
     <html lang="ko" data-scroll-behavior="smooth">
       <body className={`${inter.variable} font-sans antialiased overflow-x-hidden`}>
+                {/* 카카오 SDK */}
+        <Script
+          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.8/kakao.min.js"
+          strategy="beforeInteractive"
+        />
+        {/* 카카오 SDK 로드 확인 */}
+        <Script id="kakao-check" strategy="afterInteractive">
+          {`
+            if (typeof window !== 'undefined') {
+              console.log('🔍 Checking Kakao SDK...');
+              console.log('window.Kakao:', window.Kakao);
+              if (window.Kakao) {
+                console.log('✅ Kakao SDK loaded successfully!');
+                console.log('Kakao version:', window.Kakao.VERSION);
+              } else {
+                console.error('❌ Kakao SDK not found!');
+              }
+            }
+          `}
+        </Script>
+        
         <Providers>
           <PWAInstaller />
-          <RealTimeNotifications />
           <div className="min-h-screen bg-gray-50 pb-safe-bottom">
             <main className="max-w-md mx-auto min-h-screen bg-white shadow-lg">
               {children}

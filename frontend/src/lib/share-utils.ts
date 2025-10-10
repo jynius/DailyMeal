@@ -1,4 +1,5 @@
 // 공유 기능을 위한 유틸리티 함수들
+import { kakaoShare, type KakaoShareData } from './kakao-share'
 
 export interface ShareData {
   title: string
@@ -44,26 +45,35 @@ export const shareUtils = {
     }
   },
 
+  // 카카오톡 공유 (SDK 사용)
+  async shareKakao(data: ShareData) {
+    // 이미지 URL을 절대 경로로 변환
+    let imageUrl = data.imageUrl
+    if (imageUrl && !imageUrl.startsWith('http')) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      imageUrl = `${apiUrl}${imageUrl}`
+    }
+    
+    const kakaoData: KakaoShareData = {
+      title: data.title,
+      description: data.description,
+      url: data.url,
+      imageUrl: imageUrl,
+    }
+    return await kakaoShare.share(kakaoData)
+  },
+
   // 소셜 미디어 공유 URL 생성
-  getSocialShareUrl(platform: 'kakao' | 'facebook' | 'twitter' | 'instagram', data: ShareData) {
+  getSocialShareUrl(platform: 'facebook' | 'twitter', data: ShareData) {
     const encodedUrl = encodeURIComponent(data.url)
     const encodedText = encodeURIComponent(data.description)
-    // const encodedTitle = encodeURIComponent(data.title)
 
     switch (platform) {
-      case 'kakao':
-        // 카카오톡은 SDK 필요, 여기서는 기본 공유
-        return `https://story.kakao.com/share?url=${encodedUrl}&text=${encodedText}`
-      
       case 'facebook':
         return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
       
       case 'twitter':
         return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`
-      
-      case 'instagram':
-        // 인스타그램은 직접 URL 공유 불가, 클립보드 복사 안내
-        return null
       
       default:
         return null

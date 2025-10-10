@@ -90,7 +90,7 @@ NODE_ENV=development
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_KAKAO_MAP_API_KEY=your_kakao_map_api_key_here
+NEXT_PUBLIC_KAKAO_API_KEY =your_kakao_map_api_key_here
 ```
 
 **사용 여부:** ✅ **사용됨**

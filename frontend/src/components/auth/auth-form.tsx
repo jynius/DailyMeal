@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { APP_CONFIG } from '@/lib/constants'
 import { authApi, tokenManager } from '@/lib/api/client'
 import { connectFriend } from '@/lib/api/share'
@@ -9,11 +10,12 @@ import { useToast } from '@/components/ui/toast'
 import { useAlert } from '@/components/ui/alert'
 
 interface AuthFormProps {
+  initialMode?: 'login' | 'register'
   onSuccess?: () => void
 }
 
-export function AuthForm({ onSuccess }: AuthFormProps) {
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+export function AuthForm({ initialMode = 'login', onSuccess }: AuthFormProps) {
+  const [mode, setMode] = useState<'login' | 'register'>(initialMode)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -23,6 +25,8 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
   const [error, setError] = useState('')
   const toast = useToast()
   const { showAlert } = useAlert()
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   const handleAuthSuccess = async (token: string, message: string) => {
     // 토큰 저장
@@ -46,12 +50,45 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       }
     }
     
+    // 리다이렉트 로직:
+    // 1. returnUrl 쿼리 파라미터 (미들웨어에서 설정, 최우선)
+    // 2. document.referrer (이전 페이지)
+    // 3. 기본값: / (홈)
+    let redirectUrl = searchParams.get('returnUrl')
+    
+    console.log('🔍 Redirect Debug:', {
+      returnUrl: searchParams.get('returnUrl'),
+      referrer: typeof window !== 'undefined' ? document.referrer : 'N/A',
+      searchParams: Array.from(searchParams.entries())
+    })
+    
+    if (!redirectUrl && typeof window !== 'undefined' && document.referrer) {
+      const referrer = new URL(document.referrer)
+      const referrerPath = referrer.pathname
+      
+      // 같은 도메인이고, /login이나 /signup이 아닌 경우에만 referrer 사용
+      if (referrer.origin === window.location.origin && 
+          referrerPath !== '/login' && 
+          referrerPath !== '/signup' &&
+          referrerPath !== '/') {
+        redirectUrl = referrerPath + referrer.search
+      }
+    }
+    
+    // 기본값
+    if (!redirectUrl) {
+      redirectUrl = '/'
+    }
+    
+    console.log('✅ Final redirect URL:', redirectUrl)
+    
     showAlert({
       title: '로그인 성공',
       message,
       confirmText: '확인',
       onConfirm: () => {
-        onSuccess?.()
+        // onSuccess는 무시하고 항상 redirectUrl 사용
+        router.push(redirectUrl!)
       }
     })
   }

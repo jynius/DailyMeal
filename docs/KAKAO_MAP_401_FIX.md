@@ -45,7 +45,7 @@ net::ERR_ABORTED 401 (Unauthorized)
 3. `.env.local` 파일에 추가:
 
    ```bash
-   NEXT_PUBLIC_KAKAO_MAP_API_KEY=your_javascript_key_here
+   NEXT_PUBLIC_KAKAO_API_KEY =your_javascript_key_here
    ```
 
 ### 4단계: 활성화 대기 및 재시작
@@ -70,7 +70,7 @@ net::ERR_ABORTED 401 (Unauthorized)
 
 ```javascript
 // 1. API 키 확인
-console.log(process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY)
+console.log(process.env.NEXT_PUBLIC_KAKAO_API_KEY )
 
 // 2. 카카오맵 로드 여부 확인
 console.log(window.kakao?.maps ? 'Loaded' : 'Not Loaded')
@@ -122,7 +122,7 @@ https://*.vercel.app    # 와일드카드는 지원 안 됨 (각각 등록 필�
 ### .env.local 파일
 ```bash
 # frontend/.env.local
-NEXT_PUBLIC_KAKAO_MAP_API_KEY=9a51447dcf94f75c12430b8439214e87
+NEXT_PUBLIC_KAKAO_API_KEY =9a51447dcf94f75c12430b8439214e87
 ```
 
 ### 등록할 도메인

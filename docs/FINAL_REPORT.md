@@ -17,11 +17,11 @@ require('dotenv').config({ path: './backend/.env' });
 require('dotenv').config({ path: './frontend/.env.local' });
 ```
 - ✅ Backend 환경 변수: `DB_*`, `JWT_SECRET`, `PORT`, `NODE_ENV`
-- ✅ Frontend 환경 변수: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_KAKAO_MAP_API_KEY`
+- ✅ Frontend 환경 변수: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_KAKAO_API_KEY `
 
 #### 프로덕션 환경 설정 (`ecosystem.config.js`)
 - ✅ Backend 환경 변수 추가: `DB_*`, `JWT_SECRET`
-- ✅ Frontend 환경 변수 추가: `NEXT_PUBLIC_KAKAO_MAP_API_KEY`
+- ✅ Frontend 환경 변수 추가: `NEXT_PUBLIC_KAKAO_API_KEY `
 
 #### 중요한 보안 수정
 1. **JWT_SECRET 하드코딩 제거**
@@ -134,7 +134,7 @@ require('dotenv').config({ path: './frontend/.env.local' });
 ### Frontend 필수 환경 변수 ✅
 - [x] `NEXT_PUBLIC_API_URL` - 백엔드 API URL
 - [x] `NEXT_PUBLIC_SITE_URL` - 프론트엔드 사이트 URL
-- [x] `NEXT_PUBLIC_KAKAO_MAP_API_KEY` ⭐ - 카카오 지도 API 키 (기능 필수!)
+- [x] `NEXT_PUBLIC_KAKAO_API_KEY ` ⭐ - 카카오 지도 API 키 (기능 필수!)
 
 ---
 

@@ -33,7 +33,7 @@ env: {
   PORT: process.env.PORT || 8000,
   DB_HOST: process.env.DB_HOST,
   JWT_SECRET: process.env.JWT_SECRET,
-  NEXT_PUBLIC_KAKAO_MAP_API_KEY: process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY,
+  NEXT_PUBLIC_KAKAO_API_KEY : process.env.NEXT_PUBLIC_KAKAO_API_KEY ,
   // ... 모든 환경 변수
 }
 ```
@@ -94,14 +94,14 @@ NODE_ENV=development
 - `.env` 파일에 정의되어 있었지만 코드에서는 하드코딩된 값 사용
 - 보안 취약점 해결
 
-### 2. NEXT_PUBLIC_KAKAO_MAP_API_KEY 누락
+### 2. NEXT_PUBLIC_KAKAO_API_KEY  누락
 - 카카오 지도 기능에 필수적인 환경 변수
 - `ecosystem.dev.config.js`에 없어서 PM2 실행 시 지도 미표시 문제
 - 추가하여 해결
 
 ### 3. 환경 변수의 중요성
 - `JWT_SECRET`: 인증/인가의 핵심
-- `NEXT_PUBLIC_KAKAO_MAP_API_KEY`: 지도 기능의 필수 요소
+- `NEXT_PUBLIC_KAKAO_API_KEY `: 지도 기능의 필수 요소
 - DB 관련 변수들: 데이터베이스 연결
 
 ## 최종 환경 변수 목록
@@ -119,7 +119,7 @@ NODE_ENV=development
 ### Frontend (.env.local)
 1. `NEXT_PUBLIC_API_URL` - 백엔드 API URL
 2. `NEXT_PUBLIC_SITE_URL` - 프론트엔드 사이트 URL
-3. `NEXT_PUBLIC_KAKAO_MAP_API_KEY` - 카카오 지도 API 키 ⭐ 필수!
+3. `NEXT_PUBLIC_KAKAO_API_KEY ` - 카카오 지도 API 키 ⭐ 필수!
 
 ## 테스트 항목
 

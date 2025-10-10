@@ -7,10 +7,12 @@ import { BottomNavigation } from '@/components/bottom-navigation'
 import { Button } from '@/components/ui/button'
 import { mealRecordsApi } from '@/lib/api/client'
 import { useSocket } from '@/contexts/socket-context'
+import { useRequireAuth } from '@/hooks/use-auth'
 import { Users, Filter, Zap } from 'lucide-react'
 import type { MealRecord } from '@/types'
 
 export default function FeedPage() {
+  const { isAuthenticated, isLoading: authLoading } = useRequireAuth()
   const searchParams = useSearchParams()
   const [meals, setMeals] = useState<MealRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,14 +38,8 @@ export default function FeedPage() {
       setLoading(true)
       setError(null)
       
-      // 토큰 확인
-      const token = localStorage.getItem('token')
-      if (!token) {
-        console.warn('No token found, showing sample data')
-        setMeals(getSampleMeals())
-        setLoading(false)
-        return
-      }
+      // 인증되지 않았으면 리턴
+      if (!isAuthenticated) return
       
       console.log('🔄 Fetching meals from API...')
       
@@ -58,47 +54,34 @@ export default function FeedPage() {
     } catch (err: unknown) {
       const error = err as Error
       console.error('❌ 식사 기록 로딩 실패:', error)
-      
-      // 인증 오류인 경우 샘플 데이터 표시
-      if (error.message?.includes('unauthorized') || error.message?.includes('401') || error.message?.includes('Unauthorized')) {
-        console.warn('Authentication failed, showing sample data')
-        setMeals(getSampleMeals())
-      } else {
-        setError(error.message || '식사 기록을 불러올 수 없습니다.')
-      }
+      setError(error.message || '식사 기록을 불러올 수 없습니다.')
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchMeals()
-  }, [])
+    if (isAuthenticated) {
+      fetchMeals()
+    }
+  }, [isAuthenticated])
 
-  // 샘플 데이터 (로그인 전 또는 오류 시 사용)
-  const getSampleMeals = (): MealRecord[] => [
-    {
-      id: '1',
-      name: '크림파스타',
-      location: '홍대 이탈리안 레스토랑',
-      rating: 4,
-      memo: '친구들과 함께 먹은 맛있는 파스타! 크림소스가 정말 진했어요 🍝',
-      createdAt: '2024-10-03T13:30:00Z',
-      updatedAt: '2024-10-03T13:30:00Z',
-      price: 18000,
-      userId: 'sample',
-    },
-    {
-      id: '2',
-      name: '김치찌개',
-      location: '집',
-      rating: 5,
-      memo: '집에서 만든 김치찌개. 엄마 손맛 그리워서 만들어봤는데 성공!',
-      createdAt: '2024-10-02T19:20:00Z',
-      updatedAt: '2024-10-02T19:20:00Z',
-      userId: 'sample',
-    },
-  ]
+  // 인증 로딩 중
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">인증 확인 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // 인증되지 않은 경우 (훅에서 리다이렉트 처리)
+  if (!isAuthenticated) {
+    return null
+  }
 
   const formatDate = (dateString: string) => {
     // 클라이언트에서만 실행되도록 체크

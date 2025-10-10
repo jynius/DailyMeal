@@ -74,11 +74,11 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 # Kakao Map API
-NEXT_PUBLIC_KAKAO_MAP_API_KEY=your_kakao_map_api_key_here
+NEXT_PUBLIC_KAKAO_API_KEY =your_kakao_map_api_key_here
 ```
 
 **중요한 환경 변수:**
-- `NEXT_PUBLIC_KAKAO_MAP_API_KEY`: 카카오 지도 API 키 (필수!)
+- `NEXT_PUBLIC_KAKAO_API_KEY `: 카카오 지도 API 키 (필수!)
   - 없으면 지도 기능이 작동하지 않습니다
   - [카카오 개발자 센터](https://developers.kakao.com/)에서 발급
 
@@ -105,7 +105,7 @@ cp .env.local.example .env.local
 1. [카카오 개발자 센터](https://developers.kakao.com/) 접속
 2. 애플리케이션 생성
 3. JavaScript 키 복사
-4. `frontend/.env.local`의 `NEXT_PUBLIC_KAKAO_MAP_API_KEY`에 붙여넣기
+4. `frontend/.env.local`의 `NEXT_PUBLIC_KAKAO_API_KEY `에 붙여넣기
 
 ## PM2 통합 (방안 2)
 
@@ -133,7 +133,7 @@ module.exports = {
       name: 'dailymeal-frontend',
       env: {
         NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-        NEXT_PUBLIC_KAKAO_MAP_API_KEY: process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY,
+        NEXT_PUBLIC_KAKAO_API_KEY : process.env.NEXT_PUBLIC_KAKAO_API_KEY ,
         // ... 기타 환경 변수
       }
     }
@@ -163,14 +163,14 @@ npm run start:dev
 브라우저 콘솔에서:
 ```javascript
 console.log(process.env.NEXT_PUBLIC_API_URL)
-console.log(process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY)
+console.log(process.env.NEXT_PUBLIC_KAKAO_API_KEY )
 ```
 
 ## 문제 해결
 
 ### 카카오 지도가 표시되지 않을 때
 
-1. `frontend/.env.local`에 `NEXT_PUBLIC_KAKAO_MAP_API_KEY` 확인
+1. `frontend/.env.local`에 `NEXT_PUBLIC_KAKAO_API_KEY ` 확인
 2. API 키가 유효한지 확인
 3. PM2 사용 시 `ecosystem.dev.config.js`에 환경 변수가 전달되는지 확인
 

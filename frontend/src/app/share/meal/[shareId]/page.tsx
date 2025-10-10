@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Star, MapPin, Share2, Users as UsersIcon, Eye } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Star, MapPin, Share2, Users as UsersIcon, Eye } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ShareModal } from '@/components/share-modal'
@@ -21,7 +21,6 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
   const [showShareModal, setShowShareModal] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   
-  const router = useRouter()
   const searchParams = useSearchParams()
   const ref = searchParams.get('ref')
 
@@ -114,15 +113,8 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
     <div className="min-h-screen bg-white pb-20">
       {/* 헤더 */}
       <header className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between max-w-2xl mx-auto">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <ArrowLeft size={24} className="text-gray-700" />
-          </button>
+        <div className="flex items-center justify-center max-w-2xl mx-auto">
           <h1 className="text-lg font-semibold text-gray-900">공유된 맛집</h1>
-          <div className="w-10" /> {/* 균형 맞추기 */}
         </div>
       </header>
 
@@ -155,18 +147,16 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={() => router.push('/login')}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
-              >
-                로그인하고 친구 되기
-              </Button>
-              <Button
-                onClick={() => router.push('/signup')}
-                className="flex-1 bg-white hover:bg-gray-50 text-blue-600 border border-blue-600"
-              >
-                회원가입
-              </Button>
+              <Link href="/login" className="flex-1">
+                <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">
+                  로그인하고 친구 되기
+                </Button>
+              </Link>
+              <Link href="/signup" className="flex-1">
+                <Button className="w-full bg-white hover:bg-gray-50 text-blue-600 border border-blue-600">
+                  회원가입
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -294,12 +284,11 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
               🎉 이 맛집이 마음에 드시나요?<br />
               데일리밀에 가입하고 나만의 맛집 기록을 만들어보세요!
             </p>
-            <Button
-              onClick={() => router.push('/signup')}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              무료로 시작하기
-            </Button>
+            <Link href="/signup">
+              <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">
+                무료로 시작하기
+              </Button>
+            </Link>
           </div>
         )}
       </div>

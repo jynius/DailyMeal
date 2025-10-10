@@ -77,6 +77,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!mounted) return // 마운트되기 전에는 실행하지 않음
     
+    // 토큰 확인 - 로그인하지 않았으면 Socket 연결하지 않음
+    const token = tokenManager.get()
+    if (!token) {
+      console.log('🔌 Socket connection skipped: No authentication token')
+      return
+    }
+    
     const serverUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     
     console.log('🔌 Attempting to connect to Socket.IO server:', serverUrl);
@@ -89,7 +96,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       reconnection: true, // 자동 재연결 활성화
       reconnectionDelay: 5000, // 5초 후 재연결
       reconnectionAttempts: 3, // 최대 3번 시도
-      forceNew: true
+      forceNew: true,
+      auth: {
+        token // 토큰 전달
+      }
     })
 
     setSocket(newSocket)

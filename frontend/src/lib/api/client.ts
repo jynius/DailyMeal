@@ -20,7 +20,7 @@ export interface CreateMealRecordData {
   companionNames?: string
 }
 
-// 토큰 관리
+// 토큰 관리 (localStorage + 쿠키)
 export const tokenManager = {
   get: () => {
     if (typeof window !== 'undefined') {
@@ -31,13 +31,21 @@ export const tokenManager = {
   
   set: (token: string) => {
     if (typeof window !== 'undefined') {
+      // localStorage에 저장
       localStorage.setItem('token', token)
+      
+      // 쿠키에도 저장 (미들웨어에서 사용)
+      document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
     }
   },
   
   remove: () => {
     if (typeof window !== 'undefined') {
+      // localStorage에서 제거
       localStorage.removeItem('token')
+      
+      // 쿠키에서도 제거
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
     }
   }
 }

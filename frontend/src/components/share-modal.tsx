@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Share, Copy, Download, MessageCircle, Facebook, Twitter, Instagram } from 'lucide-react'
 import { shareUtils, type ShareData } from '@/lib/share-utils'
+import { kakaoShare } from '@/lib/kakao-share'
 import { useToast } from '@/components/ui/toast'
 
 interface ShareModalProps {
@@ -14,7 +15,24 @@ interface ShareModalProps {
 
 export function ShareModal({ isOpen, onClose, shareData, imageUrl }: ShareModalProps) {
   const [loading, setLoading] = useState<string | null>(null)
+  const [kakaoReady, setKakaoReady] = useState(false)
   const toast = useToast()
+
+  useEffect(() => {
+    if (!isOpen) return
+    
+    // 카카오 SDK 초기화 (Promise 방식)
+    console.log('🔄 Initializing Kakao SDK...')
+    kakaoShare.init()
+      .then(() => {
+        console.log('✅ Kakao SDK ready!')
+        setKakaoReady(true)
+      })
+      .catch((error) => {
+        console.warn('⚠️ Kakao SDK 초기화 실패:', error.message)
+        setKakaoReady(false)
+      })
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -41,10 +59,35 @@ export function ShareModal({ isOpen, onClose, shareData, imageUrl }: ShareModalP
     setLoading(null)
   }
 
-  const handleSocialShare = (platform: 'kakao' | 'facebook' | 'twitter') => {
-    const url = shareUtils.getSocialShareUrl(platform, shareData)
-    if (url) {
-      window.open(url, '_blank', 'width=600,height=400')
+  const handleSocialShare = async (platform: 'kakao' | 'facebook' | 'twitter') => {
+    if (platform === 'kakao') {
+      setLoading('kakao')
+      
+      // SDK 사용 가능하면 SDK로 공유
+      if (kakaoReady) {
+        const success = await shareUtils.shareKakao(shareData)
+        if (success) {
+          toast.success('카카오톡으로 공유했습니다!')
+        } else {
+          toast.error('카카오톡 공유에 실패했습니다')
+        }
+      } else {
+        // SDK 없으면 링크 복사 후 안내
+        const success = await shareUtils.copyToClipboard(shareData.url)
+        if (success) {
+          toast.success('링크가 복사되었습니다!\n카카오톡에 붙여넣기 해주세요 📋')
+        } else {
+          toast.error('링크 복사에 실패했습니다')
+        }
+      }
+      
+      setLoading(null)
+    } else {
+      // facebook, twitter만 URL 방식 사용
+      const url = shareUtils.getSocialShareUrl(platform as 'facebook' | 'twitter', shareData)
+      if (url) {
+        window.open(url, '_blank', 'width=600,height=400')
+      }
     }
   }
 
@@ -110,9 +153,15 @@ export function ShareModal({ isOpen, onClose, shareData, imageUrl }: ShareModalP
           <div className="grid grid-cols-3 gap-4">
             <button
               onClick={() => handleSocialShare('kakao')}
-              className="flex flex-col items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
+              disabled={loading === 'kakao'}
+              className="flex flex-col items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors disabled:opacity-50"
+              title={!kakaoReady ? '링크를 복사하여 카카오톡에 붙여넣기' : '카카오톡으로 공유'}
             >
-              <MessageCircle className="w-6 h-6 text-yellow-600 mb-2" />
+              {loading === 'kakao' ? (
+                <div className="w-6 h-6 mb-2 border-2 border-yellow-300 border-t-yellow-600 rounded-full animate-spin" />
+              ) : (
+                <MessageCircle className="w-6 h-6 text-yellow-600 mb-2" />
+              )}
               <span className="text-sm font-medium text-gray-900">카카오톡</span>
             </button>
 

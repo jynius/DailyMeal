@@ -50,7 +50,7 @@ module.exports = {
         PORT: 3000,
         NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
         NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-        NEXT_PUBLIC_KAKAO_MAP_API_KEY: process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY
+        NEXT_PUBLIC_KAKAO_API_KEY : process.env.NEXT_PUBLIC_KAKAO_API_KEY
       },
       instances: 1,
       exec_mode: 'fork',
