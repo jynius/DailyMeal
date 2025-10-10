@@ -16,7 +16,7 @@ const client = new Client({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
   user: process.env.DB_USERNAME || 'dailymeal_user',
-  password: process.env.DB_PASSWORD,
+  password: process.env.DB_PASSWORD || 'dailymeal2024!',
   database: process.env.DB_NAME || 'dailymeal',
 });
 
