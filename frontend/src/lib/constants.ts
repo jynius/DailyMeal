@@ -18,7 +18,7 @@ export const ROUTES = {
   ADD: '/add',
   FEED: '/feed',
   PROFILE: '/profile',
-  SEARCH: '/search',
+  RESTAURANT: '/restaurant',
   MEAL: (id: string) => `/meal/${id}`
 } as const
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { MealCard } from '@/components/meal-card'
 import { BottomNavigation } from '@/components/bottom-navigation'
@@ -17,7 +17,7 @@ const log = createLogger('FeedPage')
 // 동적 렌더링 강제 (useSearchParams 사용)
 export const dynamic = 'force-dynamic'
 
-export default function FeedPage() {
+function FeedContent() {
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth()
   const searchParams = useSearchParams()
   const [meals, setMeals] = useState<MealRecord[]>([])
@@ -212,5 +212,20 @@ export default function FeedPage() {
 
       <BottomNavigation />
     </div>
+  )
+}
+
+export default function FeedPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    }>
+      <FeedContent />
+    </Suspense>
   )
 }

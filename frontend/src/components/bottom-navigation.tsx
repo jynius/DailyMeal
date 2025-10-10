@@ -10,7 +10,7 @@ export function BottomNavigation() {
   const navItems = [
     { href: '/', icon: Home, label: '홈' },
     { href: '/feed', icon: Utensils, label: '피드' },
-    { href: '/search', icon: MapPin, label: '맛집' },
+    { href: '/restaurant', icon: MapPin, label: '맛집' },
     { href: '/users', icon: Users, label: '친구' },
     { href: '/profile', icon: User, label: '프로필' },
   ]

@@ -190,7 +190,7 @@ export default function RestaurantsPage() {
           {popularRestaurants.map((restaurant) => (
             <Link
               key={restaurant.id}
-              href={`/restaurants/${restaurant.id}`}
+              href={`/restaurant/${restaurant.id}`}
               className="flex items-center justify-between bg-gray-50 px-2 py-2 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
             >
               <div className="flex items-center gap-1 flex-1 min-w-0">
@@ -283,7 +283,7 @@ export default function RestaurantsPage() {
                   {sortedRestaurants.slice(0, 10).map((restaurant) => (
                     <Link
                       key={restaurant.id}
-                      href={`/restaurants/${restaurant.id}`}
+                      href={`/restaurant/${restaurant.id}`}
                       className="flex-shrink-0 w-64 bg-white rounded-lg shadow-lg p-3 border border-gray-200"
                     >
                       <div className="flex items-start justify-between mb-1">
@@ -349,7 +349,7 @@ export default function RestaurantsPage() {
             {sortedRestaurants.map((restaurant) => (
               <Link
                 key={restaurant.id}
-                href={`/restaurants/${restaurant.id}`}
+                href={`/restaurant/${restaurant.id}`}
                 className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all"
               >
                 <div className="flex items-start justify-between mb-2">

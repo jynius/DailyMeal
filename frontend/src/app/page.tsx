@@ -177,7 +177,7 @@ export default function Home() {
             </div>
           </Link>
 
-          <Link href="/search" className="group">
+          <Link href="/restaurant" className="group">
             <div className="bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
