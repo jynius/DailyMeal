@@ -9,7 +9,7 @@
  */
 
 const { Client } = require('pg');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // PostgreSQL 연결 설정
 const client = new Client({
