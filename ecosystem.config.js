@@ -16,7 +16,7 @@ module.exports = {
         ENCRYPTION_KEY: 'dailymeal-secret-key-32-chars!',
         FRONTEND_URL: 'https://www.dailymeal.life',
         API_BASE_URL: 'https://www.dailymeal.life/api',
-        UPLOAD_DIR: './uploads',
+        UPLOAD_DIR: '/data/uploads',
         UPLOAD_MAX_FILE_SIZE: '5242880',
         UPLOAD_MAX_FILES: '5'
       },
