@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User } from '../entities/user.entity';
+import { UserSettings } from '../entities/user-settings.entity';
 import { CreateUserDto, LoginDto } from '../dto/user.dto';
 import { AppLoggerService, LogMethod } from '../common/logger.service';
 
@@ -14,6 +15,8 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(UserSettings)
+    private userSettingsRepository: Repository<UserSettings>,
     private jwtService: JwtService,
   ) {}
 
@@ -41,6 +44,20 @@ export class AuthService {
     });
 
     await this.userRepository.save(user);
+
+    // 사용자 설정 초기화
+    const userSettings = this.userSettingsRepository.create({
+      userId: user.id,
+      // 기본값은 entity에 정의된 대로 자동 설정됨
+      notificationFriendRequest: true,
+      notificationNewReview: true,
+      notificationNearbyFriend: false,
+      privacyProfilePublic: false,
+      privacyShowLocation: true,
+      privacyShowMealDetails: true,
+    });
+
+    await this.userSettingsRepository.save(userSettings);
 
     // JWT 토큰 생성
     const payload = { sub: user.id, email: user.email };

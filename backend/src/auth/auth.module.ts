@@ -6,10 +6,11 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from '../entities/user.entity';
+import { UserSettings } from '../entities/user-settings.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, UserSettings]),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'dailymeal-fixed-secret-key',

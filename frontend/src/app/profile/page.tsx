@@ -77,6 +77,26 @@ export default function ProfilePage() {
     router.push('/login')
   }
 
+  const handleDeleteAccount = async () => {
+    if (!confirm('정말로 회원 탈퇴하시겠습니까?\n\n모든 데이터가 삭제되며 복구할 수 없습니다.')) {
+      return
+    }
+
+    const password = prompt('비밀번호를 입력하세요:')
+    if (!password) {
+      return
+    }
+
+    try {
+      await profileApi.deleteAccount(password)
+      tokenManager.remove()
+      alert('회원 탈퇴가 완료되었습니다.')
+      router.push('/login')
+    } catch (error: any) {
+      alert(error?.message || '회원 탈퇴에 실패했습니다')
+    }
+  }
+
   const handleImageClick = () => {
     if (isEditing) {
       fileInputRef.current?.click()
@@ -315,13 +335,24 @@ export default function ProfilePage() {
       </div>
 
       {/* Logout */}
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-4 pb-2">
         <button 
           onClick={handleLogout}
-          className="w-full flex items-center justify-center bg-red-50 text-red-600 p-4 rounded-lg border border-red-200 hover:bg-red-100 transition-colors"
+          className="w-full flex items-center justify-center bg-gray-100 text-gray-700 p-4 rounded-lg border border-gray-200 hover:bg-gray-200 transition-colors"
         >
           <LogOut size={20} className="mr-2" />
           로그아웃
+        </button>
+      </div>
+
+      {/* Delete Account */}
+      <div className="px-4 pb-4">
+        <button 
+          onClick={handleDeleteAccount}
+          className="w-full flex items-center justify-center bg-red-50 text-red-600 p-4 rounded-lg border border-red-200 hover:bg-red-100 transition-colors"
+        >
+          <span className="mr-2">⚠️</span>
+          회원 탈퇴
         </button>
       </div>
 
