@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import { AuthForm } from '@/components/auth/auth-form'
 import { tokenManager } from '@/lib/api/client'
 
+// 동적 렌더링 강제
+export const dynamic = 'force-dynamic'
+
 export default function LoginPage() {
   const router = useRouter()
 

@@ -14,6 +14,9 @@ import type { MealRecord } from '@/types'
 
 const log = createLogger('FeedPage')
 
+// 동적 렌더링 강제 (useSearchParams 사용)
+export const dynamic = 'force-dynamic'
+
 export default function FeedPage() {
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth()
   const searchParams = useSearchParams()
