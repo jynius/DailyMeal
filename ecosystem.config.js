@@ -13,6 +13,9 @@ module.exports = {
         DB_PASSWORD: 'your_production_password_here',
         DB_NAME: 'dailymeal',
         JWT_SECRET: 'your_production_jwt_secret_change_this',
+        ENCRYPTION_KEY: 'dailymeal-secret-key-32-chars!',
+        FRONTEND_URL: 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com',
+        API_BASE_URL: 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com/api',
         UPLOAD_DIR: './uploads',
         UPLOAD_MAX_FILE_SIZE: '5242880',
         UPLOAD_MAX_FILES: '5'
