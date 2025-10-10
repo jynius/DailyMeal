@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Plus, User, MapPin, Utensils, Users } from 'lucide-react'
+import { logClick } from '@/lib/webview-utils'
 
 export function BottomNavigation() {
   const pathname = usePathname()
@@ -27,6 +28,10 @@ export function BottomNavigation() {
         href="/add"
         className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 z-50 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 touch-target"
         style={{ bottom: `calc(4.5rem + env(safe-area-inset-bottom, 0px))` }}
+        onClick={() => {
+          logClick('add-button');
+          console.log('[Nav Click] Add');
+        }}
       >
         <Plus size={20} className="drop-shadow-sm sm:w-6 sm:h-6" />
       </Link>
@@ -46,6 +51,10 @@ export function BottomNavigation() {
                     ? 'text-blue-600' 
                     : 'text-gray-500 hover:text-blue-500'
                 }`}
+                onClick={() => {
+                  logClick(`nav-${label}`, { href, active });
+                  console.log('[Nav Click]', label, href);
+                }}
               >
                 <div className={`transition-all duration-200 ${active ? 'transform -translate-y-1' : ''}`}>
                   <Icon 

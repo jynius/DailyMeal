@@ -10,6 +10,7 @@ import { MealCard } from "@/components/meal-card";
 import { useSocket } from "@/contexts/socket-context";
 import { AIMenuRecommendation } from "@/components/ai-menu-recommendation";
 import Link from "next/link";
+import { isWebView, setupWebViewDebug, logClick } from "@/lib/webview-utils";
 
 
 export default function Home() {
@@ -19,6 +20,14 @@ export default function Home() {
   const [mealsLoading, setMealsLoading] = useState(false)
   const { notifications, isConnected, connectedUsers } = useSocket()
   const router = useRouter()
+
+  // WebView 디버깅 설정
+  useEffect(() => {
+    if (isWebView()) {
+      console.log('[WebView] Detected! Setting up debug mode...');
+      setupWebViewDebug();
+    }
+  }, []);
 
   useEffect(() => {
     const token = tokenManager.get()
@@ -30,10 +39,12 @@ export default function Home() {
       const hasVisited = localStorage.getItem('hasVisited')
       if (hasVisited === 'true') {
         // 재방문자는 바로 로그인 페이지로
+        console.log('[Navigation] Redirecting to /login (returning user)');
         router.push('/login')
       } else {
         // 첫 방문자는 랜딩 페이지 보여주고 방문 기록
         localStorage.setItem('hasVisited', 'true')
+        console.log('[Navigation] First visit, showing landing page');
       }
     }
     
@@ -165,7 +176,14 @@ export default function Home() {
       {/* 빠른 액션 카드들 */}
       <div className="px-6 py-4">
         <div className="grid grid-cols-2 gap-4">
-          <Link href="/statistics" className="group">
+          <Link 
+            href="/statistics" 
+            className="group"
+            onClick={() => {
+              logClick('statistics-link');
+              console.log('[Link Click] Statistics');
+            }}
+          >
             <div className="bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -177,7 +195,14 @@ export default function Home() {
             </div>
           </Link>
 
-          <Link href="/restaurant" className="group">
+          <Link 
+            href="/restaurant" 
+            className="group"
+            onClick={() => {
+              logClick('restaurant-link');
+              console.log('[Link Click] Restaurant');
+            }}
+          >
             <div className="bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
