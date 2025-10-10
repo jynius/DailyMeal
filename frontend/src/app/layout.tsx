@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { PWAInstaller } from "@/components/pwa-installer";
@@ -46,26 +45,6 @@ export default function RootLayout({
   return (
     <html lang="ko" data-scroll-behavior="smooth">
       <body className={`${inter.variable} font-sans antialiased overflow-x-hidden`}>
-                {/* 카카오 SDK */}
-        <Script
-          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.8/kakao.min.js"
-          strategy="beforeInteractive"
-        />
-        {/* 카카오 SDK 로드 확인 */}
-        <Script id="kakao-check" strategy="afterInteractive">
-          {`
-            if (typeof window !== 'undefined' && window.__logger) {
-              const log = window.__logger;
-              log.debug('Checking Kakao SDK', 'Layout');
-              if (window.Kakao) {
-                log.info('Kakao SDK loaded successfully', 'Layout', { version: window.Kakao.VERSION });
-              } else {
-                log.error('Kakao SDK not found', null, 'Layout');
-              }
-            }
-          `}
-        </Script>
-        
         <Providers>
           <PWAInstaller />
           <div className="min-h-screen bg-gray-50 pb-safe-bottom">

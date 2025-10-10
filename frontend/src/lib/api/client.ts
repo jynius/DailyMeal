@@ -1,5 +1,6 @@
 // 데일리밀 API 클라이언트
 import { APP_CONFIG } from '@/lib/constants'
+import { apiMonitor } from './monitor'
 
 const API_BASE_URL = APP_CONFIG.API_BASE_URL
 
@@ -69,6 +70,9 @@ export async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${token}`
   }
 
+  // 성능 모니터링 시작
+  const endMonitoring = apiMonitor.startRequest(endpoint, options.method || 'GET')
+
   // 타임아웃 설정
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), APP_CONFIG.API_TIMEOUT)
@@ -104,29 +108,45 @@ export async function apiRequest<T>(
           window.location.href = '/'
         }
         
-        throw new Error('인증이 필요합니다. 로그인 페이지로 이동합니다.')
+        const errorMsg = '인증이 필요합니다. 로그인 페이지로 이동합니다.'
+        endMonitoring(response.status, errorMsg)
+        throw new Error(errorMsg)
       }
       
       const error = await response.json().catch(() => ({ 
         error: '서버 오류가 발생했습니다' 
       }))
       console.error('❌ API Error:', error)
-      throw new Error(error.error || error.message || '요청 실패')
+      
+      const errorMsg = error.error || error.message || '요청 실패'
+      endMonitoring(response.status, errorMsg)
+      throw new Error(errorMsg)
     }
 
     const data = await response.json()
     console.log('✅ API Success:', data)
+    
+    // 성공 모니터링
+    endMonitoring(response.status)
+    
     return data
   } catch (error: unknown) {
     const err = error as Error
     clearTimeout(timeoutId) // 오류시 타임아웃 제거
     
     if (err.name === 'AbortError') {
+      endMonitoring(0, '요청 시간 초과')
       throw new Error('요청이 시간 초과되었습니다')
     }
     
     if (('code' in err && err.code === 'ECONNREFUSED') || err.message?.includes('ERR_CONNECTION_REFUSED')) {
+      endMonitoring(0, '연결 실패')
       throw new Error('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
+    }
+    
+    // 이미 모니터링된 에러가 아니면 기록
+    if (!err.message?.includes('인증이 필요') && !err.message?.includes('요청 실패')) {
+      endMonitoring(0, err.message)
     }
     
     throw err

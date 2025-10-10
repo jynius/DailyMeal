@@ -110,17 +110,28 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     });
   }
 
-  // 새로운 식사 기록 알림
-  broadcastNewMeal(mealData: any) {
-    this.server.emit('newMeal', {
-      type: 'NEW_MEAL',
-      data: mealData,
-      timestamp: new Date().toISOString(),
-    });
-    this.logger.log(`Broadcasting new meal: ${mealData.name}`);
+  // 새로운 식사 기록 알림 (친구에게만 전송)
+  broadcastNewMeal(mealData: any, friendUserIds?: number[]) {
+    // 친구 목록이 있으면 친구에게만, 없으면 전체 브로드캐스트 (기존 동작 유지)
+    if (friendUserIds && friendUserIds.length > 0) {
+      friendUserIds.forEach(userId => {
+        this.sendNotificationToUser(userId, {
+          type: 'NEW_MEAL',
+          data: mealData,
+        });
+      });
+      this.logger.log(`Broadcasting new meal to ${friendUserIds.length} friends: ${mealData.name}`);
+    } else {
+      this.server.emit('newMeal', {
+        type: 'NEW_MEAL',
+        data: mealData,
+        timestamp: new Date().toISOString(),
+      });
+      this.logger.log(`Broadcasting new meal: ${mealData.name}`);
+    }
   }
 
-  // 새로운 음식점 알림
+  // 새로운 음식점 알림 (전체 브로드캐스트 유지 - 공용 정보)
   broadcastNewRestaurant(restaurantData: any) {
     this.server.emit('newRestaurant', {
       type: 'NEW_RESTAURANT',
@@ -130,8 +141,21 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     this.logger.log(`Broadcasting new restaurant: ${restaurantData.name}`);
   }
 
-  // 실시간 좋아요 업데이트
+  // 좋아요 쓰로틀링 추가 (마지막 좋아요 시간 기록)
+  private lastLikeBroadcast = new Map<string, number>();
+  private readonly LIKE_THROTTLE_MS = 2000; // 2초
+
   broadcastLikeUpdate(data: { mealId: string; likes: number; userId: number }) {
+    const now = Date.now();
+    const lastTime = this.lastLikeBroadcast.get(data.mealId) || 0;
+    
+    // 2초 이내 중복 브로드캐스트 방지
+    if (now - lastTime < this.LIKE_THROTTLE_MS) {
+      this.logger.debug(`Throttling like update for meal ${data.mealId}`);
+      return;
+    }
+    
+    this.lastLikeBroadcast.set(data.mealId, now);
     this.server.emit('likeUpdate', {
       type: 'LIKE_UPDATE',
       data,
@@ -139,13 +163,24 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     });
   }
 
-  // 실시간 댓글 알림
-  broadcastNewComment(data: { mealId: string; comment: any; userId: number }) {
-    this.server.emit('newComment', {
-      type: 'NEW_COMMENT',
-      data,
-      timestamp: new Date().toISOString(),
-    });
+  // 실시간 댓글 알림 (게시물 작성자에게만 전송)
+  broadcastNewComment(data: { mealId: string; comment: any; userId: number; authorId?: number }) {
+    if (data.authorId) {
+      // 작성자에게만 알림
+      this.sendNotificationToUser(data.authorId, {
+        type: 'NEW_COMMENT',
+        mealId: data.mealId,
+        comment: data.comment,
+      });
+      this.logger.log(`Sending comment notification to author ${data.authorId}`);
+    } else {
+      // authorId 없으면 전체 브로드캐스트 (fallback)
+      this.server.emit('newComment', {
+        type: 'NEW_COMMENT',
+        data,
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 
   // 특정 사용자에게 알림 전송
