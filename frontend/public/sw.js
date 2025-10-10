@@ -61,12 +61,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // API 요청 처리 (네트워크 우선, 오프라인 시 캐시)
+  // API 요청 처리 (GET만 캐시, 네트워크 우선)
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/uploads/')) {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) {
+          // ✅ GET 요청이고 응답이 성공적일 때만 캐시
+          if (response.ok && request.method === 'GET') {
             const responseClone = response.clone();
             caches.open(API_CACHE).then((cache) => {
               cache.put(request, responseClone);
@@ -75,21 +76,25 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // 네트워크 실패 시 캐시에서 반환
-          return caches.match(request).then((cachedResponse) => {
-            if (cachedResponse) {
-              return cachedResponse;
-            }
-            // 캐시도 없으면 오프라인 응답
-            return new Response(JSON.stringify({
-              error: 'Offline - 네트워크 연결을 확인해주세요',
-              offline: true
-            }), {
-              status: 503,
-              statusText: 'Service Unavailable',
-              headers: { 'Content-Type': 'application/json' }
+          // 네트워크 실패 시 캐시에서 반환 (GET 요청만)
+          if (request.method === 'GET') {
+            return caches.match(request).then((cachedResponse) => {
+              if (cachedResponse) {
+                return cachedResponse;
+              }
+              // 캐시도 없으면 오프라인 응답
+              return new Response(JSON.stringify({
+                error: 'Offline - 네트워크 연결을 확인해주세요',
+                offline: true
+              }), {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: { 'Content-Type': 'application/json' }
+              });
             });
-          });
+          }
+          // POST/PATCH/DELETE는 네트워크 에러 그대로 throw
+          return Promise.reject(new Error('Network request failed'));
         })
     );
     return;
