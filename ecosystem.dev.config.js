@@ -1,5 +1,4 @@
 require('dotenv').config({ path: './backend/.env' });
-require('dotenv').config({ path: './frontend/.env.local' });
 
 module.exports = {
   apps: [
@@ -47,10 +46,7 @@ module.exports = {
       cwd: './frontend',
       env: {
         NODE_ENV: process.env.NODE_ENV,
-        PORT: 3000,
-        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-        NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
-        NEXT_PUBLIC_KAKAO_API_KEY: process.env.NEXT_PUBLIC_KAKAO_API_KEY
+        PORT: 3000
       },
       instances: 1,
       exec_mode: 'fork',
