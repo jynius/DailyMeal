@@ -8,8 +8,11 @@ import { Button } from '@/components/ui/button'
 import { mealRecordsApi } from '@/lib/api/client'
 import { useSocket } from '@/contexts/socket-context'
 import { useRequireAuth } from '@/hooks/use-auth'
+import { createLogger } from '@/lib/logger'
 import { Users, Filter, Zap } from 'lucide-react'
 import type { MealRecord } from '@/types'
+
+const log = createLogger('FeedPage')
 
 export default function FeedPage() {
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth()
@@ -41,10 +44,10 @@ export default function FeedPage() {
       // 인증되지 않았으면 리턴
       if (!isAuthenticated) return
       
-      console.log('🔄 Fetching meals from API...')
+      log.debug('Fetching meals from API')
       
       const result = await mealRecordsApi.getAll()
-      console.log('✅ Meals fetched:', result)
+      log.info('Meals fetched successfully', { count: Array.isArray(result) ? result.length : result.data?.length })
       
       if (Array.isArray(result)) {
         setMeals(result)
@@ -53,7 +56,7 @@ export default function FeedPage() {
       }
     } catch (err: unknown) {
       const error = err as Error
-      console.error('❌ 식사 기록 로딩 실패:', error)
+      log.error('Failed to load meals', error)
       setError(error.message || '식사 기록을 불러올 수 없습니다.')
     } finally {
       setLoading(false)

@@ -7,6 +7,9 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useAlert } from '@/components/ui/alert'
 import { useToast } from '@/components/ui/toast'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('AddMealPage')
 
 interface FormData {
   name: string
@@ -95,7 +98,7 @@ export default function AddMealPage() {
 
       // 위치 서비스 지원 확인
       if (!navigator.geolocation) {
-        console.log('이 브라우저는 위치 서비스를 지원하지 않습니다.')
+        log.warn('Geolocation not supported by browser')
         return
       }
 
@@ -107,11 +110,11 @@ export default function AddMealPage() {
           
           // 이미 거부된 경우 요청하지 않음
           if (permission.state === 'denied') {
-            console.log('위치 권한이 거부되었습니다.')
+            log.info('Geolocation permission denied')
             return
           }
         } catch (error) {
-          console.log('권한 확인 실패:', error)
+          log.debug('Failed to check geolocation permission', error)
         }
       }
 
@@ -121,7 +124,7 @@ export default function AddMealPage() {
         async (position) => {
           const { latitude, longitude } = position.coords
           
-          console.log('📍 GPS 위치 수집:', { latitude, longitude })
+          log.debug('GPS location acquired', { latitude, longitude })
           
           setFormData(prev => ({
             ...prev,
@@ -142,11 +145,11 @@ export default function AddMealPage() {
                 address: data.address,
                 location: shortAddress
               }))
-              console.log('📍 주소:', shortAddress)
+              log.info('Reverse geocoding successful', { address: shortAddress })
               toast.success(`현재 위치: ${shortAddress}`, '위치 정보')
             }
           } catch (error) {
-            console.error('역지오코딩 실패:', error)
+            log.error('Reverse geocoding failed', error)
             toast.error('주소를 가져오는데 실패했습니다.', '위치 정보')
           }
 
@@ -154,7 +157,7 @@ export default function AddMealPage() {
           setIsGettingLocation(false)
         },
         (error) => {
-          console.error('위치 가져오기 실패:', error)
+          log.warn('Failed to get geolocation', error)
           setGpsPermission('denied')
           setIsGettingLocation(false)
           
@@ -265,20 +268,19 @@ export default function AddMealPage() {
       }
 
       // 디버깅: FormData 내용 확인
-      console.log('📤 Sending FormData:')
-      console.log('  - name:', formData.name.trim())
-      console.log('  - photos count:', formData.photos.length)
-      console.log('  - GPS:', formData.latitude, formData.longitude)
-      console.log('  - location:', formData.location)
-      for (let pair of data.entries()) {
-        console.log(`  - ${pair[0]}:`, pair[1])
-      }
+      log.debug('Sending FormData', {
+        name: formData.name.trim(),
+        photosCount: formData.photos.length,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        location: formData.location
+      })
 
       // 식사 기록 제출 (사진, 제목, GPS 정보)
       const result = await mealRecordsApi.createWithFiles(data)
       
       if (result) {
-        console.log('✅ 서버 응답 완료:', result)
+        log.info('Meal record saved successfully', { mealId: result.id })
         toast.success('식사 기록이 저장되었습니다! 🎉', '저장 완료')
         
         // Next.js 클라이언트 사이드 라우팅 사용 (페이지 새로고침 없음)
@@ -286,7 +288,7 @@ export default function AddMealPage() {
       }
     } catch (error: unknown) {
       const err = error as Error
-      console.error('❌ 저장 실패:', err)
+      log.error('Failed to save meal record', err)
       
       showAlert({
         title: '저장 실패',

@@ -54,14 +54,13 @@ export default function RootLayout({
         {/* 카카오 SDK 로드 확인 */}
         <Script id="kakao-check" strategy="afterInteractive">
           {`
-            if (typeof window !== 'undefined') {
-              console.log('🔍 Checking Kakao SDK...');
-              console.log('window.Kakao:', window.Kakao);
+            if (typeof window !== 'undefined' && window.__logger) {
+              const log = window.__logger;
+              log.debug('Checking Kakao SDK', 'Layout');
               if (window.Kakao) {
-                console.log('✅ Kakao SDK loaded successfully!');
-                console.log('Kakao version:', window.Kakao.VERSION);
+                log.info('Kakao SDK loaded successfully', 'Layout', { version: window.Kakao.VERSION });
               } else {
-                console.error('❌ Kakao SDK not found!');
+                log.error('Kakao SDK not found', null, 'Layout');
               }
             }
           `}

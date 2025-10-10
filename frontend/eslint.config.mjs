@@ -20,6 +20,14 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    rules: {
+      // console 직접 사용 금지 (logger 사용 강제)
+      "no-console": ["warn", {
+        allow: [] // console.log, console.error 등 모두 금지
+      }],
+    },
+  },
 ];
 
 export default eslintConfig;

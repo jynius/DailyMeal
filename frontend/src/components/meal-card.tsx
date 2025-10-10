@@ -9,7 +9,10 @@ import { useToast } from './ui/toast'
 import { mealRecordsApi } from '@/lib/api/client'
 import { createShare } from '@/lib/api/share'
 import { ROUTES } from '@/lib/constants'
+import { createLogger } from '@/lib/logger'
 import type { MealRecord } from '@/types'
+
+const log = createLogger('MealCard')
 
 interface MealCardProps {
   id: string
@@ -74,15 +77,14 @@ export function MealCard({
     e.preventDefault() // Link 클릭 방지
     e.stopPropagation()
     
-    console.log('🔄 Share button clicked for meal:', id)
-    console.log('🔑 Current token:', localStorage.getItem('token')?.substring(0, 30) + '...')
+    log.debug('Share button clicked', { mealId: id })
     
     setIsCreatingShare(true)
     try {
-      console.log('📤 Calling createShare API...')
+      log.debug('Calling createShare API')
       // 공유 링크 생성
       const result = await createShare(id)
-      console.log('✅ Share link created:', result)
+      log.info('Share link created successfully', { url: result.url })
       setShareUrl(result.url)
       
       // 링크 복사
@@ -92,8 +94,7 @@ export function MealCard({
       // ShareModal 열기 (추가 공유 옵션용)
       setShowShareModal(true)
     } catch (error) {
-      console.error('❌ Failed to create share link:', error)
-      console.error('Error details:', JSON.stringify(error, null, 2))
+      log.error('Failed to create share link', error)
       toast.error('공유 링크 생성에 실패했습니다.')
     } finally {
       setIsCreatingShare(false)
@@ -122,7 +123,7 @@ export function MealCard({
             onEvaluated() // 삭제 후에도 목록 새로고침
           }
         } catch (error) {
-          console.error('Failed to delete meal:', error)
+          log.error('Failed to delete meal', error)
           showAlert({
             title: '삭제 실패',
             message: '식사 기록 삭제에 실패했습니다.',

@@ -26,6 +26,12 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true, // TypeScript 에러 무시
   },
+  // 프로덕션 빌드에서 console.* 자동 제거
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'], // error와 warn은 유지
+    } : false,
+  },
 };
 
 export default nextConfig;
