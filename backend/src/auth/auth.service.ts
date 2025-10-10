@@ -68,14 +68,18 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다');
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않습니다',
+      );
     }
 
     // 비밀번호 확인
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다');
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않습니다',
+      );
     }
 
     // JWT 토큰 생성
@@ -96,11 +100,11 @@ export class AuthService {
   @LogMethod()
   async validateUser(userId: string) {
     this.logger.debug(`Validating user with ID: ${userId}`);
-    
+
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
-    
+
     if (!user) {
       this.logger.warn(`User not found with ID: ${userId}`);
       throw new UnauthorizedException('유효하지 않은 사용자입니다');

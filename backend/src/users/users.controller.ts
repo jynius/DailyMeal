@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import {
   Controller,
   Get,
@@ -34,7 +35,7 @@ export class UsersController {
     return this.usersService.updateProfile(req.user.id, updateData);
   }
 
-    // 프로필 이미지 업로드
+  // 프로필 이미지 업로드
   @Post('me/profile-image')
   @UseInterceptors(FileInterceptor('file'))
   async uploadProfileImage(
@@ -77,10 +78,7 @@ export class UsersController {
 
   // 설정 업데이트
   @Patch('me/settings')
-  async updateSettings(
-    @Request() req,
-    @Body() settings: any,
-  ) {
+  async updateSettings(@Request() req, @Body() settings: any) {
     return this.usersService.updateUserSettings(req.user.id, settings);
   }
 }

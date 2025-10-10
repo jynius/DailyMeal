@@ -7,17 +7,17 @@ export const loggerConfig: LoggerConfig = {
   logDir: './logs',
   packageLevels: {
     // 패키지별 로그 레벨 설정 (Java logback.xml 스타일)
-    'auth': AppLogLevel.DEBUG,
-    'meal-records': AppLogLevel.DEBUG, 
-    'AuthService': AppLogLevel.DEBUG,
-    'JwtStrategy': AppLogLevel.DEBUG,
-    'JwtAuthGuard': AppLogLevel.DEBUG,
-    'MealRecordsService': AppLogLevel.INFO,
-    'MealRecordsController': AppLogLevel.DEBUG,
-    
+    auth: AppLogLevel.DEBUG,
+    'meal-records': AppLogLevel.DEBUG,
+    AuthService: AppLogLevel.DEBUG,
+    JwtStrategy: AppLogLevel.DEBUG,
+    JwtAuthGuard: AppLogLevel.DEBUG,
+    MealRecordsService: AppLogLevel.INFO,
+    MealRecordsController: AppLogLevel.DEBUG,
+
     // 라이브러리 로그 (실제 운영에서는 WARN 이상으로)
-    'TypeOrmModule': AppLogLevel.WARN,
-    'DatabaseLogger': AppLogLevel.ERROR,
-    'PassportModule': AppLogLevel.WARN,
-  }
+    TypeOrmModule: AppLogLevel.WARN,
+    DatabaseLogger: AppLogLevel.ERROR,
+    PassportModule: AppLogLevel.WARN,
+  },
 };

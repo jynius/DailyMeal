@@ -6,10 +6,7 @@ import { MealRecord } from '../entities/meal-record.entity';
 import { RealTimeModule } from '../realtime/realtime.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([MealRecord]),
-    RealTimeModule
-  ],
+  imports: [TypeOrmModule.forFeature([MealRecord]), RealTimeModule],
   controllers: [MealRecordsController],
   providers: [MealRecordsService],
 })

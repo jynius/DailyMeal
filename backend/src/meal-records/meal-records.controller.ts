@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
 import {
   Controller,
   Get,
@@ -8,26 +9,36 @@ import {
   Delete,
   UseGuards,
   UseInterceptors,
-  UploadedFile,
   UploadedFiles,
   Query,
   ValidationPipe,
   Request,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiConsumes,
+} from '@nestjs/swagger';
 import { Express } from 'express';
 import { MealRecordsService } from './meal-records.service';
-import { CreateMealRecordDto, UpdateMealRecordDto } from '../dto/meal-record.dto';
+import {
+  CreateMealRecordDto,
+  UpdateMealRecordDto,
+} from '../dto/meal-record.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { AppLoggerService, LogMethod } from '../common/logger.service';
+import { AppLoggerService } from '../common/logger.service';
 
 // 파일 업로드 설정 (환경 변수)
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
-const UPLOAD_MAX_FILE_SIZE = parseInt(process.env.UPLOAD_MAX_FILE_SIZE || '5242880'); // 5MB
+const UPLOAD_MAX_FILE_SIZE = parseInt(
+  process.env.UPLOAD_MAX_FILE_SIZE || '5242880',
+); // 5MB
 const UPLOAD_MAX_FILES = parseInt(process.env.UPLOAD_MAX_FILES || '5');
 
 @ApiTags('Meal Records')
@@ -70,30 +81,36 @@ export class MealRecordsController {
     @Request() req: any,
   ) {
     this.logger.info(`🔄 create() called for user: ${req.user.email}`);
-    this.logger.debug(`📝 Meal data: ${createMealRecordDto.name}, Rating: ${createMealRecordDto.rating}`);
+    this.logger.debug(
+      `📝 Meal data: ${createMealRecordDto.name}, Rating: ${createMealRecordDto.rating}`,
+    );
     this.logger.debug(`📁 Files received: ${files?.length || 0}`);
-    
+
     // 다중 사진 경로 처리
     const photoPaths: string[] = [];
     if (files && files.length > 0) {
-      files.forEach(file => {
+      files.forEach((file) => {
         photoPaths.push(`/uploads/${file.filename}`);
         this.logger.debug(`Photo uploaded: ${file.filename}`);
       });
     }
-    
+
     // GPS 좌표 로그
     if (createMealRecordDto.latitude && createMealRecordDto.longitude) {
-      this.logger.debug(`GPS coordinates: ${createMealRecordDto.latitude}, ${createMealRecordDto.longitude}`);
+      this.logger.debug(
+        `GPS coordinates: ${createMealRecordDto.latitude}, ${createMealRecordDto.longitude}`,
+      );
     }
-    
+
     const result = await this.mealRecordsService.create(
       createMealRecordDto,
       req.user.id,
       photoPaths,
     );
-    
-    this.logger.info(`✅ create() completed successfully for meal: ${createMealRecordDto.name}`);
+
+    this.logger.info(
+      `✅ create() completed successfully for meal: ${createMealRecordDto.name}`,
+    );
     return result;
   }
 

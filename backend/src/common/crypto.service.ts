@@ -9,7 +9,8 @@ export class CryptoService {
 
   constructor() {
     // 환경 변수에서 키 가져오기, 없으면 기본값 사용 (프로덕션에서는 반드시 설정해야 함)
-    const secretKey = process.env.ENCRYPTION_KEY || 'dailymeal-secret-key-32-chars!';
+    const secretKey =
+      process.env.ENCRYPTION_KEY || 'dailymeal-secret-key-32-chars!';
     this.key = crypto.scryptSync(secretKey, 'salt', 32);
     this.iv = Buffer.alloc(16, 0); // 초기화 벡터
   }
@@ -29,11 +30,15 @@ export class CryptoService {
    */
   decrypt(encryptedText: string): string {
     try {
-      const decipher = crypto.createDecipheriv(this.algorithm, this.key, this.iv);
+      const decipher = crypto.createDecipheriv(
+        this.algorithm,
+        this.key,
+        this.iv,
+      );
       let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
       return decrypted;
-    } catch (error) {
+    } catch {
       throw new Error('Invalid encrypted data');
     }
   }

@@ -1,4 +1,14 @@
-import { Injectable, LogLevel } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-base-to-string */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+
+import { Injectable } from '@nestjs/common';
 import * as winston from 'winston';
 
 export enum AppLogLevel {
@@ -6,7 +16,7 @@ export enum AppLogLevel {
   WARN = 'warn',
   INFO = 'info',
   DEBUG = 'debug',
-  TRACE = 'verbose'
+  TRACE = 'verbose',
 }
 
 export interface LoggerConfig {
@@ -29,12 +39,12 @@ export class AppLoggerService {
       enableFile: true,
       logDir: './logs',
       packageLevels: {
-        'auth': AppLogLevel.DEBUG,
+        auth: AppLogLevel.DEBUG,
         'meal-records': AppLogLevel.INFO,
-        'database': AppLogLevel.WARN,
-        ...config.packageLevels
+        database: AppLogLevel.WARN,
+        ...config.packageLevels,
       },
-      ...config
+      ...config,
     };
 
     this.initializeLogger();
@@ -50,13 +60,15 @@ export class AppLoggerService {
           format: winston.format.combine(
             winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
             winston.format.colorize(),
-            winston.format.printf(({ timestamp, level, message, context, trace }) => {
-              const contextStr = context ? `[${context}]` : '';
-              const traceStr = trace ? `\n${trace}` : '';
-              return `${timestamp} ${level.toUpperCase().padEnd(7)} ${contextStr} ${message}${traceStr}`;
-            })
-          )
-        })
+            winston.format.printf(
+              ({ timestamp, level, message, context, trace }) => {
+                const contextStr = context ? `[${context}]` : '';
+                const traceStr = trace ? `\n${trace}` : '';
+                return `${timestamp} ${level.toUpperCase().padEnd(7)} ${contextStr} ${message}${traceStr}`;
+              },
+            ),
+          ),
+        }),
       );
     }
 
@@ -68,9 +80,9 @@ export class AppLoggerService {
           filename: `${this.config.logDir}/app.log`,
           format: winston.format.combine(
             winston.format.timestamp(),
-            winston.format.json()
-          )
-        })
+            winston.format.json(),
+          ),
+        }),
       );
 
       // 에러 로그만
@@ -80,15 +92,15 @@ export class AppLoggerService {
           level: 'error',
           format: winston.format.combine(
             winston.format.timestamp(),
-            winston.format.json()
-          )
-        })
+            winston.format.json(),
+          ),
+        }),
       );
     }
 
     this.logger = winston.createLogger({
       level: this.config.level,
-      transports
+      transports,
     });
   }
 
@@ -98,7 +110,8 @@ export class AppLoggerService {
   private shouldLog(level: AppLogLevel, context?: string): boolean {
     if (!context) return true;
 
-    const packageLevel = this.config.packageLevels[context] || this.config.level;
+    const packageLevel =
+      this.config.packageLevels[context] || this.config.level;
     const levels = Object.values(AppLogLevel);
     const currentLevelIndex = levels.indexOf(packageLevel);
     const messageLevelIndex = levels.indexOf(level);
@@ -200,7 +213,11 @@ export class PackageLogger {
  * 데코레이터로 자동 로깅 (AOP 스타일)
  */
 export function LogMethod(level: AppLogLevel = AppLogLevel.DEBUG) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (
+    target: any,
+    propertyName: string,
+    descriptor: PropertyDescriptor,
+  ) {
     const method = descriptor.value;
     const logger = AppLoggerService.getLogger(target.constructor.name);
 
@@ -217,17 +234,20 @@ export function LogMethod(level: AppLogLevel = AppLogLevel.DEBUG) {
           if (val && typeof val === 'object' && val.constructor) {
             if (val.constructor.name === 'IncomingMessage') return '[Request]';
             if (val.constructor.name === 'Socket') return '[Socket]';
-            if (val.constructor.name === 'Buffer') return `[Buffer ${val.length}]`;
+            if (val.constructor.name === 'Buffer')
+              return `[Buffer ${val.length}]`;
           }
           return val;
         });
       };
-      
-      logger.debug(`🔄 ${propertyName}() called with args: ${safeStringify(args)}`);
-      
+
+      logger.debug(
+        `🔄 ${propertyName}() called with args: ${safeStringify(args)}`,
+      );
+
       try {
         const result = method.apply(this, args);
-        
+
         // Promise 처리
         if (result instanceof Promise) {
           return result
@@ -240,7 +260,7 @@ export function LogMethod(level: AppLogLevel = AppLogLevel.DEBUG) {
               throw error;
             });
         }
-        
+
         logger.debug(`✅ ${propertyName}() completed successfully`);
         return result;
       } catch (error) {

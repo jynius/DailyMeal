@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 
 export type FriendshipStatus = 'pending' | 'accepted' | 'rejected' | 'blocked';
@@ -16,13 +24,13 @@ export class Friendship {
 
   @Column({
     type: 'varchar',
-    default: 'pending'
+    default: 'pending',
   })
   status: FriendshipStatus;
 
   @Column({
     type: 'boolean',
-    default: false
+    default: false,
   })
   notificationEnabled: boolean;
 

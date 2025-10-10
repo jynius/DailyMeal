@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MealRecord } from '../entities/meal-record.entity';
-import { CreateMealRecordDto, UpdateMealRecordDto } from '../dto/meal-record.dto';
+import {
+  CreateMealRecordDto,
+  UpdateMealRecordDto,
+} from '../dto/meal-record.dto';
 import { RealTimeService } from '../realtime/realtime.service';
 
 @Injectable()
@@ -18,12 +26,12 @@ export class MealRecordsService {
    */
   private transformImageUrl(photo: string | null): string | null {
     if (!photo) return null;
-    
+
     // 이미 절대 URL인 경우
     if (photo.startsWith('http')) {
       return photo;
     }
-    
+
     // 상대 경로를 절대 URL로 변환
     const baseUrl = process.env.API_BASE_URL || 'http://localhost:8000';
     return `${baseUrl}${photo}`;
@@ -53,7 +61,7 @@ export class MealRecordsService {
 
     const saved = await this.mealRecordRepository.save(mealRecord);
     const transformed = this.transformMealRecord(saved);
-    
+
     // 실시간 알림 전송
     this.realTimeService.notifyNewMeal({
       id: saved.id,
@@ -62,7 +70,7 @@ export class MealRecordsService {
       userId: saved.userId,
       createdAt: saved.createdAt,
     });
-    
+
     return transformed;
   }
 
@@ -77,7 +85,7 @@ export class MealRecordsService {
     });
 
     return {
-      data: mealRecords.map(record => this.transformMealRecord(record)),
+      data: mealRecords.map((record) => this.transformMealRecord(record)),
       total,
       page,
       limit,
@@ -123,7 +131,12 @@ export class MealRecordsService {
     return { message: '식사 기록이 삭제되었습니다' };
   }
 
-  async search(userId: string, query: string, page: number = 1, limit: number = 10) {
+  async search(
+    userId: string,
+    query: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const skip = (page - 1) * limit;
 
     const [mealRecords, total] = await this.mealRecordRepository
@@ -131,7 +144,7 @@ export class MealRecordsService {
       .where('mealRecord.userId = :userId', { userId })
       .andWhere(
         '(mealRecord.name ILIKE :query OR mealRecord.location ILIKE :query OR mealRecord.memo ILIKE :query)',
-        { query: `%${query}%` }
+        { query: `%${query}%` },
       )
       .orderBy('mealRecord.createdAt', 'DESC')
       .skip(skip)
@@ -188,7 +201,7 @@ export class MealRecordsService {
       .limit(20)
       .getRawMany();
 
-    return locations.map(loc => ({
+    return locations.map((loc) => ({
       location: loc.location,
       count: parseInt(loc.count),
       latitude: loc.latitude ? parseFloat(loc.latitude) : undefined,

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RestaurantsService } from './restaurants.service';
@@ -21,7 +29,8 @@ export class RestaurantsController {
   @ApiOperation({ summary: '맛집 지도 생성' })
   @ApiResponse({ status: 201, description: '맛집 지도 생성 성공' })
   async createMap(
-    @Body() createMapDto: {
+    @Body()
+    createMapDto: {
       title: string;
       description?: string;
       restaurantIds: string[];

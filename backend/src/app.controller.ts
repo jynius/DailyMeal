@@ -11,10 +11,7 @@ export class AppController {
   }
 
   @Get('geocode/reverse')
-  async reverseGeocode(
-    @Query('lat') lat: string,
-    @Query('lon') lon: string,
-  ) {
+  async reverseGeocode(@Query('lat') lat: string, @Query('lon') lon: string) {
     return this.appService.reverseGeocode(parseFloat(lat), parseFloat(lon));
   }
 }

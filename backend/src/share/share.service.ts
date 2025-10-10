@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull, Not } from 'typeorm';
 import { MealShare } from '../entities/meal-share.entity';
@@ -11,6 +17,8 @@ import { PublicMealResponseDto } from '../dto/share.dto';
 
 @Injectable()
 export class ShareService {
+  private readonly logger = new Logger(ShareService.name);
+
   constructor(
     @InjectRepository(MealShare)
     private mealShareRepository: Repository<MealShare>,
@@ -28,7 +36,10 @@ export class ShareService {
   /**
    * 공유 링크 생성
    */
-  async createShareLink(mealId: string, userId: string): Promise<{ shareId: string; url: string; ref: string }> {
+  async createShareLink(
+    mealId: string,
+    userId: string,
+  ): Promise<{ shareId: string; url: string; ref: string }> {
     // Meal 존재 및 권한 확인
     const meal = await this.mealRecordRepository.findOne({
       where: { id: mealId },
@@ -53,7 +64,7 @@ export class ShareService {
       const ref = this.cryptoService.encrypt(userId);
       const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
       const url = `${baseUrl}/share/meal/${mealShare.shareId}?ref=${ref}`;
-      
+
       return {
         shareId: mealShare.shareId,
         url,
@@ -118,9 +129,10 @@ export class ShareService {
 
     // 이미지 URL 변환
     const baseUrl = process.env.API_BASE_URL || 'http://localhost:8000';
-    const photos = meal.photos?.map(photo => 
-      photo.startsWith('http') ? photo : `${baseUrl}${photo}`
-    ) || [];
+    const photos =
+      meal.photos?.map((photo) =>
+        photo.startsWith('http') ? photo : `${baseUrl}${photo}`,
+      ) || [];
 
     return {
       id: meal.id,
@@ -141,7 +153,13 @@ export class ShareService {
   /**
    * 공유 조회 추적 (비로그인)
    */
-  async trackView(shareId: string, ref: string, sessionId: string, ipAddress: string, userAgent: string): Promise<void> {
+  async trackView(
+    shareId: string,
+    ref: string,
+    sessionId: string,
+    ipAddress: string,
+    userAgent: string,
+  ): Promise<void> {
     try {
       // ref 복호화하여 sharerId 추출
       const sharerId = this.cryptoService.decrypt(ref);
@@ -169,7 +187,7 @@ export class ShareService {
 
       await this.shareTrackingRepository.save(tracking);
     } catch (error) {
-      console.error('Failed to track view:', error);
+      this.logger.error('Failed to track view:', error);
       // 추적 실패해도 메인 기능에 영향 없도록
     }
   }
@@ -177,7 +195,10 @@ export class ShareService {
   /**
    * 공유를 통한 친구 연결 (로그인/가입 후)
    */
-  async connectFriend(ref: string, recipientId: string): Promise<{ success: boolean; message: string }> {
+  async connectFriend(
+    ref: string,
+    recipientId: string,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       // ref 복호화하여 sharerId 추출
       const sharerId = this.cryptoService.decrypt(ref);
@@ -240,7 +261,7 @@ export class ShareService {
 
       return { success: true, message: 'Friend added successfully' };
     } catch (error) {
-      console.error('Failed to connect friend:', error);
+      this.logger.error('Failed to connect friend:', error);
       throw new BadRequestException('Invalid share reference');
     }
   }
@@ -273,7 +294,7 @@ export class ShareService {
           conversions,
           createdAt: share.createdAt,
         };
-      })
+      }),
     );
 
     return stats;

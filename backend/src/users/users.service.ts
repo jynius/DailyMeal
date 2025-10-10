@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -232,7 +237,8 @@ export class UsersService {
         month: stat.month,
         reviewCount: parseInt(stat.reviewCount) || 0,
         restaurantCount: parseInt(stat.restaurantCount) || 0,
-        averageRating: Math.round(parseFloat(stat.averageRating) * 10) / 10 || 0,
+        averageRating:
+          Math.round(parseFloat(stat.averageRating) * 10) / 10 || 0,
       })),
       topRatedRestaurants: topRatedRestaurants.map((restaurant) => ({
         id: restaurant.name, // name을 id로 사용
@@ -260,7 +266,10 @@ export class UsersService {
     }
 
     // 현재 비밀번호 확인
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('현재 비밀번호가 일치하지 않습니다.');
     }
@@ -327,7 +336,7 @@ export class UsersService {
         locationOfficeLatitude: 0,
         locationOfficeLongitude: 0,
       });
-      
+
       settings = await this.userSettingsRepository.save(settings);
     }
 
@@ -384,31 +393,49 @@ export class UsersService {
 
     // 알림 설정
     if (settingsData.notifications) {
-      settings.notificationFriendRequest = settingsData.notifications.friendRequest ?? settings.notificationFriendRequest;
-      settings.notificationNewReview = settingsData.notifications.newReview ?? settings.notificationNewReview;
-      settings.notificationNearbyFriend = settingsData.notifications.nearbyFriend ?? settings.notificationNearbyFriend;
+      settings.notificationFriendRequest =
+        settingsData.notifications.friendRequest ??
+        settings.notificationFriendRequest;
+      settings.notificationNewReview =
+        settingsData.notifications.newReview ?? settings.notificationNewReview;
+      settings.notificationNearbyFriend =
+        settingsData.notifications.nearbyFriend ??
+        settings.notificationNearbyFriend;
     }
 
     // 프라이버시 설정
     if (settingsData.privacy) {
-      settings.privacyProfilePublic = settingsData.privacy.profilePublic ?? settings.privacyProfilePublic;
-      settings.privacyShowLocation = settingsData.privacy.showLocation ?? settings.privacyShowLocation;
-      settings.privacyShowMealDetails = settingsData.privacy.showMealDetails ?? settings.privacyShowMealDetails;
+      settings.privacyProfilePublic =
+        settingsData.privacy.profilePublic ?? settings.privacyProfilePublic;
+      settings.privacyShowLocation =
+        settingsData.privacy.showLocation ?? settings.privacyShowLocation;
+      settings.privacyShowMealDetails =
+        settingsData.privacy.showMealDetails ?? settings.privacyShowMealDetails;
     }
 
     // 장소 설정
     if (settingsData.locations) {
-      settings.locationHome = settingsData.locations.home ?? settings.locationHome;
-      settings.locationOffice = settingsData.locations.office ?? settings.locationOffice;
-      
+      settings.locationHome =
+        settingsData.locations.home ?? settings.locationHome;
+      settings.locationOffice =
+        settingsData.locations.office ?? settings.locationOffice;
+
       if (settingsData.locations.homeCoords) {
-        settings.locationHomeLatitude = settingsData.locations.homeCoords.lat ?? settings.locationHomeLatitude;
-        settings.locationHomeLongitude = settingsData.locations.homeCoords.lng ?? settings.locationHomeLongitude;
+        settings.locationHomeLatitude =
+          settingsData.locations.homeCoords.lat ??
+          settings.locationHomeLatitude;
+        settings.locationHomeLongitude =
+          settingsData.locations.homeCoords.lng ??
+          settings.locationHomeLongitude;
       }
-      
+
       if (settingsData.locations.officeCoords) {
-        settings.locationOfficeLatitude = settingsData.locations.officeCoords.lat ?? settings.locationOfficeLatitude;
-        settings.locationOfficeLongitude = settingsData.locations.officeCoords.lng ?? settings.locationOfficeLongitude;
+        settings.locationOfficeLatitude =
+          settingsData.locations.officeCoords.lat ??
+          settings.locationOfficeLatitude;
+        settings.locationOfficeLongitude =
+          settingsData.locations.officeCoords.lng ??
+          settings.locationOfficeLongitude;
       }
     }
 

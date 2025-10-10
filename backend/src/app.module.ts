@@ -34,7 +34,14 @@ import { RealTimeModule } from './realtime/realtime.module';
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME || 'dailymeal',
-      entities: [User, MealRecord, Friendship, UserSettings, MealShare, ShareTracking],
+      entities: [
+        User,
+        MealRecord,
+        Friendship,
+        UserSettings,
+        MealShare,
+        ShareTracking,
+      ],
       synchronize: false, // 프로덕션에서는 절대 true로 설정하지 말것
       logging: process.env.NODE_ENV === 'development',
     }),
@@ -59,8 +66,8 @@ import { RealTimeModule } from './realtime/realtime.module';
         const logger = new AppLoggerService(loggerConfig);
         PackageLogger.setGlobalLogger(logger);
         return logger;
-      }
-    }
+      },
+    },
   ],
 })
 export class AppModule {}

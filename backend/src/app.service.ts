@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
+interface NominatimAddress {
+  display_name: string;
+  address: Record<string, string>;
+}
+
 @Injectable()
 export class AppService {
   getHello(): string {
@@ -21,16 +26,17 @@ export class AppService {
         throw new Error(`Nominatim API error: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as NominatimAddress;
       return {
         success: true,
         address: data.display_name,
         details: data.address,
       };
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
-        error: error.message,
+        error: message,
       };
     }
   }

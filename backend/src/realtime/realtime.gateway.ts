@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import {
   WebSocketGateway,
   SubscribeMessage,
@@ -20,42 +21,46 @@ export interface ConnectedUser {
 
 @WebSocketGateway({
   cors: {
-    origin: "*", // 개발 환경에서는 모든 origin 허용
-    methods: ["GET", "POST"],
-    credentials: false // credentials 비활성화
-  }
+    origin: '*', // 개발 환경에서는 모든 origin 허용
+    methods: ['GET', 'POST'],
+    credentials: false, // credentials 비활성화
+  },
 })
-export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class RealTimeGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('RealTimeGateway');
   private connectedUsers: Map<string, ConnectedUser> = new Map();
 
-  afterInit(server: Server) {
+  afterInit() {
     this.logger.log('WebSocket Gateway initialized');
     this.logger.log('Socket.IO server is ready on port 8000');
-    console.log('🔌 Socket.IO Gateway initialized successfully');
+    this.logger.log('🔌 Socket.IO Gateway initialized successfully');
   }
 
-  handleConnection(client: Socket, ...args: any[]) {
+  handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
-    console.log(`🔗 Client connected: ${client.id} from ${client.handshake.address}`);
-    
+    this.logger.log(
+      `🔗 Client connected: ${client.id} from ${client.handshake.address}`,
+    );
+
     const user: ConnectedUser = {
       id: client.id,
       socketId: client.id,
     };
-    
+
     this.connectedUsers.set(client.id, user);
-    
+
     // 연결된 사용자 수 브로드캐스트
     this.server.emit('userCount', this.connectedUsers.size);
-    console.log(`👥 Connected users: ${this.connectedUsers.size}`);
+    this.logger.log(`👥 Connected users: ${this.connectedUsers.size}`);
   }
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
     this.connectedUsers.delete(client.id);
-    
+
     // 연결된 사용자 수 브로드캐스트
     this.server.emit('userCount', this.connectedUsers.size);
   }
@@ -63,29 +68,32 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   @SubscribeMessage('userAuth')
   handleUserAuth(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { userId: number; username: string }
+    @MessageBody() data: { userId: number; username: string },
   ) {
     const user = this.connectedUsers.get(client.id);
     if (user) {
       user.userId = data.userId;
       user.username = data.username;
       this.connectedUsers.set(client.id, user);
-      
+
       this.logger.log(`User authenticated: ${data.username} (${data.userId})`);
-      
+
       // 사용자에게 인증 완료 응답
-      client.emit('authSuccess', { userId: data.userId, username: data.username });
+      client.emit('authSuccess', {
+        userId: data.userId,
+        username: data.username,
+      });
     }
   }
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { room: string }
+    @MessageBody() data: { room: string },
   ) {
-    client.join(data.room);
+    void client.join(data.room);
     this.logger.log(`Client ${client.id} joined room: ${data.room}`);
-    
+
     // 방에 참여 알림
     client.to(data.room).emit('userJoined', {
       socketId: client.id,
@@ -97,11 +105,11 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   @SubscribeMessage('leaveRoom')
   handleLeaveRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { room: string }
+    @MessageBody() data: { room: string },
   ) {
-    client.leave(data.room);
+    void client.leave(data.room);
     this.logger.log(`Client ${client.id} left room: ${data.room}`);
-    
+
     // 방 떠남 알림
     client.to(data.room).emit('userLeft', {
       socketId: client.id,
@@ -114,13 +122,15 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   broadcastNewMeal(mealData: any, friendUserIds?: number[]) {
     // 친구 목록이 있으면 친구에게만, 없으면 전체 브로드캐스트 (기존 동작 유지)
     if (friendUserIds && friendUserIds.length > 0) {
-      friendUserIds.forEach(userId => {
+      friendUserIds.forEach((userId) => {
         this.sendNotificationToUser(userId, {
           type: 'NEW_MEAL',
           data: mealData,
         });
       });
-      this.logger.log(`Broadcasting new meal to ${friendUserIds.length} friends: ${mealData.name}`);
+      this.logger.log(
+        `Broadcasting new meal to ${friendUserIds.length} friends: ${mealData.name}`,
+      );
     } else {
       this.server.emit('newMeal', {
         type: 'NEW_MEAL',
@@ -148,13 +158,13 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   broadcastLikeUpdate(data: { mealId: string; likes: number; userId: number }) {
     const now = Date.now();
     const lastTime = this.lastLikeBroadcast.get(data.mealId) || 0;
-    
+
     // 2초 이내 중복 브로드캐스트 방지
     if (now - lastTime < this.LIKE_THROTTLE_MS) {
       this.logger.debug(`Throttling like update for meal ${data.mealId}`);
       return;
     }
-    
+
     this.lastLikeBroadcast.set(data.mealId, now);
     this.server.emit('likeUpdate', {
       type: 'LIKE_UPDATE',
@@ -164,7 +174,12 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   }
 
   // 실시간 댓글 알림 (게시물 작성자에게만 전송)
-  broadcastNewComment(data: { mealId: string; comment: any; userId: number; authorId?: number }) {
+  broadcastNewComment(data: {
+    mealId: string;
+    comment: any;
+    userId: number;
+    authorId?: number;
+  }) {
     if (data.authorId) {
       // 작성자에게만 알림
       this.sendNotificationToUser(data.authorId, {
@@ -172,7 +187,9 @@ export class RealTimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
         mealId: data.mealId,
         comment: data.comment,
       });
-      this.logger.log(`Sending comment notification to author ${data.authorId}`);
+      this.logger.log(
+        `Sending comment notification to author ${data.authorId}`,
+      );
     } else {
       // authorId 없으면 전체 브로드캐스트 (fallback)
       this.server.emit('newComment', {

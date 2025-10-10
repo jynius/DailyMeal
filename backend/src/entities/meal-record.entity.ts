@@ -48,10 +48,10 @@ export class MealRecord {
   price: number;
 
   // 식사 카테고리 (집밥, 배달, 식당)
-  @Column({ 
+  @Column({
     type: 'varchar',
     nullable: true,
-    default: 'restaurant'
+    default: 'restaurant',
   })
   category: 'home' | 'delivery' | 'restaurant';
 
