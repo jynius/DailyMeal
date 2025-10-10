@@ -152,7 +152,6 @@ export function MealCard({
     if (absoluteUrl.includes('localhost')) {
       return 'https://via.placeholder.com/600x400/3B82F6/FFFFFF?text=DailyMeal'
     }
-    }
     
     return absoluteUrl
   }
