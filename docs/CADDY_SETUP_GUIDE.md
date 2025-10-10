@@ -49,7 +49,7 @@ sudo vi /etc/caddy/Caddyfile
 
 **내용:**
 ```
-ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com {
+www.dailymeal.life {
     # 로그
     log {
         output file /var/log/caddy/access.log
@@ -132,14 +132,14 @@ sudo journalctl -u caddy -n 50
 ### 3. HTTPS 테스트
 ```bash
 # 헤더 확인
-curl -I https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+curl -I https://www.dailymeal.life
 
 # 인증서 확인
-openssl s_client -connect ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com:443 -showcerts
+openssl s_client -connect www.dailymeal.life:443 -showcerts
 ```
 
 ### 4. 브라우저 테스트
-- https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+- https://www.dailymeal.life
 - 자물쇠 아이콘 확인
 - 인증서 정보 확인 (Let's Encrypt)
 
@@ -347,5 +347,5 @@ cd /home/jynius/projects/WebApp/DailyMeal
 설치 완료 후:
 ```bash
 # HTTPS 확인
-curl -I https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+curl -I https://www.dailymeal.life
 ```

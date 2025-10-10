@@ -30,7 +30,7 @@ fi
 echo "📝 Caddyfile 생성..."
 sudo tee /etc/caddy/Caddyfile > /dev/null <<'EOF'
 # DailyMeal Caddy 설정
-ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com {
+www.dailymeal.life {
     # 로그 설정
     log {
         output file /var/log/caddy/access.log
@@ -116,6 +116,6 @@ echo ""
 echo "📋 다음 명령어로 확인:"
 echo "  - 상태: sudo systemctl status caddy"
 echo "  - 로그: sudo journalctl -u caddy -f"
-echo "  - 테스트: curl -I https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com"
+echo "  - 테스트: curl -I https://www.dailymeal.life"
 echo ""
 echo "⚠️  인증서 발급까지 1-2분 소요됩니다."

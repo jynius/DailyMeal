@@ -3,7 +3,7 @@
 ## 📋 현재 상황
 
 - **서버**: AWS EC2 Ubuntu
-- **도메인**: `ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com`
+- **도메인**: `www.dailymeal.life`
 - **문제**: 자체 서명 인증서로 인한 SSL 오류
 - **앱 오류**: "SSL error: The certificate authority is not trusted"
 
@@ -43,7 +43,7 @@ sudo vi /etc/caddy/Caddyfile
 
 **내용:**
 ```
-ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com {
+www.dailymeal.life {
     # 프론트엔드 (Next.js)
     reverse_proxy localhost:3000
     
@@ -113,7 +113,7 @@ sudo vi /etc/nginx/sites-available/dailymeal
 ```nginx
 server {
     listen 80;
-    server_name ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com;
+    server_name www.dailymeal.life;
     
     location / {
         proxy_pass http://localhost:3000;
@@ -156,7 +156,7 @@ sudo systemctl reload nginx
 ### 3단계: SSL 인증서 발급
 
 ```bash
-sudo certbot --nginx -d ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+sudo certbot --nginx -d www.dailymeal.life
 ```
 
 **주의:** EC2 도메인은 Let's Encrypt가 검증하기 어려울 수 있습니다.

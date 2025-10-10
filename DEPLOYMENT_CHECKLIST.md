@@ -61,7 +61,7 @@ git push origin main
 
 ```bash
 # SSH 접속
-ssh ubuntu@ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+ssh ubuntu@www.dailymeal.life
 
 # 프로젝트 디렉토리로 이동
 cd ~/DailyMeal
@@ -103,10 +103,10 @@ cd ~/DailyMeal
 sudo systemctl status caddy
 
 # HTTPS 테스트
-curl -I https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+curl -I https://www.dailymeal.life
 
 # 인증서 확인
-openssl s_client -connect ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com:443
+openssl s_client -connect www.dailymeal.life:443
 ```
 
 ---

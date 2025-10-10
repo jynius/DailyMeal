@@ -92,8 +92,8 @@ origin: [
 origin: [
   'http://localhost:3000',              // ✅ WSL2 내부
   'http://172.21.114.94:3000',          // ✅ WSL2 IP (port forwarding 대상)
-  'http://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com',
-  'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com'
+  'http://www.dailymeal.life',
+  'https://www.dailymeal.life'
 ]
 ```
 
@@ -144,7 +144,7 @@ images: {
   remotePatterns: [
     { hostname: 'localhost' },                                    // WSL2 내부
     { hostname: '172.21.114.94' },                               // WSL2 IP (port forwarding 대상)
-    { hostname: 'ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com' }  // EC2
+    { hostname: 'www.dailymeal.life' }  // EC2
   ]
 }
 ```
@@ -201,8 +201,8 @@ NEXT_PUBLIC_SITE_URL=http://192.168.219.103:3000
 ### **프로덕션 환경 (EC2)**
 ```bash
 # .env.production
-NEXT_PUBLIC_API_URL=https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
-NEXT_PUBLIC_SITE_URL=https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+NEXT_PUBLIC_API_URL=https://www.dailymeal.life
+NEXT_PUBLIC_SITE_URL=https://www.dailymeal.life
 ```
 
 ---
@@ -231,8 +231,8 @@ NEXT_PUBLIC_SITE_URL=https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.
 ### **프론트엔드 빌드 전 확인**
 ```bash
 # EC2에서 환경변수 설정
-export NEXT_PUBLIC_API_URL=https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
-export NEXT_PUBLIC_SITE_URL=https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+export NEXT_PUBLIC_API_URL=https://www.dailymeal.life
+export NEXT_PUBLIC_SITE_URL=https://www.dailymeal.life
 
 cd frontend
 npm run build

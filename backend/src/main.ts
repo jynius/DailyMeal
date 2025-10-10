@@ -13,8 +13,8 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000', // 개발 환경 (WSL2 내부)
       'http://172.21.114.94:3000', // 개발 환경 (WSL2 IP - port forwarding 대상)
-      'http://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com', // 프로덕션 도메인
-      'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com', // HTTPS 프로덕션 도메인
+      'http://www.dailymeal.life', // 프로덕션 도메인
+      'https://www.dailymeal.life', // HTTPS 프로덕션 도메인
     ],
     credentials: true,
   });

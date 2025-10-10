@@ -58,7 +58,7 @@ Nginx 프록시
 
 server {
     listen 443 ssl http2;
-    server_name ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com;
+    server_name www.dailymeal.life;
 
     # SSL 인증서
     ssl_certificate /etc/ssl/certs/dailymeal.crt;
@@ -120,7 +120,7 @@ server {
 # HTTP → HTTPS 리다이렉트
 server {
     listen 80;
-    server_name ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com;
+    server_name www.dailymeal.life;
     return 301 https://$server_name$request_uri;
 }
 ```
@@ -270,10 +270,10 @@ sudo systemctl restart nginx
 
 ```bash
 # 프론트엔드 접속
-curl https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+curl https://www.dailymeal.life
 
 # API 테스트 (외부에서)
-curl https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com/api/restaurants
+curl https://www.dailymeal.life/api/restaurants
 
 # 내부에서 백엔드 직접 접속
 curl http://localhost:8000/restaurants
@@ -388,10 +388,10 @@ location /api {
 
 ```bash
 # 1. 프론트엔드 접속
-https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+https://www.dailymeal.life
 
 # 2. API 테스트 (브라우저 또는 curl)
-https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com/api/restaurants
+https://www.dailymeal.life/api/restaurants
 
 # 3. 백엔드 직접 접속 (서버 내부)
 curl http://localhost:8000/restaurants

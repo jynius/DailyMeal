@@ -1,0 +1,20 @@
+# DailyMeal Caddy 설정 (간단 버전)
+www.dailymeal.life {
+    # 프론트엔드 (Next.js) - 기본
+    reverse_proxy localhost:3000
+
+    # API 요청 → 백엔드
+    handle /api/* {
+        reverse_proxy localhost:8000
+    }
+
+    # 업로드된 파일 → 백엔드
+    handle /uploads/* {
+        reverse_proxy localhost:8000
+    }
+
+    # Socket.IO → 백엔드
+    handle /socket.io/* {
+        reverse_proxy localhost:8000
+    }
+}

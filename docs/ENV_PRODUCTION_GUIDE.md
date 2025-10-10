@@ -23,7 +23,7 @@ vi .env.production
 # 프로덕션 환경 설정
 NODE_ENV=production
 NEXT_PUBLIC_API_URL=/api
-NEXT_PUBLIC_SITE_URL=https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+NEXT_PUBLIC_SITE_URL=https://www.dailymeal.life
 
 # 카카오 API 설정 (실제 키로 변경)
 NEXT_PUBLIC_KAKAO_API_KEY=197d152438e3a21af616caac12a6db11

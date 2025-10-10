@@ -134,14 +134,14 @@ sudo chmod 600 /etc/ssl/dailymeal/private.key
 # HTTP → HTTPS 리다이렉트
 server {
     listen 80;
-    server_name ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com;
+    server_name www.dailymeal.life;
     return 301 https://$server_name$request_uri;
 }
 
 # HTTPS
 server {
     listen 443 ssl http2;
-    server_name ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com;
+    server_name www.dailymeal.life;
 
     # SSL 인증서
     ssl_certificate /etc/ssl/certs/dailymeal.crt;
@@ -423,8 +423,8 @@ aws configure
 
 # ACM 인증서 요청
 aws acm request-certificate \
-  --domain-name ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com \
-  --subject-alternative-names ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com \
+  --domain-name www.dailymeal.life \
+  --subject-alternative-names www.dailymeal.life \
   --validation-method DNS
 ```
 

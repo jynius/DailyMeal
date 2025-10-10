@@ -20,12 +20,12 @@ const nextConfig = {
       },
       {
         protocol: 'http',
-        hostname: 'ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com',
+        hostname: 'www.dailymeal.life',
         pathname: '/uploads/**',
       },
       {
         protocol: 'https',
-        hostname: 'ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com',
+        hostname: 'www.dailymeal.life',
         pathname: '/uploads/**',
       }
     ],

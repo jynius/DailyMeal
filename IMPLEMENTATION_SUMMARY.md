@@ -103,7 +103,7 @@ node backend/scripts/init-user-settings.js
 ```bash
 NODE_ENV=production
 NEXT_PUBLIC_API_URL=/api
-NEXT_PUBLIC_SITE_URL=https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+NEXT_PUBLIC_SITE_URL=https://www.dailymeal.life
 NEXT_PUBLIC_KAKAO_API_KEY=your_kakao_javascript_key_here
 ```
 
@@ -209,7 +209,7 @@ git push origin main
 
 ### 2. 서버 배포
 ```bash
-ssh ubuntu@ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+ssh ubuntu@www.dailymeal.life
 cd ~/DailyMeal
 git pull origin main
 
@@ -231,7 +231,7 @@ node backend/scripts/init-user-settings.js
 ./bin/setup-caddy.sh
 
 # 확인
-curl -I https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+curl -I https://www.dailymeal.life
 ```
 
 ### 4. 앱 재빌드

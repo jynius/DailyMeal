@@ -188,8 +188,8 @@ Backend:  :8000 ← 직접 호출
 ```javascript
 // ecosystem.config.js
 env: {
-  NEXT_PUBLIC_API_URL: 'http://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com:8000',
-  NEXT_PUBLIC_SITE_URL: 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com'
+  NEXT_PUBLIC_API_URL: 'http://www.dailymeal.life:8000',
+  NEXT_PUBLIC_SITE_URL: 'https://www.dailymeal.life'
 }
 ```
 
@@ -199,7 +199,7 @@ env: {
 fetch(`${NEXT_PUBLIC_API_URL}/restaurants`)
 
 // 실제 요청 URL
-// → http://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com:8000/restaurants
+// → http://www.dailymeal.life:8000/restaurants
 ```
 
 ### **장점**

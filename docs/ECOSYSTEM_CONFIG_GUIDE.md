@@ -288,7 +288,7 @@ pm2 list
 pm2 logs
 
 # 외부 접속 테스트
-https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+https://www.dailymeal.life
 ```
 
 ---

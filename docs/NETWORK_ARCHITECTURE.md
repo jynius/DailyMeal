@@ -196,7 +196,7 @@ NEXT_PUBLIC_SITE_URL=http://192.168.219.103:3000
 ```javascript
 const WEB_URL = __DEV__ 
   ? 'http://192.168.219.103:3000'  // ✅ 클라이언트는 Windows IP
-  : 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com'
+  : 'https://www.dailymeal.life'
 ```
 
 ---

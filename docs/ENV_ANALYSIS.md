@@ -27,9 +27,9 @@ DailyMeal/
 NODE_ENV=production
 BACKEND_PORT=8000
 FRONTEND_PORT=3000
-DOMAIN=ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+DOMAIN=www.dailymeal.life
 NEXT_PUBLIC_API_URL=/api
-NEXT_PUBLIC_SITE_URL=http://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com
+NEXT_PUBLIC_SITE_URL=http://www.dailymeal.life
 ```
 
 **사용 여부:** ❌ **사용되지 않음!**
