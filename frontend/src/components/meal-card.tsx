@@ -142,12 +142,16 @@ export function MealCard({
     }
     if (url.startsWith('http')) return url
     
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    const absoluteUrl = `${apiUrl}${url}`
+    // 개발 환경: localhost:8000, 프로덕션: 상대 경로
+    const apiUrl = process.env.NODE_ENV === 'development'
+      ? 'http://localhost:8000'
+      : (process.env.NEXT_PUBLIC_API_URL || '')
+    const absoluteUrl = apiUrl ? `${apiUrl}${url}` : url
     
     // localhost URL은 카카오톡에서 표시 안되므로 플레이스홀더 사용
     if (absoluteUrl.includes('localhost')) {
       return 'https://via.placeholder.com/600x400/3B82F6/FFFFFF?text=DailyMeal'
+    }
     }
     
     return absoluteUrl

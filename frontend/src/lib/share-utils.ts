@@ -50,7 +50,9 @@ export const shareUtils = {
     // 이미지 URL을 절대 경로로 변환
     let imageUrl = data.imageUrl
     if (imageUrl && !imageUrl.startsWith('http')) {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const apiUrl = process.env.NODE_ENV === 'development'
+        ? 'http://localhost:8000'
+        : (process.env.NEXT_PUBLIC_API_URL || '/api')
       imageUrl = `${apiUrl}${imageUrl}`
     }
     

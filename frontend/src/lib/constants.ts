@@ -1,7 +1,9 @@
 // 애플리케이션 상수 정의
 
 export const APP_CONFIG = {
-  API_BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  API_BASE_URL: process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:8000' 
+    : (process.env.NEXT_PUBLIC_API_URL || '/api'),
   API_TIMEOUT: 10000, // 10초
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
   SUPPORTED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],

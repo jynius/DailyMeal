@@ -55,7 +55,9 @@ export async function createShare(mealId: string): Promise<CreateShareResponse> 
  * 공개 Meal 조회 (인증 불필요)
  */
 export async function getPublicMeal(shareId: string): Promise<PublicMealResponse> {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const API_URL = process.env.NODE_ENV === 'development'
+    ? 'http://localhost:8000'
+    : (process.env.NEXT_PUBLIC_API_URL || '/api');
   const response = await fetch(`${API_URL}/share/meal/${shareId}`, {
     method: 'GET',
     headers: {
@@ -74,7 +76,9 @@ export async function getPublicMeal(shareId: string): Promise<PublicMealResponse
  * 공유 조회 추적 (비로그인)
  */
 export async function trackView(data: TrackViewRequest): Promise<void> {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const API_URL = process.env.NODE_ENV === 'development'
+    ? 'http://localhost:8000'
+    : (process.env.NEXT_PUBLIC_API_URL || '/api');
   await fetch(`${API_URL}/share/track-view`, {
     method: 'POST',
     headers: {

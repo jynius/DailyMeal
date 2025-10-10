@@ -29,6 +29,27 @@ sudo systemctl restart caddy
 
 ---
 
+#### `/etc/nginx/sites-available/dailymeal` (있는 경우)
+```bash
+# 변경 전
+server_name ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com;
+
+# 변경 후
+server_name dailymeal.app www.dailymeal.app;
+```
+
+**명령어:**
+```bash
+sudo nano /etc/nginx/sites-available/dailymeal
+# 있다면
+sudo nano /etc/nginx/sites-available/dailymeal-ssl
+# 도메인 변경 후
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+---
+
 #### `ecosystem.config.js`
 ```javascript
 // 변경 전
@@ -130,10 +151,26 @@ sed -i "s|$OLD_DOMAIN|$NEW_DOMAIN|g" ~/DailyMeal/app/app.json
 echo "📝 Caddyfile 변경..."
 sudo sed -i "s|$OLD_DOMAIN|$NEW_DOMAIN|g" /etc/caddy/Caddyfile
 
+# 5. Nginx 설정 (있는 경우)
+if [ -f "/etc/nginx/sites-available/dailymeal" ]; then
+  echo "📝 Nginx dailymeal 변경..."
+  sudo sed -i "s|ec2-43-202-215-27\.ap-northeast-2\.compute\.amazonaws\.com|$NEW_DOMAIN|g" /etc/nginx/sites-available/dailymeal
+fi
+
+if [ -f "/etc/nginx/sites-available/dailymeal-ssl" ]; then
+  echo "📝 Nginx dailymeal-ssl 변경..."
+  sudo sed -i "s|ec2-43-202-215-27\.ap-northeast-2\.compute\.amazonaws\.com|$NEW_DOMAIN|g" /etc/nginx/sites-available/dailymeal-ssl
+fi
+
 echo "✅ 도메인 변경 완료!"
 echo ""
 echo "📋 다음 단계:"
-echo "  1. sudo systemctl restart caddy"
+if [ -f "/etc/caddy/Caddyfile" ]; then
+  echo "  1. sudo systemctl restart caddy"
+fi
+if [ -f "/etc/nginx/sites-available/dailymeal" ]; then
+  echo "  1. sudo nginx -t && sudo systemctl reload nginx"
+fi
 echo "  2. cd ~/DailyMeal && ./bin/deploy.sh"
 echo "  3. cd app && eas build --platform android --profile preview"
 ```

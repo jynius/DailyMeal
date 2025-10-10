@@ -84,12 +84,17 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       return
     }
     
-    const serverUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    // Socket.IO 서버 URL 설정
+    // 프로덕션: 현재 도메인 사용 (상대 경로)
+    // 개발: localhost:8000 사용
+    const isDev = process.env.NODE_ENV === 'development'
+    const serverUrl = isDev ? 'http://localhost:8000' : ''
     
-    console.log('🔌 Attempting to connect to Socket.IO server:', serverUrl);
+    console.log('🔌 Attempting to connect to Socket.IO server:', serverUrl || 'current domain');
     
     // Socket.IO 연결 - 에러에 강한 설정
     const newSocket = io(serverUrl, {
+      path: '/api/socket.io',  // ✅ /api 경로 사용!
       withCredentials: false,
       transports: ['polling', 'websocket'], // polling을 먼저 시도
       timeout: 10000,

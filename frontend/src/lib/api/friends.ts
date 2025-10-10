@@ -13,7 +13,10 @@ async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
+  // ✅ 개발 환경에서만 localhost 사용, 프로덕션에서는 환경변수 필수
+  const API_BASE_URL = process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:8000'
+    : process.env.NEXT_PUBLIC_API_URL || '/api'
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
