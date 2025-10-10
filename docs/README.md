@@ -8,10 +8,11 @@ DailyMeal 프로젝트의 모든 기술 문서와 가이드를 모아둔 곳입�
 
 ### 🚀 배포 & 운영
 - [**BUILD_DEPLOY_GUIDE.md**](./BUILD_DEPLOY_GUIDE.md) - 빌드 및 배포 프로세스 완벽 가이드
+- [**ENV_SETUP_CHECKLIST.md**](./ENV_SETUP_CHECKLIST.md) ⭐ - 신규 설치 체크리스트 (NEW!)
+- [**ENVIRONMENT_SETUP.md**](./ENVIRONMENT_SETUP.md) - 환경 변수 설정 종합 가이드 ⭐ **필수!**
 - [**CLEANUP_SUMMARY.md**](./CLEANUP_SUMMARY.md) - 프로덕션 배포 스크립트 정리 완료
 - [**ECOSYSTEM_BUILD_SOLUTION.md**](./ECOSYSTEM_BUILD_SOLUTION.md) - ecosystem.config.js 빌드 문제 해결
 - [**ECOSYSTEM_CONFIG_GUIDE.md**](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 Ecosystem 설정 완벽 가이드
-- [**ENVIRONMENT_SETUP.md**](./ENVIRONMENT_SETUP.md) - 환경 변수 설정 종합 가이드 ⭐ **필수!**
 - [**ENV_INTEGRATION_REPORT.md**](./ENV_INTEGRATION_REPORT.md) - 환경 변수 통합 작업 완료 보고서
 - [**ENV_ANALYSIS.md**](./ENV_ANALYSIS.md) - 환경 변수 파일 상세 분석
 - [**DEV_ENV_CONFLICT.md**](./DEV_ENV_CONFLICT.md) - 개발 환경 설정 충돌 해결 과정
@@ -58,10 +59,11 @@ DailyMeal 프로젝트의 모든 기술 문서와 가이드를 모아둔 곳입�
 ### 레벨 1: 필수 읽기 📌
 프로젝트를 시작하거나 배포하는 모든 사람이 반드시 읽어야 할 문서
 
-1. [**ENVIRONMENT_SETUP.md**](./ENVIRONMENT_SETUP.md) ⭐ - 환경 변수 설정 (가장 먼저!)
-2. [**BUILD_DEPLOY_GUIDE.md**](./BUILD_DEPLOY_GUIDE.md) - 배포 프로세스 이해
-3. [**NETWORK_ARCHITECTURE.md**](./NETWORK_ARCHITECTURE.md) - 네트워크 구조 이해
-4. [**ECOSYSTEM_CONFIG_GUIDE.md**](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 설정 이해
+1. [**ENV_SETUP_CHECKLIST.md**](./ENV_SETUP_CHECKLIST.md) ⭐ - 신규 설치 체크리스트 (제일 먼저!)
+2. [**ENVIRONMENT_SETUP.md**](./ENVIRONMENT_SETUP.md) ⭐ - 환경 변수 설정 상세 가이드
+3. [**BUILD_DEPLOY_GUIDE.md**](./BUILD_DEPLOY_GUIDE.md) - 배포 프로세스 이해
+4. [**NETWORK_ARCHITECTURE.md**](./NETWORK_ARCHITECTURE.md) - 네트워크 구조 이해
+5. [**ECOSYSTEM_CONFIG_GUIDE.md**](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 설정 이해
 
 ### 레벨 2: 운영 가이드 🔧
 서버 운영 및 유지보수 담당자를 위한 문서

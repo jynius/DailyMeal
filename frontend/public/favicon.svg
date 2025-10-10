@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#3B82F6" rx="3.2"/>
+  <g transform="translate(4.8, 6.4)">
+    <!-- Fork -->
+    <rect x="3.2" y="1.6" width="1.6" height="16" fill="white" rx="0.32"/>
+    <rect x="1.6" y="1.6" width="1.6" height="6.4" fill="white" rx="0.32"/>
+    <rect x="4.8" y="1.6" width="1.6" height="6.4" fill="white" rx="0.32"/>
+    
+    <!-- Spoon -->
+    <ellipse cx="17.6" cy="4.8" rx="1.92" ry="2.56" fill="white"/>
+    <rect x="16.64" y="6.4" width="1.92" height="11.2" fill="white" rx="0.32"/>
+  </g>
+  <text x="50%" y="27.2" font-family="system-ui, -apple-system, sans-serif" 
+        font-size="4.8" font-weight="bold" fill="white" 
+        text-anchor="middle" dominant-baseline="middle">
+    DM
+  </text>
+</svg>

@@ -109,6 +109,7 @@ bin/  # 스크립트 (11개)
 ### 🎯 빠른 링크
 
 #### 🆕 최신 업데이트
+- [⭐ **환경 변수 체크리스트**](./docs/ENV_SETUP_CHECKLIST.md) - 신규 설치 필수 확인 사항 (2025-10-10)
 - [⭐ **PostgreSQL 설치 가이드**](./docs/POSTGRES_SETUP_GUIDE.md) - 신규 서버에서 PostgreSQL 설치 자동화 (2025-10-10)
 - [⭐ **PostgreSQL 마이그레이션 완료**](./docs/POSTGRES_MIGRATION_COMPLETE.md) - SQLite → PostgreSQL 16 성공!
 - [⭐ **Socket.IO 구조 정리**](./docs/SOCKET_IO_FINAL.md) - 실시간 통신 최적화
@@ -136,21 +137,57 @@ bin/  # 스크립트 (11개)
 
 ## 🚀 빠른 시작
 
-### 배포 (권장)
+### 1️⃣ 환경 변수 설정 (필수!)
+
+프로젝트를 처음 설치한 경우, 환경 변수 파일을 설정해야 합니다:
+
+```bash
+# Backend 환경 변수 복사
+cp backend/.env.example backend/.env
+
+# Frontend 환경 변수 복사
+cp frontend/.env.local.example frontend/.env.local
+
+# 환경 변수 편집 (DB 비밀번호, API 키 등)
+nano backend/.env
+nano frontend/.env.local
+```
+
+**⚠️ 중요**: `.env` 파일은 **절대 Git에 커밋하지 마세요!** (이미 `.gitignore`에 포함됨)
+
+자세한 설정 방법은 [환경 변수 설정 가이드](./docs/ENVIRONMENT_SETUP.md)를 참조하세요.
+
+### 2️⃣ PostgreSQL 설치 및 설정
+
+```bash
+# 자동 설치 스크립트 실행 (Ubuntu/Debian)
+sudo bash backend/scripts/setup-postgres.sh
+
+# 또는 수동 설치는 아래 가이드 참조
+# → docs/POSTGRES_SETUP_GUIDE.md
+```
+
+### 3️⃣ 배포 (권장)
 ```bash
 # 저장소 클론
 git clone https://github.com/jynius/DailyMeal.git
 cd DailyMeal
 
-# 의존성 설치
+# 1. 환경 변수 설정 (위 1️⃣ 참조)
+cp backend/.env.example backend/.env
+cp frontend/.env.local.example frontend/.env.local
+
+# 2. 의존성 설치
 npm run install:all
 
-# 프로덕션 배포
+# 3. PostgreSQL 설정 (위 2️⃣ 참조)
+
+# 4. 프로덕션 배포
 npm run deploy
 # 또는: ./bin/deploy.sh
 ```
 
-### 개발 모드
+### 4️⃣ 개발 모드
 ```bash
 # 로컬 개발 (Concurrently)
 npm run dev
