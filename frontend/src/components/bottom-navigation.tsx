@@ -26,8 +26,10 @@ export function BottomNavigation() {
       {/* 중앙 플로팅 버튼 */}
       <Link 
         href="/add"
-        className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 z-50 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 touch-target"
-        style={{ bottom: `calc(4.5rem + env(safe-area-inset-bottom, 0px))` }}
+        className="fixed right-4 sm:right-6 z-50 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 touch-target"
+        style={{ 
+          bottom: `calc(5rem + env(safe-area-inset-bottom, 0px))` 
+        }}
         onClick={() => {
           logClick('add-button');
           console.log('[Nav Click] Add');
