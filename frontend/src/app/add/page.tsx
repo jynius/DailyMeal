@@ -350,9 +350,9 @@ export default function AddMealPage() {
           <div className="relative">
             <input
               type="file"
-              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              accept="image/*"
               multiple
-              {...(isMobile && { capture: "environment" })}
+              capture="environment"
               onChange={handlePhotosChange}
               className="hidden"
               id="photo-upload"
