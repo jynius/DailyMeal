@@ -67,33 +67,42 @@ export default function AddMealPage() {
   useEffect(() => {
     const isApp = /DailyMeal/.test(navigator.userAgent) || window.ReactNativeWebView !== undefined
     setIsMobileApp(isApp)
-    log.info('Environment check:', { isApp, userAgent: navigator.userAgent })
+    log.info('🔍 Environment check:', { isApp, userAgent: navigator.userAgent })
     
     // 앱에서 이미지 선택 결과 수신
     if (isApp && typeof window !== 'undefined') {
       const handleMessage = (event: MessageEvent) => {
+        log.info('📨 Message event received:', event.data)
         try {
           const message = JSON.parse(event.data)
+          log.info('📨 Parsed message:', message.type)
+          
           if (message.type === 'imagesSelected' && message.images) {
-            log.info('Images received from app:', message.images.length)
+            log.info('✅ Images received from app:', message.images.length)
             handleNativeImages(message.images)
           }
         } catch (e) {
-          // 무시
+          log.error('❌ Message parse error:', e)
         }
       }
       
+      log.info('👂 Adding message listener')
       window.addEventListener('message', handleMessage)
-      return () => window.removeEventListener('message', handleMessage)
+      return () => {
+        log.info('🔇 Removing message listener')
+        window.removeEventListener('message', handleMessage)
+      }
     }
   }, [])
   
   // 네이티브 앱에서 선택한 이미지 처리
   const handleNativeImages = (images: Array<{ base64: string, uri: string }>) => {
+    log.info(`🖼️ handleNativeImages called with ${images.length} images`)
     const newFiles: File[] = []
     const newPreviews: string[] = []
     
     images.forEach((img, index) => {
+      log.info(`🖼️ Processing image ${index + 1}/${images.length}`)
       // Base64를 Blob으로 변환
       const base64Data = img.base64.includes(',') ? img.base64.split(',')[1] : img.base64
       const byteCharacters = atob(base64Data)
@@ -109,20 +118,25 @@ export default function AddMealPage() {
       newPreviews.push(`data:image/jpeg;base64,${base64Data}`)
     })
     
+    log.info(`✅ Created ${newFiles.length} files and ${newPreviews.length} previews`)
+    
     setFormData(prev => ({
       ...prev,
       photos: [...prev.photos, ...newFiles]
     }))
     setPhotoPreviews(prev => [...prev, ...newPreviews])
     setCurrentPhotoIndex(formData.photos.length + newFiles.length - 1)
+    
+    log.info('✅ State updated')
   }
   
   // 이미지 선택 요청 (앱에서는 네이티브 피커 실행)
   const requestImagePicker = () => {
     if (isMobileApp && window.ReactNativeWebView) {
-      log.info('Requesting native image picker')
+      log.info('📱 Requesting native image picker')
       window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'pickImage' }))
     } else {
+      log.info('💻 Using web file input')
       // 웹에서는 기본 file input 사용
       document.getElementById('photo-upload')?.click()
     }
