@@ -11,6 +11,15 @@ import { createLogger } from '@/lib/logger'
 
 const log = createLogger('AddMealPage')
 
+// React Native WebView 타입 선언
+declare global {
+  interface Window {
+    ReactNativeWebView?: {
+      postMessage: (message: string) => void
+    }
+  }
+}
+
 interface FormData {
   name: string
   photos: File[]
@@ -52,6 +61,72 @@ export default function AddMealPage() {
   })
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [isMobileApp, setIsMobileApp] = useState(false) // 모바일 앱 환경 감지
+  
+  // 모바일 앱 환경 감지
+  useEffect(() => {
+    const isApp = /DailyMeal/.test(navigator.userAgent) || window.ReactNativeWebView !== undefined
+    setIsMobileApp(isApp)
+    log.info('Environment check:', { isApp, userAgent: navigator.userAgent })
+    
+    // 앱에서 이미지 선택 결과 수신
+    if (isApp && typeof window !== 'undefined') {
+      const handleMessage = (event: MessageEvent) => {
+        try {
+          const message = JSON.parse(event.data)
+          if (message.type === 'imagesSelected' && message.images) {
+            log.info('Images received from app:', message.images.length)
+            handleNativeImages(message.images)
+          }
+        } catch (e) {
+          // 무시
+        }
+      }
+      
+      window.addEventListener('message', handleMessage)
+      return () => window.removeEventListener('message', handleMessage)
+    }
+  }, [])
+  
+  // 네이티브 앱에서 선택한 이미지 처리
+  const handleNativeImages = (images: Array<{ base64: string, uri: string }>) => {
+    const newFiles: File[] = []
+    const newPreviews: string[] = []
+    
+    images.forEach((img, index) => {
+      // Base64를 Blob으로 변환
+      const base64Data = img.base64.includes(',') ? img.base64.split(',')[1] : img.base64
+      const byteCharacters = atob(base64Data)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      const byteArray = new Uint8Array(byteNumbers)
+      const blob = new Blob([byteArray], { type: 'image/jpeg' })
+      const file = new File([blob], `photo_${Date.now()}_${index}.jpg`, { type: 'image/jpeg' })
+      
+      newFiles.push(file)
+      newPreviews.push(`data:image/jpeg;base64,${base64Data}`)
+    })
+    
+    setFormData(prev => ({
+      ...prev,
+      photos: [...prev.photos, ...newFiles]
+    }))
+    setPhotoPreviews(prev => [...prev, ...newPreviews])
+    setCurrentPhotoIndex(formData.photos.length + newFiles.length - 1)
+  }
+  
+  // 이미지 선택 요청 (앱에서는 네이티브 피커 실행)
+  const requestImagePicker = () => {
+    if (isMobileApp && window.ReactNativeWebView) {
+      log.info('Requesting native image picker')
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'pickImage' }))
+    } else {
+      // 웹에서는 기본 file input 사용
+      document.getElementById('photo-upload')?.click()
+    }
+  }
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMobile, setIsMobile] = useState<boolean>(false)
   const [gpsPermission, setGpsPermission] = useState<'prompt' | 'granted' | 'denied'>('prompt')
@@ -465,8 +540,8 @@ export default function AddMealPage() {
               </div>
             ) : (
               /* 사진이 없을 때: 업로드 영역 */
-              <label
-                htmlFor="photo-upload"
+              <div
+                onClick={requestImagePicker}
                 className="block w-full aspect-square border-2 border-dashed border-red-300 hover:border-red-400 bg-red-50 rounded-lg cursor-pointer transition-colors flex flex-col items-center justify-center space-y-2"
                 style={{ 
                   touchAction: 'manipulation',
@@ -479,13 +554,13 @@ export default function AddMealPage() {
                 <Camera size={48} className="text-gray-400" />
                 <p className="text-sm text-gray-500">사진을 선택하거나 촬영하세요</p>
                 <p className="text-xs text-red-400">최소 1장 필수</p>
-              </label>
+              </div>
             )}
             
             {formData.photos.length > 0 && (
               <Button
                 type="button"
-                onClick={() => document.getElementById('photo-upload')?.click()}
+                onClick={requestImagePicker}
                 className="mt-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300"
               >
                 📸 사진 추가하기 ({formData.photos.length}/5)
