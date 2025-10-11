@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   swcMinify: false, // SWC 비활성화
   images: {
     unoptimized: true, // 이미지 최적화 비활성화
+    loader: 'custom',
+    loaderFile: './src/lib/image-loader.ts',
     remotePatterns: [
       {
         protocol: 'http',
