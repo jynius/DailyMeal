@@ -176,7 +176,7 @@ const WEB_URL = __DEV__
 ```javascript
 const WEB_URL = __DEV__ 
   ? 'http://192.168.219.103:3000'  
-  : 'https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com'; // 실제 도메인
+  : 'https://www.dailymeal.life'; // 실제 도메인
 ```
 
 ### 아이콘 및 스플래시 준비

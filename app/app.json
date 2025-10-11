@@ -27,12 +27,24 @@
         "backgroundColor": "#3B82F6"
       },
       "edgeToEdgeEnabled": true,
+      "navigationBar": {
+        "visible": "immersive",
+        "backgroundColor": "#ffffff"
+      },
+      "statusBar": {
+        "hidden": false,
+        "backgroundColor": "#3B82F6",
+        "barStyle": "light-content"
+      },
       "package": "com.dailymeal.app",
       "permissions": [
         "INTERNET",
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
       ],
       "intentFilters": [
         {
@@ -61,7 +73,7 @@
     },
     "extra": {
       "webUrl": "http://localhost:3000",
-      "productionWebUrl": "https://ec2-43-202-215-27.ap-northeast-2.compute.amazonaws.com",
+      "productionWebUrl": "https://www.dailymeal.life",
       "eas": {
         "projectId": "4f64dc67-c866-4a69-89b5-c0453d63899b"
       }
