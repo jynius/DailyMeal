@@ -1,6 +1,10 @@
 /**
  * Custom Image Loader for Next.js
- * /api/uploads 경로를 그대로 사용하도록 설정
+ * 
+ * 개발 환경: 백엔드가 http://localhost:8000/uploads/... 형태로 반환
+ * 프로덕션: 백엔드가 /api/uploads/... 형태로 반환
+ * 
+ * 이 로더는 모든 경로를 그대로 반환하여 Next.js가 최적화하지 않도록 함
  */
 
 export default function imageLoader({ src, width, quality }: {
@@ -8,16 +12,6 @@ export default function imageLoader({ src, width, quality }: {
   width: number;
   quality?: number;
 }) {
-  // /api/uploads로 시작하는 경로는 그대로 반환 (백엔드 이미지)
-  if (src.startsWith('/api/uploads') || src.startsWith('/uploads')) {
-    return src;
-  }
-  
-  // 외부 URL은 그대로 반환
-  if (src.startsWith('http://') || src.startsWith('https://')) {
-    return src;
-  }
-  
-  // 기타 경로는 그대로 반환
+  // 모든 경로를 그대로 반환 (unoptimized: true 설정과 함께 사용)
   return src;
 }

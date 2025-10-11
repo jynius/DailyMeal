@@ -136,6 +136,7 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
                   width={48}
                   height={48}
                   className="rounded-full"
+                  unoptimized
                 />
               ) : (
                 <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -186,6 +187,7 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
                   className="object-cover"
                   priority={index === 0}
                   sizes="(max-width: 768px) 100vw, 672px"
+                  unoptimized
                 />
               </div>
             ))}

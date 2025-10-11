@@ -22,7 +22,9 @@ export class MealRecordsService {
   ) {}
 
   /**
-   * 이미지 경로를 절대 URL로 변환
+   * 이미지 경로를 환경에 맞게 변환
+   * - 개발: 절대 URL (http://localhost:8000/uploads/...)
+   * - 프로덕션: 상대 경로 (/api/uploads/...) - Nginx가 프록시
    */
   private transformImageUrl(photo: string | null): string | null {
     if (!photo) return null;
@@ -32,7 +34,13 @@ export class MealRecordsService {
       return photo;
     }
 
-    // 상대 경로를 절대 URL로 변환
+    // 프로덕션 환경: 상대 경로 반환
+    if (process.env.NODE_ENV === 'production') {
+      // /uploads/... -> /api/uploads/...
+      return photo.startsWith('/uploads') ? `/api${photo}` : photo;
+    }
+
+    // 개발 환경: 절대 URL 반환
     const baseUrl = process.env.API_BASE_URL || 'http://localhost:8000';
     return `${baseUrl}${photo}`;
   }
@@ -52,7 +60,11 @@ export class MealRecordsService {
     userId: string,
     photos?: string[],
   ) {
+    // UUID 수동 생성 (데이터베이스 제약 조건 문제 해결)
+    const { v4: uuidv4 } = require('uuid');
+    
     const mealRecord = this.mealRecordRepository.create({
+      id: uuidv4(), // UUID 명시적 생성
       ...createMealRecordDto,
       userId,
       photo: photos && photos.length > 0 ? photos[0] : undefined, // 첫 번째 사진을 메인 사진으로

@@ -148,6 +148,7 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
                   alt={`${meal.name} ${index + 1}`}
                   width={800}
                   height={800}
+                  unoptimized
                   className="w-full h-full object-cover"
                   priority={index === 0}
                 />
@@ -200,6 +201,7 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
                         width={64}
                         height={64}
                         className="w-full h-full object-cover"
+                        unoptimized
                       />
                     </button>
                   ))}

@@ -199,6 +199,7 @@ export function MealCard({
                     className="object-cover high-res-image"
                     priority={index === 0}
                     sizes="(max-width: 768px) 50vw, 33vw"
+                    unoptimized
                   />
                 </div>
               ))}

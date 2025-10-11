@@ -20,6 +20,7 @@ export interface ConnectedUser {
 }
 
 @WebSocketGateway({
+  path: '/api/socket.io', // ✅ 프론트엔드와 동일한 경로 사용
   cors: {
     origin: '*', // 개발 환경에서는 모든 origin 허용
     methods: ['GET', 'POST'],

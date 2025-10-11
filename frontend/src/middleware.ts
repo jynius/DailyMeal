@@ -13,14 +13,24 @@ const publicPaths = [
 const ignorePaths = [
   '/_next',
   '/api',
-  '/favicon.ico',
+  '/favicon',        // 모든 favicon 파일
   '/manifest.json',
   '/sw.js',
   '/workbox',
+  '/icon-',          // 모든 아이콘 파일
+  '/.well-known',    // PWA 관련
 ]
+
+// 정적 리소스 확장자
+const staticExtensions = ['.png', '.svg', '.jpg', '.jpeg', '.webp', '.ico', '.gif']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // 정적 파일 확장자 체크
+  if (staticExtensions.some(ext => pathname.endsWith(ext))) {
+    return NextResponse.next()
+  }
 
   // 정적 파일 및 API는 건너뛰기
   if (ignorePaths.some(path => pathname.startsWith(path))) {

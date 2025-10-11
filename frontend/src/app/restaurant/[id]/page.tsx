@@ -222,6 +222,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
                       alt={meal.name}
                       fill
                       className="object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
