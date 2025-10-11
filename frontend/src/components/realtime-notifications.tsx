@@ -73,7 +73,7 @@ export function RealTimeNotifications() {
   return (
     <>
       {/* Floating 상태 표시 - 우측 상단에 나란히 */}
-      <div className="fixed top-6 right-4 z-50 flex items-center gap-2">
+      <div className="fixed top-8 right-4 z-50 flex items-center gap-2">
         {/* 연결 상태 + 사용자 수 - 버튼으로 변경 */}
         <button
           onClick={() => setIsOpen(!isOpen)}

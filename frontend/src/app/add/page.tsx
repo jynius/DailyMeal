@@ -86,11 +86,15 @@ export default function AddMealPage() {
         }
       }
       
-      log.info('👂 Adding message listener')
+      log.info('👂 Adding message listeners')
+      // React Native WebView는 document와 window 모두 지원
       window.addEventListener('message', handleMessage)
+      document.addEventListener('message', handleMessage as any)
+      
       return () => {
-        log.info('🔇 Removing message listener')
+        log.info('🔇 Removing message listeners')
         window.removeEventListener('message', handleMessage)
+        document.removeEventListener('message', handleMessage as any)
       }
     }
   }, [])
