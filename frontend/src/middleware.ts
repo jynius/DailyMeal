@@ -6,7 +6,9 @@ const publicPaths = [
   '/',
   '/login',
   '/signup',
-  '/share',  // /share로 시작하는 모든 경로
+  '/share',   // /share로 시작하는 모든 경로
+  '/privacy', // 개인정보 처리방침 (Play Store 요구사항)
+  '/terms',   // 이용약관 (Play Store 요구사항)
 ]
 
 // 정적 파일 및 API 경로
