@@ -36,7 +36,10 @@ export const tokenManager = {
       localStorage.setItem('token', token)
       
       // 쿠키에도 저장 (미들웨어에서 사용)
-      document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
+      // HTTPS에서는 Secure 플래그 필요
+      const isSecure = window.location.protocol === 'https:'
+      const secureFlag = isSecure ? '; Secure' : ''
+      document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax${secureFlag}`
     }
   },
   

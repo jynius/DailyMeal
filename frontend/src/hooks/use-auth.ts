@@ -18,12 +18,13 @@ export function useRequireAuth() {
     
     if (!token) {
       // 토큰이 없으면 로그인 페이지로
-      router.push('/login')
+      setIsLoading(false)
+      router.replace('/login') // replace 사용 (히스토리에 추가 안 함)
     } else {
       setIsAuthenticated(true)
       setIsLoading(false)
     }
-  }, [router])
+  }, []) // 의존성 배열 비우기 - 마운트 시 1번만 실행
 
   return { isAuthenticated, isLoading }
 }
