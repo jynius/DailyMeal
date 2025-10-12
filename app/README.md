@@ -4,12 +4,22 @@ DailyMeal 웹사이트를 WebView로 감싼 크로스 플랫폼 모바일 앱입
 
 ## 📖 상세 문서
 
-모바일 앱 개발 및 배포에 필요한 가이드:
+모바일 앱 개발 및 배포에 필요한 가이드는 [docs/app/](../docs/app/) 폴더를 참조하세요:
 
-- [� **모바일 앱 배포**](./DEPLOYMENT.md) - EAS Build, APK/AAB 빌드, 앱스토어 배포
-- [�🔥 **방화벽 설정**](../docs/FIREWALL_SETUP.md) - WSL2 개발 환경 필수 설정
-- [🌐 **네트워크 구조**](../docs/NETWORK_ARCHITECTURE.md) - 시스템 아키텍처
-- [📖 **전체 문서**](../docs/README.md) - 모든 문서 보기
+- [📱 앱 배포 가이드](../docs/app/DEPLOYMENT.md) - EAS Build, APK/AAB 빌드, 앱스토어 배포
+- [🔍 디버깅 가이드](../docs/app/DEBUGGING_GUIDE.md) - Chrome DevTools, ADB 연결
+- [📋 배포 체크리스트](../docs/app/DEPLOYMENT_CHECKLIST.md) - 배포 전 확인사항
+- [📱 전체화면 모드](../docs/app/FULLSCREEN_MODE.md) - Android 전체화면 설정
+- [🔄 새로고침 기능](../docs/app/REFRESH_GUIDE.md) - Pull-to-refresh 구현
+- [📦 빌드 결과](../docs/app/BUILD_RESULT.md) - 최근 빌드 기록
+
+### 인프라 문서
+- [🔥 방화벽 설정](../docs/infrastructure/FIREWALL_SETUP.md) - WSL2 개발 환경 필수 설정
+- [🌐 네트워크 구조](../docs/infrastructure/NETWORK_ARCHITECTURE.md) - 시스템 아키텍처
+
+### 앱 스토어 배포
+- [🏪 Play Store 배포](../docs/app-store/PLAYSTORE_DEPLOYMENT.md) - Google Play 등록 가이드
+- [� 앱 스토어 설명](../docs/app-store/APP_STORE_DESCRIPTION.md) - 앱 설명 및 스크린샷
 
 ## ⚠️ 중요: 방화벽 설정 필요
 

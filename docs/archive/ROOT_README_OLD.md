@@ -1,266 +1,134 @@
-# DailyMeal 🍽️# DailyMeal 🍽️
+# DailyMeal 🍽️
 
+매일의 식사를 기록하고 음식점을 공유하는 소셜 식단 플랫폼
 
+## ✨ 주요 기능
 
-매일의 식사를 기록하고 공유하는 풀스택 웹/앱 서비스매일의 식사를 기록하고 음식점을 공유하는 소셜 식단 플랫폼
+### 📱 **2단계 식사 기록 시스템**
+- 📸 **1단계**: 사진만 찍고 즉시 저장 (자동 제목 생성)
+- ⭐ **2단계**: 나중에 평가 추가 (평점, 메모, 위치 등)
+- 🎯 **간편함**: 바쁠 때는 사진만, 여유있을 때 상세 평가
+- 🏷️ **미평가 표시**: 아직 평가하지 않은 식사를 한눈에 확인
+- 📱 **Modal 평가**: 어디서든 팝업으로 즉시 평가 가능
 
-
-
-## ✨ 주요 기능## ✨ 주요 기능
-
-
-
-- 📸 **식사 사진 등록**: 갤러리/카메라로 여러 장의 사진 업로드### 📱 **2단계 식사 기록 시스템**
-
-- ⭐ **평점 및 메모**: 1-5점 별점과 상세 메모 작성- 📸 **1단계**: 사진만 찍고 즉시 저장 (자동 제목 생성)
-
-- 📍 **위치 자동 기록**: GPS 기반 자동 위치 저장 및 지도 표시- ⭐ **2단계**: 나중에 평가 추가 (평점, 메모, 위치 등)
-
-- 💬 **소셜 기능**: 좋아요, 댓글, 실시간 피드- 🎯 **간편함**: 바쁠 때는 사진만, 여유있을 때 상세 평가
-
-- 🔔 **실시간 알림**: Socket.IO 기반 실시간 알림 시스템- 🏷️ **미평가 표시**: 아직 평가하지 않은 식사를 한눈에 확인
-
-- 🔗 **공유 기능**: 카카오톡 공유, 딥링크 지원- 📱 **Modal 평가**: 어디서든 팝업으로 즉시 평가 가능
-
-
-
-## 🏗️ 기술 스택### � **웹-앱 연동** (NEW! ⭐)
-
+### � **웹-앱 연동** (NEW! ⭐)
 - 📲 **Smart App Banner**: 모바일 웹에서 앱 설치 유도
+- 🔗 **Deep Linking**: 웹 링크로 앱 자동 실행
+- 🌐 **Universal Links**: iOS/Android 네이티브 연동
+- 📱 **PWA 지원**: 모바일 브라우저에서 앱처럼 사용
 
-| 구분 | 기술 |- 🔗 **Deep Linking**: 웹 링크로 앱 자동 실행
-
-|------|------|- 🌐 **Universal Links**: iOS/Android 네이티브 연동
-
-| **Frontend** | Next.js 15, TypeScript, Tailwind CSS, Zustand, Socket.IO |- 📱 **PWA 지원**: 모바일 브라우저에서 앱처럼 사용
-
-| **Backend** | NestJS, TypeScript, PostgreSQL, TypeORM, Socket.IO, JWT |
-
-| **Mobile** | React Native (Expo), WebView, expo-image-picker |### 💬 **공유 시스템**
-
-| **Infrastructure** | Nginx/Caddy, PM2, Let's Encrypt, Ubuntu |- 🔗 **식사 공유**: 고유 링크로 식사 기록 공유
-
+### 💬 **공유 시스템**
+- 🔗 **식사 공유**: 고유 링크로 식사 기록 공유
 - 📊 **조회 추적**: 공유 링크 조회 수 및 통계
+- 👥 **친구 추천**: 공유 링크를 통한 친구 연결
 
-## 🚀 빠른 시작- 👥 **친구 추천**: 공유 링크를 통한 친구 연결
+### 🗺️ **음식점 공유 & 맵**
+- 🏪 **음식점 데이터베이스**: 개별 음식점 정보 관리
+- 🗺️ **지도 연동**: 음식점 위치 지도에서 확인
+- 🔍 **검색 & 필터**: 지역, 카테고리별 음식점 검색
 
-
-
-```bash### 🗺️ **음식점 공유 & 맵**
-
-# 저장소 클론- 🏪 **음식점 데이터베이스**: 개별 음식점 정보 관리
-
-git clone https://github.com/jynius/DailyMeal.git- 🗺️ **지도 연동**: 음식점 위치 지도에서 확인
-
-cd DailyMeal- 🔍 **검색 & 필터**: 지역, 카테고리별 음식점 검색
-
-
-
-# 환경 변수 설정### 💬 **소셜 기능**
-
-cp backend/.env.example backend/.env- 👥 **사용자 프로필**: 개인 식사 기록 및 통계
-
-cp frontend/.env.example frontend/.env- 💬 **댓글 & 공유**: 식사 기록에 댓글 및 공유
-
+### 💬 **소셜 기능**
+- 👥 **사용자 프로필**: 개인 식사 기록 및 통계
+- 💬 **댓글 & 공유**: 식사 기록에 댓글 및 공유
 - 📊 **통계 & 인사이트**: 식사 패턴 분석
 
-# 개발 환경 실행
+---
 
-npm run dev---
+## 🚀 최신 업데이트
 
-
-
-# 프로덕션 배포## 🚀 최신 업데이트
-
-pm2 start ecosystem.config.js
-
-```- [⭐ **웹-앱 연동 구현**](./docs/WEB_APP_INTEGRATION_REPORT.md) - Smart Banner + Deep Linking (NEW!)
-
+- [⭐ **웹-앱 연동 구현**](./docs/WEB_APP_INTEGRATION_REPORT.md) - Smart Banner + Deep Linking (NEW!)
 - [📱 **빠른 시작 가이드**](./docs/WEB_APP_INTEGRATION_QUICKSTART.md) - 웹-앱 연동 테스트 방법
-
-**📖 자세한 가이드**: [환경 설정](docs/setup/ENVIRONMENT_SETUP.md) | [배포 가이드](docs/deployment/BUILD_DEPLOY_GUIDE.md)- [🔄 **Socket.IO 구조 정리**](./docs/SOCKET_IO_FINAL.md) - 실시간 통신 최적화
-
+- [🔄 **Socket.IO 구조 정리**](./docs/SOCKET_IO_FINAL.md) - 실시간 통신 최적화
 - [⭐ **2단계 식사 기록 시스템**](./docs/TWO_PHASE_MEAL_SYSTEM.md) - 사진 등록과 평가 분리
-
-## 📁 프로젝트 구조- [🔐 **JWT 인증 문제 해결**](./docs/JWT_AUTH_FIX.md) - PM2 환경 변수 및 자동 리다이렉션
-
+- [🔐 **JWT 인증 문제 해결**](./docs/JWT_AUTH_FIX.md) - PM2 환경 변수 및 자동 리다이렉션
 - [⚙️ **평가 선택적 업데이트**](./docs/RATING_OPTIONAL_UPDATE.md) - 기술 구현 상세
 
+---
+
+## 📚 문서
+
+프로젝트의 모든 기술 문서는 [`docs/`](./docs/) 폴더에 체계적으로 정리되어 있습니다.
+
+### 📖 문서 구조
+
+```
+docs/
+├── 🔗 웹-앱 연동 (신규!)
+│   ├── WEB_APP_INTEGRATION_REPORT.md   # 구현 완료 보고서
+│   ├── WEB_APP_INTEGRATION_QUICKSTART.md # 빠른 시작 가이드
+│   └── WEB_APP_INTEGRATION.md          # 구현 전략 문서
+│
+├── 🚀 배포 & 운영 (10개)
+│   ├── BUILD_DEPLOY_GUIDE.md           # 빌드 및 배포 프로세스
+│   ├── CLEANUP_SUMMARY.md              # 스크립트 정리 완료
+│   ├── ECOSYSTEM_BUILD_SOLUTION.md     # 빌드 문제 해결
+│   ├── ECOSYSTEM_CONFIG_GUIDE.md       # PM2 설정 가이드
+│   ├── ENVIRONMENT_SETUP.md ⭐          # 환경 변수 설정 (필수!)
+│   ├── ENV_INTEGRATION_REPORT.md       # 환경 변수 통합 보고서
+│   ├── ENV_ANALYSIS.md                 # 환경 변수 파일 분석
+│   ├── DEV_ENV_CONFLICT.md             # 개발 환경 충돌 해결
+│   ├── SCRIPTS_REORGANIZATION.md       # Shell 스크립트 재구성
+│   └── SUMMARY.md                      # 문서 재구성 요약
+│
+├── 🔧 PM2 프로세스 관리 (2개)
+│   ├── PM2_NAMING_STRATEGY.md
+│   └── PM2_SCRIPT_GUIDE.md
+│
+├── 🗄️ 데이터베이스 (5개)
+│   ├── DATABASE.md                      # DB 구조 및 관리 📊
+│   ├── POSTGRES_SETUP_GUIDE.md ⭐        # PostgreSQL 설치 및 초기 설정 (NEW!)
+│   ├── POSTGRES_MIGRATION.md            # PostgreSQL 마이그레이션 가이드 🔄
+│   ├── POSTGRES_MIGRATION_COMPLETE.md   # 마이그레이션 완료 보고서
+│   └── WHEN_TO_MIGRATE_POSTGRES.md      # 마이그레이션 타이밍 ⏰
+│
+├── 🌐 네트워크 & 인프라 (4개)
+│   ├── NETWORK_ARCHITECTURE.md
+│   ├── NGINX_PROXY_SETUP.md
+│   ├── FIREWALL_SETUP.md
+│   └── HTTPS_SETUP.md
+│
+├── ✨ 기능 업데이트 (4개) 🆕
+│   ├── TWO_PHASE_MEAL_SYSTEM.md ⭐      # 2단계 식사 기록 시스템 (NEW!)
+│   ├── EVALUATE_MODAL_SYSTEM.md ⭐      # 평가 Modal 시스템 (NEW!)
+│   ├── RATING_OPTIONAL_UPDATE.md        # 평가 선택적 업데이트
+│   └── SCENARIOS.md                     # 사용자 시나리오
+│
+├── 🔧 기술 최적화 (3개) 🆕
+│   ├── SOCKET_IO_FINAL.md ⭐            # Socket.IO 구조 정리 (NEW!)
+│   ├── SOCKET_IO_ANALYSIS.md            # Socket.IO 분석 과정
+│   └── UPLOAD_PATH_REFACTORING.md       # 업로드 경로 리팩토링
+│
+└── 🔍 문제 해결 (6개)
+    ├── LOCALHOST_CLEANUP.md             # Localhost 클린업
+    ├── JWT_TOKEN_ERROR_FIX.md           # JWT 인증 문제 해결
+    ├── KAKAO_MAP_401_FIX.md             # 카카오 맵 인증 문제
+    ├── POSTGRES_MIGRATION_REPORT.md     # PostgreSQL 마이그레이션 보고서
+    └── DATABASE_DOCUMENTATION_REPORT.md # DB 문서화 보고서
 ```
 
-DailyMeal/---
-
-├── frontend/          # Next.js 프론트엔드 (Port: 3000)
-
-├── backend/           # NestJS 백엔드 (Port: 8000)## 📚 문서
-
-├── app/               # React Native 앱 (Expo)
-
-├── docs/              # 📚 전체 문서 (체계적으로 정리)프로젝트의 모든 기술 문서는 [`docs/`](./docs/) 폴더에 체계적으로 정리되어 있습니다.
-
-│   ├── setup/         # 환경 설정
-
-│   ├── deployment/    # 배포 관련### 📖 문서 구조
-
-│   ├── infrastructure/# 인프라 설정
-
-│   ├── features/      # 기능 구현```
-
-│   ├── fixes/         # 버그 수정docs/
-
-│   ├── app/           # 앱 개발├── 🔗 웹-앱 연동 (신규!)
-
-│   ├── app-store/     # 앱 스토어 등록│   ├── WEB_APP_INTEGRATION_REPORT.md   # 구현 완료 보고서
-
-│   └── archive/       # 히스토리│   ├── WEB_APP_INTEGRATION_QUICKSTART.md # 빠른 시작 가이드
-
-├── scripts/           # 유틸리티 스크립트│   └── WEB_APP_INTEGRATION.md          # 구현 전략 문서
-
-└── bin/               # 실행 스크립트│
-
-```├── 🚀 배포 & 운영 (10개)
-
-│   ├── BUILD_DEPLOY_GUIDE.md           # 빌드 및 배포 프로세스
-
-## 📚 문서│   ├── CLEANUP_SUMMARY.md              # 스크립트 정리 완료
-
-│   ├── ECOSYSTEM_BUILD_SOLUTION.md     # 빌드 문제 해결
-
-프로젝트의 모든 기술 문서는 **[`docs/`](./docs/)** 폴더에 체계적으로 정리되어 있습니다.│   ├── ECOSYSTEM_CONFIG_GUIDE.md       # PM2 설정 가이드
-
-│   ├── ENVIRONMENT_SETUP.md ⭐          # 환경 변수 설정 (필수!)
-
-### 🎯 주요 문서│   ├── ENV_INTEGRATION_REPORT.md       # 환경 변수 통합 보고서
-
-│   ├── ENV_ANALYSIS.md                 # 환경 변수 파일 분석
-
-#### 시작하기│   ├── DEV_ENV_CONFLICT.md             # 개발 환경 충돌 해결
-
-- [📖 환경 설정](docs/setup/ENVIRONMENT_SETUP.md)│   ├── SCRIPTS_REORGANIZATION.md       # Shell 스크립트 재구성
-
-- [🗄️ 데이터베이스 설정](docs/setup/DATABASE.md)│   └── SUMMARY.md                      # 문서 재구성 요약
-
-- [🐘 PostgreSQL 설정](docs/setup/POSTGRES_SETUP_GUIDE.md)│
-
-├── 🔧 PM2 프로세스 관리 (2개)
-
-#### 배포하기│   ├── PM2_NAMING_STRATEGY.md
-
-- [🚀 빌드 및 배포 가이드](docs/deployment/BUILD_DEPLOY_GUIDE.md)│   └── PM2_SCRIPT_GUIDE.md
-
-- [⚙️ PM2 스크립트 가이드](docs/deployment/PM2_SCRIPT_GUIDE.md)│
-
-- [🔧 에코시스템 설정](docs/deployment/ECOSYSTEM_CONFIG_GUIDE.md)├── 🗄️ 데이터베이스 (5개)
-
-│   ├── DATABASE.md                      # DB 구조 및 관리 📊
-
-#### 인프라│   ├── POSTGRES_SETUP_GUIDE.md ⭐        # PostgreSQL 설치 및 초기 설정 (NEW!)
-
-- [🌐 네트워크 아키텍처](docs/infrastructure/NETWORK_ARCHITECTURE.md)│   ├── POSTGRES_MIGRATION.md            # PostgreSQL 마이그레이션 가이드 🔄
-
-- [🔒 HTTPS 설정](docs/infrastructure/HTTPS_SETUP.md)│   ├── POSTGRES_MIGRATION_COMPLETE.md   # 마이그레이션 완료 보고서
-
-- [🔥 방화벽 설정](docs/infrastructure/FIREWALL_SETUP.md)│   └── WHEN_TO_MIGRATE_POSTGRES.md      # 마이그레이션 타이밍 ⏰
-
-│
-
-#### 앱 개발├── 🌐 네트워크 & 인프라 (4개)
-
-- [📱 앱 배포 가이드](docs/app/DEPLOYMENT.md)│   ├── NETWORK_ARCHITECTURE.md
-
-- [🔍 디버깅 가이드](docs/app/DEBUGGING_GUIDE.md)│   ├── NGINX_PROXY_SETUP.md
-
-- [🏪 Play Store 등록](docs/app-store/PLAYSTORE_DEPLOYMENT.md)│   ├── FIREWALL_SETUP.md
-
-│   └── HTTPS_SETUP.md
-
-**📚 전체 문서 목록**: [docs/README.md](docs/README.md)│
-
-├── ✨ 기능 업데이트 (4개) 🆕
-
-## 🛠️ 개발│   ├── TWO_PHASE_MEAL_SYSTEM.md ⭐      # 2단계 식사 기록 시스템 (NEW!)
-
-│   ├── EVALUATE_MODAL_SYSTEM.md ⭐      # 평가 Modal 시스템 (NEW!)
-
-### Frontend 개발│   ├── RATING_OPTIONAL_UPDATE.md        # 평가 선택적 업데이트
-
-```bash│   └── SCENARIOS.md                     # 사용자 시나리오
-
-cd frontend│
-
-npm install├── 🔧 기술 최적화 (3개) 🆕
-
-npm run dev  # http://localhost:3000│   ├── SOCKET_IO_FINAL.md ⭐            # Socket.IO 구조 정리 (NEW!)
-
-```│   ├── SOCKET_IO_ANALYSIS.md            # Socket.IO 분석 과정
-
-**문서**: [frontend/README.md](frontend/README.md)│   └── UPLOAD_PATH_REFACTORING.md       # 업로드 경로 리팩토링
-
-│
-
-### Backend 개발└── 🔍 문제 해결 (6개)
-
-```bash    ├── LOCALHOST_CLEANUP.md             # Localhost 클린업
-
-cd backend    ├── JWT_TOKEN_ERROR_FIX.md           # JWT 인증 문제 해결
-
-npm install    ├── KAKAO_MAP_401_FIX.md             # 카카오 맵 인증 문제
-
-npm run start:dev  # http://localhost:8000    ├── POSTGRES_MIGRATION_REPORT.md     # PostgreSQL 마이그레이션 보고서
-
-```    └── DATABASE_DOCUMENTATION_REPORT.md # DB 문서화 보고서
-
-**문서**: [backend/README.md](backend/README.md)```
-
-
-
-### Mobile App 개발bin/  # 스크립트 (11개)
-
-```bash├── check-build.sh              # 빌드 상태 확인 (Linux/macOS)
-
-cd app├── check-firewall.sh           # 방화벽 상태 확인 (Linux)
-
-npm install├── check-firewall-windows.ps1  # 방화벽 상태 확인 (Windows) 🪟
-
-npx expo start├── check-status.sh             # PM2 상태 진단
-
-```├── deploy.sh                   # 프로덕션 배포
-
-**문서**: [app/README.md](app/README.md)├── dev-setup.sh                # 개발 환경 설정
-
+bin/  # 스크립트 (11개)
+├── check-build.sh              # 빌드 상태 확인 (Linux/macOS)
+├── check-firewall.sh           # 방화벽 상태 확인 (Linux)
+├── check-firewall-windows.ps1  # 방화벽 상태 확인 (Windows) 🪟
+├── check-status.sh             # PM2 상태 진단
+├── deploy.sh                   # 프로덕션 배포
+├── dev-setup.sh                # 개발 환경 설정
 ├── restart-pm2.sh              # PM2 재시작
-
-## 🌐 배포 URL├── start-pm2.sh                # PM2 개발 서버 시작
-
+├── start-pm2.sh                # PM2 개발 서버 시작
 ├── startup.sh                  # PM2 프로덕션 시작
-
-- **웹사이트**: https://www.dailymeal.life├── stop-pm2.sh                 # PM2 중지
-
-- **API**: https://www.dailymeal.life/api└── wsl-port-forward.ps1        # WSL2 포트 포워딩 (Windows) 🪟
-
-- **개인정보 처리방침**: https://www.dailymeal.life/privacy```
-
-- **이용약관**: https://www.dailymeal.life/terms
+├── stop-pm2.sh                 # PM2 중지
+└── wsl-port-forward.ps1        # WSL2 포트 포워딩 (Windows) 🪟
+```
 
 ### 🎯 빠른 링크
 
-## 📧 문의
-
 #### 🆕 최신 업데이트
-
-- **이메일**: support@dailymeal.life- [⭐ **환경 변수 체크리스트**](./docs/ENV_SETUP_CHECKLIST.md) - 신규 설치 필수 확인 사항 (2025-10-10)
-
-- **개인정보**: privacy@dailymeal.life- [⭐ **PostgreSQL 설치 가이드**](./docs/POSTGRES_SETUP_GUIDE.md) - 신규 서버에서 PostgreSQL 설치 자동화 (2025-10-10)
-
-- **GitHub**: https://github.com/jynius/DailyMeal- [⭐ **PostgreSQL 마이그레이션 완료**](./docs/POSTGRES_MIGRATION_COMPLETE.md) - SQLite → PostgreSQL 16 성공!
-
+- [⭐ **환경 변수 체크리스트**](./docs/ENV_SETUP_CHECKLIST.md) - 신규 설치 필수 확인 사항 (2025-10-10)
+- [⭐ **PostgreSQL 설치 가이드**](./docs/POSTGRES_SETUP_GUIDE.md) - 신규 서버에서 PostgreSQL 설치 자동화 (2025-10-10)
+- [⭐ **PostgreSQL 마이그레이션 완료**](./docs/POSTGRES_MIGRATION_COMPLETE.md) - SQLite → PostgreSQL 16 성공!
 - [⭐ **Socket.IO 구조 정리**](./docs/SOCKET_IO_FINAL.md) - 실시간 통신 최적화
-
-## 📄 라이선스- [⭐ **2단계 식사 기록 시스템**](./docs/TWO_PHASE_MEAL_SYSTEM.md) - 사진 등록과 평가 분리!
-
+- [⭐ **2단계 식사 기록 시스템**](./docs/TWO_PHASE_MEAL_SYSTEM.md) - 사진 등록과 평가 분리!
 - [🔐 **JWT 인증 문제 해결**](./docs/JWT_AUTH_FIX.md) - PM2 환경 변수 및 자동 리다이렉션
-
-이 프로젝트는 개인 프로젝트입니다.
 
 #### 필수 문서 (처음 시작하시나요?)
 - [⭐ **환경 변수 설정**](./docs/ENVIRONMENT_SETUP.md) - 가장 먼저 읽어야 할 문서!

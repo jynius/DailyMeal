@@ -1,203 +1,132 @@
-# 📚 DailyMeal 문서 센터
+# DailyMeal 문서
 
-DailyMeal 프로젝트의 모든 기술 문서와 가이드를 모아둔 곳입니다.
+이 폴더에는 DailyMeal 프로젝트의 모든 기술 문서가 체계적으로 정리되어 있습니다.
 
----
+## 📁 문서 구조
 
-## 📖 목차
+### 🚀 [setup/](setup/) - 환경 설정
+프로젝트 초기 설정 및 데이터베이스 구성 가이드
+- [환경 설정](setup/ENVIRONMENT_SETUP.md)
+- [환경 변수 체크리스트](setup/ENV_SETUP_CHECKLIST.md)
+- [프로덕션 환경 가이드](setup/ENV_PRODUCTION_GUIDE.md)
+- [데이터베이스 설정](setup/DATABASE.md)
+- [PostgreSQL 설정](setup/POSTGRES_SETUP_GUIDE.md)
+- [PostgreSQL 마이그레이션](setup/POSTGRES_MIGRATION.md)
 
-### 🚀 배포 & 운영
-- [**BUILD_DEPLOY_GUIDE.md**](./BUILD_DEPLOY_GUIDE.md) - 빌드 및 배포 프로세스 완벽 가이드
-- [**ENV_SETUP_CHECKLIST.md**](./ENV_SETUP_CHECKLIST.md) ⭐ - 신규 설치 체크리스트 (NEW!)
-- [**ENVIRONMENT_SETUP.md**](./ENVIRONMENT_SETUP.md) - 환경 변수 설정 종합 가이드 ⭐ **필수!**
-- [**CLEANUP_SUMMARY.md**](./CLEANUP_SUMMARY.md) - 프로덕션 배포 스크립트 정리 완료
-- [**ECOSYSTEM_BUILD_SOLUTION.md**](./ECOSYSTEM_BUILD_SOLUTION.md) - ecosystem.config.js 빌드 문제 해결
-- [**ECOSYSTEM_CONFIG_GUIDE.md**](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 Ecosystem 설정 완벽 가이드
-- [**ENV_INTEGRATION_REPORT.md**](./ENV_INTEGRATION_REPORT.md) - 환경 변수 통합 작업 완료 보고서
-- [**ENV_ANALYSIS.md**](./ENV_ANALYSIS.md) - 환경 변수 파일 상세 분석
-- [**DEV_ENV_CONFLICT.md**](./DEV_ENV_CONFLICT.md) - 개발 환경 설정 충돌 해결 과정
-- [**SCRIPTS_REORGANIZATION.md**](./SCRIPTS_REORGANIZATION.md) - Shell 스크립트 재구성 보고서
-- [**SCRIPTS_FINAL_REPORT.md**](./SCRIPTS_FINAL_REPORT.md) - 스크립트 재구성 최종 보고서 (Bash + PowerShell) 🪟
-- [**SUMMARY.md**](./SUMMARY.md) - 문서 재구성 요약
+### 📦 [deployment/](deployment/) - 배포
+빌드, 배포, 프로세스 관리 가이드
+- [빌드 및 배포 가이드](deployment/BUILD_DEPLOY_GUIDE.md)
+- [PM2 스크립트 가이드](deployment/PM2_SCRIPT_GUIDE.md)
+- [PM2 네이밍 전략](deployment/PM2_NAMING_STRATEGY.md)
+- [에코시스템 설정](deployment/ECOSYSTEM_CONFIG_GUIDE.md)
 
-### 🔧 PM2 프로세스 관리
-- [**PM2_NAMING_STRATEGY.md**](./PM2_NAMING_STRATEGY.md) - PM2 프로세스 이름 전략
-- [**PM2_SCRIPT_GUIDE.md**](./PM2_SCRIPT_GUIDE.md) - PM2 script vs npm 실행 가이드
+### 🏗️ [infrastructure/](infrastructure/) - 인프라
+네트워크, 보안, 프록시 설정
+- [네트워크 아키텍처](infrastructure/NETWORK_ARCHITECTURE.md)
+- [HTTPS 설정](infrastructure/HTTPS_SETUP.md)
+- [방화벽 설정](infrastructure/FIREWALL_SETUP.md)
+- [Nginx 완전 설정](infrastructure/NGINX_COMPLETE_CONFIG.md)
+- [Nginx 프록시 설정](infrastructure/NGINX_PROXY_SETUP.md)
+- [Caddy 설정 가이드](infrastructure/CADDY_SETUP_GUIDE.md)
 
-### 🗄️ 데이터베이스
-- [**DATABASE.md**](./DATABASE.md) - 데이터베이스 구조 및 관리 가이드 📊
-- [**POSTGRES_SETUP_GUIDE.md**](./POSTGRES_SETUP_GUIDE.md) ⭐ - PostgreSQL 설치 및 초기 설정 (NEW!)
-- [**POSTGRES_MIGRATION.md**](./POSTGRES_MIGRATION.md) - PostgreSQL 마이그레이션 가이드 🔄
-- [**POSTGRES_MIGRATION_COMPLETE.md**](./POSTGRES_MIGRATION_COMPLETE.md) - 마이그레이션 완료 보고서
-- [**WHEN_TO_MIGRATE_POSTGRES.md**](./WHEN_TO_MIGRATE_POSTGRES.md) - 마이그레이션 타이밍 가이드 ⏰
+### ✨ [features/](features/) - 기능 구현
+주요 기능 구현 가이드
+- [카카오톡 공유 설정](features/KAKAO_SHARE_SETUP.md)
+- [공유 시스템 백엔드](features/SHARE_SYSTEM_PHASE1_BACKEND.md)
+- [공유 시스템 프론트엔드](features/SHARE_SYSTEM_PHASE2_FRONTEND.md)
+- [PWA 아이콘 가이드](features/PWA_ICONS_GUIDE.md)
+- [웹앱 통합](features/WEB_APP_INTEGRATION.md)
+- [웹앱 통합 퀵스타트](features/WEB_APP_INTEGRATION_QUICKSTART.md)
 
-### 🌐 네트워크 & 인프라
-- [**NETWORK_ARCHITECTURE.md**](./NETWORK_ARCHITECTURE.md) - WSL2 + Windows + AWS 네트워크 구조
-- [**NGINX_PROXY_SETUP.md**](./NGINX_PROXY_SETUP.md) - Nginx 리버스 프록시 설정 가이드
-- [**FIREWALL_SETUP.md**](./FIREWALL_SETUP.md) - Windows 방화벽 및 포트 포워딩 설정
-- [**HTTPS_SETUP.md**](./HTTPS_SETUP.md) - HTTPS/SSL 인증서 설정 가이드
+### 🔧 [fixes/](fixes/) - 버그 수정
+발견된 문제와 해결 방법
+- [JWT 인증 수정](fixes/JWT_AUTH_FIX.md)
+- [JWT 토큰 에러 수정](fixes/JWT_TOKEN_ERROR_FIX.md)
+- [카카오 맵 401 에러 수정](fixes/KAKAO_MAP_401_FIX.md)
+- [이미지 경로 수정](fixes/IMAGE_PATH_FIX.md)
+- [Next.js 이미지 로더 수정](fixes/NEXTJS_IMAGE_LOADER_FIX.md)
+- [공유 403 해결](fixes/SHARE_403_SOLUTION.md)
+- [Socket.IO Nginx 수정](fixes/SOCKETIO_NGINX_FIX.md)
+- [WebView 네비게이션 디버그](fixes/WEBVIEW_NAVIGATION_DEBUG.md)
+- [플로팅 버튼과 새로고침](fixes/FLOATING_BUTTON_AND_REFRESH.md)
 
-### 🔍 문제 해결 & 최적화
-- [**LOCALHOST_CLEANUP.md**](./LOCALHOST_CLEANUP.md) - Localhost 하드코딩 제거 작업
-- [**SCENARIOS.md**](./SCENARIOS.md) - 다양한 사용 시나리오 및 문제 해결
+### 📱 [app/](app/) - 모바일 앱
+React Native 앱 개발 및 배포
+- [앱 배포 가이드](app/DEPLOYMENT.md)
+- [디버깅 가이드](app/DEBUGGING_GUIDE.md)
+- [배포 체크리스트](app/DEPLOYMENT_CHECKLIST.md)
+- [전체화면 모드](app/FULLSCREEN_MODE.md)
+- [새로고침 가이드](app/REFRESH_GUIDE.md)
+- [빌드 결과](app/BUILD_RESULT.md)
 
----
+### 🏪 [app-store/](app-store/) - 앱 스토어 등록
+Play Store / App Store 등록 가이드
+- [Play Store 배포](app-store/PLAYSTORE_DEPLOYMENT.md)
+- [앱 스토어 설명](app-store/APP_STORE_DESCRIPTION.md)
 
-## 🔗 관련 전문 문서
+### 💻 [frontend/](frontend/) - 프론트엔드
+Next.js 관련 문서
+- [로거 시스템](frontend/LOGGER_README.md)
+- [API 모니터링](frontend/API_MONITOR_README.md)
 
-프로젝트의 다른 특화된 문서들:
+### 🔌 [backend/](backend/) - 백엔드
+NestJS 관련 문서 (향후 추가 예정)
 
-- [📱 **모바일 앱 배포**](../app/DEPLOYMENT.md) - Expo 앱 빌드 및 배포 가이드
-- [🌳 **브랜치 전략**](../.github/BRANCH_SETUP.md) - Git 브랜치 설정 및 관리
-- [⚙️ **GitHub Actions**](../.github/GITHUB_ACTIONS_SETUP.md) - CI/CD 환경 설정
-- [📋 **Copilot 가이드**](../.github/copilot-instructions.md) - GitHub Copilot 프로젝트 컨텍스트
+### 📜 [scripts/](scripts/) - 스크립트
+유틸리티 스크립트 문서
+- [SVG to PNG 변환기](scripts/README.md)
 
----
+### 🐙 [github/](github/) - GitHub 설정
+GitHub Actions, 브랜치 전략
+- [브랜치 설정](github/BRANCH_SETUP.md)
+- [GitHub Actions 설정](github/GITHUB_ACTIONS_SETUP.md)
 
-## 🗂️ 문서 분류
+### 📦 [archive/](archive/) - 아카이브
+과거 마이그레이션, 리팩토링, 분석 기록
 
-### 레벨 1: 필수 읽기 📌
-프로젝트를 시작하거나 배포하는 모든 사람이 반드시 읽어야 할 문서
+## 🎯 빠른 링크
 
-1. [**ENV_SETUP_CHECKLIST.md**](./ENV_SETUP_CHECKLIST.md) ⭐ - 신규 설치 체크리스트 (제일 먼저!)
-2. [**ENVIRONMENT_SETUP.md**](./ENVIRONMENT_SETUP.md) ⭐ - 환경 변수 설정 상세 가이드
-3. [**BUILD_DEPLOY_GUIDE.md**](./BUILD_DEPLOY_GUIDE.md) - 배포 프로세스 이해
-4. [**NETWORK_ARCHITECTURE.md**](./NETWORK_ARCHITECTURE.md) - 네트워크 구조 이해
-5. [**ECOSYSTEM_CONFIG_GUIDE.md**](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 설정 이해
+### 새로 시작하기
+1. [환경 설정](setup/ENVIRONMENT_SETUP.md)
+2. [데이터베이스 설정](setup/DATABASE.md)
+3. [빌드 및 배포](deployment/BUILD_DEPLOY_GUIDE.md)
 
-### 레벨 2: 운영 가이드 🔧
-서버 운영 및 유지보수 담당자를 위한 문서
+### 배포하기
+1. [배포 체크리스트](deployment/BUILD_DEPLOY_GUIDE.md)
+2. [PM2 가이드](deployment/PM2_SCRIPT_GUIDE.md)
+3. [HTTPS 설정](infrastructure/HTTPS_SETUP.md)
 
-1. [**PM2_SCRIPT_GUIDE.md**](./PM2_SCRIPT_GUIDE.md) - PM2 스크립트 이해
-2. [**NGINX_PROXY_SETUP.md**](./NGINX_PROXY_SETUP.md) - 웹서버 설정
-3. [**FIREWALL_SETUP.md**](./FIREWALL_SETUP.md) - 보안 설정
-4. [**HTTPS_SETUP.md**](./HTTPS_SETUP.md) - SSL 인증서 관리
+### 앱 개발
+1. [앱 배포 가이드](app/DEPLOYMENT.md)
+2. [디버깅 가이드](app/DEBUGGING_GUIDE.md)
+3. [Play Store 등록](app-store/PLAYSTORE_DEPLOYMENT.md)
 
-### 레벨 3: 참고 자료 📚
-특정 문제 해결이나 최적화를 위한 문서
+### 문제 해결
+- [버그 수정 목록](fixes/)
+- [네트워크 문제](infrastructure/NETWORK_ARCHITECTURE.md)
+- [방화벽 설정](infrastructure/FIREWALL_SETUP.md)
 
-1. [**ENV_INTEGRATION_REPORT.md**](./ENV_INTEGRATION_REPORT.md) - 환경 변수 통합 내역
-2. [**ENV_ANALYSIS.md**](./ENV_ANALYSIS.md) - 환경 변수 파일 상세 분석
-3. [**DEV_ENV_CONFLICT.md**](./DEV_ENV_CONFLICT.md) - 개발 환경 충돌 해결 과정
-4. [**SCRIPTS_REORGANIZATION.md**](./SCRIPTS_REORGANIZATION.md) - Shell 스크립트 재구성
-5. [**CLEANUP_SUMMARY.md**](./CLEANUP_SUMMARY.md) - 스크립트 정리 내역
-6. [**ECOSYSTEM_BUILD_SOLUTION.md**](./ECOSYSTEM_BUILD_SOLUTION.md) - 빌드 문제 해결
-7. [**PM2_NAMING_STRATEGY.md**](./PM2_NAMING_STRATEGY.md) - 네이밍 전략
-8. [**LOCALHOST_CLEANUP.md**](./LOCALHOST_CLEANUP.md) - 하드코딩 제거
-9. [**SCENARIOS.md**](./SCENARIOS.md) - 시나리오별 가이드
-10. [**SUMMARY.md**](./SUMMARY.md) - 문서 재구성 요약
+## 📝 문서 작성 규칙
 
----
+1. **파일명**: `UPPER_SNAKE_CASE.md` 사용
+2. **위치**: 적절한 카테고리 폴더에 배치
+3. **링크**: 상대 경로 사용
+4. **업데이트**: 변경사항이 있으면 문서도 함께 업데이트
 
-## 🔍 빠른 검색
+## 🔍 문서 찾기
 
-### 키워드로 찾기
+```bash
+# 키워드로 문서 검색
+grep -r "키워드" docs/
 
-#### 환경 변수 관련 ⭐
-- **초기 설정**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "초기 설정 방법"
-- **JWT_SECRET**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "JWT Configuration"
-- **카카오 지도 API**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "카카오 지도 API 키 발급"
-- **.env vs PM2**: [ENV_INTEGRATION_REPORT.md](./ENV_INTEGRATION_REPORT.md) → "dotenv 통합"
-- **파일 분석**: [ENV_ANALYSIS.md](./ENV_ANALYSIS.md) → "4개 .env 파일 비교"
-- **충돌 해결**: [DEV_ENV_CONFLICT.md](./DEV_ENV_CONFLICT.md) → "방안 2 선택 과정"
+# 특정 카테고리 문서 목록
+ls docs/setup/
+```
 
-#### 배포 관련
-- **초기 배포**: [BUILD_DEPLOY_GUIDE.md](./BUILD_DEPLOY_GUIDE.md) → "초기 배포"
-- **재배포**: [CLEANUP_SUMMARY.md](./CLEANUP_SUMMARY.md) → "코드 업데이트"
-- **빌드 실패**: [ECOSYSTEM_BUILD_SOLUTION.md](./ECOSYSTEM_BUILD_SOLUTION.md)
+## 📚 추가 자료
 
-#### PM2 관련
-- **PM2 시작**: [PM2_SCRIPT_GUIDE.md](./PM2_SCRIPT_GUIDE.md) → "start-pm2.sh"
-- **PM2 중지**: [PM2_SCRIPT_GUIDE.md](./PM2_SCRIPT_GUIDE.md) → "stop-pm2.sh"
-- **프로세스 이름**: [PM2_NAMING_STRATEGY.md](./PM2_NAMING_STRATEGY.md)
-- **PM2 설정**: [ECOSYSTEM_CONFIG_GUIDE.md](./ECOSYSTEM_CONFIG_GUIDE.md)
-
-#### 네트워크 관련
-- **WSL2 설정**: [NETWORK_ARCHITECTURE.md](./NETWORK_ARCHITECTURE.md) → "WSL2"
-- **방화벽 설정**: [FIREWALL_SETUP.md](./FIREWALL_SETUP.md)
-- **Nginx 설정**: [NGINX_PROXY_SETUP.md](./NGINX_PROXY_SETUP.md)
-- **HTTPS 설정**: [HTTPS_SETUP.md](./HTTPS_SETUP.md)
-
-#### 문제 해결
-- **지도 안 보임**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "문제 해결"
-- **JWT 오류**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "JWT 인증 오류"
-- **DB 연결 오류**: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) → "데이터베이스 연결 오류"
-- **localhost 오류**: [LOCALHOST_CLEANUP.md](./LOCALHOST_CLEANUP.md)
-
----
-
-## 🎯 시나리오별 가이드
-
-### 새 개발자 온보딩 🆕
-1. [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) - 환경 변수 설정
-2. [NETWORK_ARCHITECTURE.md](./NETWORK_ARCHITECTURE.md) - 프로젝트 구조 이해
-3. [BUILD_DEPLOY_GUIDE.md](./BUILD_DEPLOY_GUIDE.md) - 로컬 실행 방법
-
-### 서버 운영자 🔧
-1. [PM2_SCRIPT_GUIDE.md](./PM2_SCRIPT_GUIDE.md) - PM2 명령어
-2. [ECOSYSTEM_CONFIG_GUIDE.md](./ECOSYSTEM_CONFIG_GUIDE.md) - PM2 설정
-3. [NGINX_PROXY_SETUP.md](./NGINX_PROXY_SETUP.md) - 웹서버 관리
-
-### DevOps 엔지니어 ⚙️
-1. [BUILD_DEPLOY_GUIDE.md](./BUILD_DEPLOY_GUIDE.md) - CI/CD 파이프라인
-2. [FIREWALL_SETUP.md](./FIREWALL_SETUP.md) - 보안 설정
-3. [HTTPS_SETUP.md](./HTTPS_SETUP.md) - SSL 인증서
-
-### 문제 해결 담당자 🔍
-1. [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) - 환경 변수 문제
-2. [SCENARIOS.md](./SCENARIOS.md) - 다양한 시나리오
-3. [ECOSYSTEM_BUILD_SOLUTION.md](./ECOSYSTEM_BUILD_SOLUTION.md) - 빌드 오류
-
----
-
-## 📝 문서 작성 기준
-
-### 문서 추가 시
-1. 이 README.md에 링크 추가
-2. 적절한 카테고리에 배치
-3. 레벨 분류 지정
-4. 키워드 검색 섹션에 추가
-
-### 문서 작성 가이드
-- **제목**: 명확하고 검색 가능한 이름
-- **구조**: 목차, 개요, 상세 내용, 예제, 문제 해결
-- **링크**: 관련 문서 간 상호 참조
-- **예제**: 실제 사용 가능한 명령어와 코드
-- **업데이트**: 변경 사항 발생 시 즉시 반영
-
----
-
-## 🔄 최근 업데이트
-
-### 2025-10-08
-- ✨ **ENVIRONMENT_SETUP.md** 추가 - 환경 변수 설정 종합 가이드
-- ✨ **ENV_INTEGRATION_REPORT.md** 추가 - 환경 변수 통합 작업 보고서
-- 🔧 JWT_SECRET 환경 변수 적용 완료
-- 🔧 KAKAO_MAP_API_KEY 환경 변수 통합
-- 🗑️ .env.production 삭제 (미사용)
-- 📝 backend/.env.example 생성
-
-### 2025-10-07
-- 📚 문서 센터 구조화 완료
-- 🏗️ 13개 문서를 docs/ 폴더로 이동
-- 📋 레벨별 분류 및 검색 기능 추가
-- 🔗 크로스 레퍼런스 체계 확립
-
----
-
-## 🤝 기여 가이드
-
-문서 개선이나 새로운 가이드 추가는 언제나 환영합니다!
-
-1. 문서 작성 또는 수정
-2. 이 README.md에 링크 추가
-3. Pull Request 생성
-4. 리뷰 후 병합
-
----
-
-## 📧 문의
-
-문서 관련 문의사항이나 개선 제안은 이슈로 남겨주세요.
-
-**Happy Coding! 🚀**
+- [메인 README](../README.md)
+- [Frontend README](../frontend/README.md)
+- [Backend README](../backend/README.md)
+- [App README](../app/README.md)
+- [Scripts README](../scripts/README.md)
