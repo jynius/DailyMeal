@@ -11,6 +11,7 @@ import { useRequireAuth } from '@/hooks/use-auth'
 import { createLogger } from '@/lib/logger'
 import { Users, Filter, Zap } from 'lucide-react'
 import type { MealRecord } from '@/types'
+import { Header } from '@/components/header'
 
 const log = createLogger('FeedPage')
 
@@ -118,45 +119,6 @@ function FeedContent() {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 pt-safe">
-        <h1 className="text-xl font-bold text-gray-900 mb-3 mt-2">나의 식단</h1>
-        
-        {/* 필터 버튼 */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              filter === 'all'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            전체
-          </button>
-          <button
-            onClick={() => setFilter('rated')}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              filter === 'rated'
-                ? 'bg-green-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            평가완료
-          </button>
-          <button
-            onClick={() => setFilter('unrated')}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              filter === 'unrated'
-                ? 'bg-orange-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            미평가
-          </button>
-        </div>
-      </header>
-
       {/* Content */}
       <div className="p-4 space-y-4">
         {error ? (
@@ -209,8 +171,6 @@ function FeedContent() {
           );
         })()}
       </div>
-
-      <BottomNavigation />
     </div>
   )
 }

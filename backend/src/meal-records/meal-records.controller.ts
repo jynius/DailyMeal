@@ -101,6 +101,7 @@ export class MealRecordsController {
 
     // 다중 사진 경로 처리 (날짜별 폴더 구조 반영)
     const photoPaths: string[] = [];
+    const fullPhotoPaths: string[] = [];
     if (files && files.length > 0) {
       files.forEach((file) => {
         // file.path는 전체 경로, 여기서 /uploads 이후만 추출
@@ -110,6 +111,7 @@ export class MealRecordsController {
           useDate: true,
         });
         photoPaths.push(urlPath);
+        fullPhotoPaths.push(file.path);
         this.logger.debug(`Photo uploaded: ${urlPath}`);
       });
     }
@@ -125,6 +127,7 @@ export class MealRecordsController {
       createMealRecordDto,
       req.user.id,
       photoPaths,
+      fullPhotoPaths,
     );
 
     this.logger.info(

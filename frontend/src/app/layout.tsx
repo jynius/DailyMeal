@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { PWAInstaller } from "@/components/pwa-installer";
 import { AppInstallBanner } from "@/components/app-install-banner";
+import { LocationProvider } from "@/contexts/location-context";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -47,13 +48,15 @@ export default function RootLayout({
     <html lang="ko" data-scroll-behavior="smooth">
       <body className={`${inter.variable} font-sans antialiased overflow-x-hidden`}>
         <Providers>
-          <PWAInstaller />
-          <AppInstallBanner />
-          <div className="min-h-screen bg-gray-50 pb-safe-bottom">
-            <main className="max-w-md mx-auto min-h-screen bg-white shadow-lg">
-              {children}
-            </main>
-          </div>
+          <LocationProvider>
+            <PWAInstaller />
+            <AppInstallBanner />
+            <div className="min-h-screen bg-gray-50 pb-safe-bottom">
+              <main className="max-w-md mx-auto min-h-screen bg-white shadow-lg">
+                {children}
+              </main>
+            </div>
+          </LocationProvider>
         </Providers>
       </body>
     </html>

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
+import sharp from 'sharp';
 import {
   Injectable,
   NotFoundException,
@@ -59,7 +59,28 @@ export class MealRecordsService {
     createMealRecordDto: CreateMealRecordDto,
     userId: string,
     photos?: string[],
+    fullPhotoPaths?: string[],
   ) {
+    // EXIF에서 촬영 시간 추출
+    let photoTakenAt: Date | undefined;
+    if (fullPhotoPaths && fullPhotoPaths.length > 0) {
+      try {
+        const metadata = await sharp(fullPhotoPaths[0]).metadata();
+        if (metadata.exif) {
+          // exif-parser-js와 유사한 로직으로 파싱
+          const exifString = metadata.exif.toString('utf-8');
+          const match = exifString.match(/DateTimeOriginal\x00(....:..:.. ..:..:..)/);
+          if (match && match[1]) {
+            const [datePart, timePart] = match[1].split(' ');
+            const [year, month, day] = datePart.split(':');
+            photoTakenAt = new Date(`${year}-${month}-${day}T${timePart}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error reading image metadata:', error);
+      }
+    }
+
     // UUID 수동 생성 (데이터베이스 제약 조건 문제 해결)
     const { v4: uuidv4 } = require('uuid');
     
@@ -69,6 +90,7 @@ export class MealRecordsService {
       userId,
       photo: photos && photos.length > 0 ? photos[0] : undefined, // 첫 번째 사진을 메인 사진으로
       photos: photos || [], // 모든 사진들
+      photoTakenAt, // 추출한 촬영 시간 저장
     });
 
     const saved = await this.mealRecordRepository.save(mealRecord);

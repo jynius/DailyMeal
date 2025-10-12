@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { KakaoMap } from '@/components/kakao-map'
+import { Header } from '@/components/header'
 
 interface MealRecord {
   id: string
@@ -128,15 +129,6 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
-      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 pt-safe">
-        <div className="flex items-center gap-3 mt-2">
-          <button onClick={() => router.back()} className="text-gray-600 hover:text-gray-800">
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className="text-lg font-semibold truncate flex-1">{restaurant.name}</h1>
-        </div>
-      </header>
-
       <div className="bg-white p-6 border-b">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">

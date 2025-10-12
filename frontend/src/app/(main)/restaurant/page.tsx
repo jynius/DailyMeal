@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { MapPin, Star, Map as MapIcon, List } from 'lucide-react'
-import { BottomNavigation } from '@/components/bottom-navigation'
 import { KakaoMap } from '@/components/kakao-map'
 import { useRequireAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
+import { useLocation } from '@/contexts/location-context'
 
 interface Restaurant {
   id: string
@@ -13,12 +13,12 @@ interface Restaurant {
   address: string
   latitude?: number
   longitude?: number
-  mealCount: number  // 이 식당에서 먹은 횟수
-  avgRating: number  // 평균 평점
-  lastVisited: string  // 마지막 방문일
-  photos: string[]  // 대표 사진들
-  isFriendVisit?: boolean  // 친구 방문 여부
-  friendName?: string  // 친구 이름
+  mealCount: number
+  avgRating: number
+  lastVisited: string
+  photos: string[]
+  isFriendVisit?: boolean
+  friendName?: string
 }
 
 type SortOption = 'recent' | 'count' | 'rating'
@@ -28,125 +28,59 @@ export default function RestaurantsPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [popularRestaurants, setPopularRestaurants] = useState<Restaurant[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map') // 지도/리스트 뷰 토글
-  const [sortOption, setSortOption] = useState<SortOption>('recent') // 정렬 옵션
-  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
+  const [sortOption, setSortOption] = useState<SortOption>('recent')
+  const location = useLocation()
+  const { latitude, longitude, error: locationError } = location
 
-  // 페이지 로드 시 현재 위치 가져오기
-  useEffect(() => {
-    // 현재 위치 가져오기
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCurrentLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          })
-        },
-        (error) => {
-          console.error('위치 정보를 가져올 수 없습니다:', error)
-          // 기본 위치 (서울 시청)
-          setCurrentLocation({ lat: 37.5665, lng: 126.9780 })
-        }
-      )
-    }
-  }, [])
-
-  // 식당 데이터 로드 (식사 기록에서 자동 생성)
   useEffect(() => {
     if (isAuthenticated) {
       fetchRestaurants()
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, latitude, longitude])
 
   const fetchRestaurants = async () => {
     try {
       setLoading(true)
-      const { mealRecordsApi, friendsApi } = await import('@/lib/api/client')
+      const { restaurantsApi } = await import('@/lib/api/client')
       
-      // 내 식사 기록과 친구 목록 가져오기
-      const [myMealsResponse, friends] = await Promise.all([
-        mealRecordsApi.getAll(1, 1000), // 모든 데이터 가져오기
-        friendsApi.getFriends().catch(() => [])
-      ])
+      const params: { lat?: number; lon?: number; radius?: number } = {}
+      if (latitude && longitude) {
+        params.lat = latitude
+        params.lon = longitude
+        params.radius = 5 // 기본 반경 5km
+      }
 
-      const myMeals = myMealsResponse.data
-
-      // 친구들의 식사 기록 가져오기는 일단 스킵 (API 엔드포인트 필요)
-      // TODO: 친구의 식사 기록을 가져오는 별도 API 필요
+      const response = await restaurantsApi.getRestaurants(params)
       
-      // 식당별로 그룹핑 (장소명 기준)
-      const restaurantMap = new Map<string, Restaurant>()
+      const restaurantData = response.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        address: r.address,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        mealCount: r.totalVisits,
+        avgRating: r.averageRating,
+        lastVisited: r.lastVisit,
+        photos: r.representativePhoto ? [r.representativePhoto] : [],
+      }))
 
-      // 내 식사 기록 처리
-      myMeals.forEach((meal: any) => {
-        if (!meal.location) return
-        
-        const existing = restaurantMap.get(meal.location)
-        if (existing) {
-          existing.mealCount++
-          const totalRating = existing.avgRating * (existing.mealCount - 1) + (meal.rating || 0)
-          existing.avgRating = totalRating / existing.mealCount
-          if (new Date(meal.createdAt) > new Date(existing.lastVisited)) {
-            existing.lastVisited = meal.createdAt
-          }
-          if (meal.photo && !existing.photos.includes(meal.photo)) {
-            existing.photos.push(meal.photo)
-          }
-        } else {
-          restaurantMap.set(meal.location, {
-            id: meal.id,
-            name: meal.location,
-            address: meal.address || '주소 정보 없음',
-            latitude: meal.latitude,
-            longitude: meal.longitude,
-            mealCount: 1,
-            avgRating: meal.rating || 0,
-            lastVisited: meal.createdAt,
-            photos: meal.photo ? [meal.photo] : []
-          })
-        }
-      })
-      
-      const restaurantData = Array.from(restaurantMap.values())
       setRestaurants(restaurantData)
-      setPopularRestaurants(restaurantData.slice(0, 4))
+      setPopularRestaurants(
+        [...restaurantData]
+          .sort((a, b) => b.mealCount - a.mealCount)
+          .slice(0, 4),
+      )
     } catch (error) {
       console.error('Failed to fetch restaurants:', error)
-      
-      // 에러 시 임시 데이터 사용
-      const mockData: Restaurant[] = [
-        {
-          id: '1',
-          name: '맛있는 파스타',
-          address: '서울 마포구 홍대입구역',
-          mealCount: 5,
-          avgRating: 4.5,
-          lastVisited: '2025-10-08',
-          photos: ['/placeholder.jpg']
-        },
-        {
-          id: '2',
-          name: '김치찌개 전문점',
-          address: '서울 강남구 강남역',
-          mealCount: 3,
-          avgRating: 5,
-          lastVisited: '2025-10-07',
-          photos: ['/placeholder.jpg']
-        }
-      ]
-      setRestaurants(mockData)
-      setPopularRestaurants(mockData.slice(0, 4))
     } finally {
       setLoading(false)
     }
   }
 
-  // 정렬된 식당 목록
   const sortedRestaurants = (() => {
     const list = [...restaurants]
     
-    // 정렬 적용
     switch (sortOption) {
       case 'recent':
         return list.sort((a, b) => new Date(b.lastVisited).getTime() - new Date(a.lastVisited).getTime())
@@ -159,7 +93,6 @@ export default function RestaurantsPage() {
     }
   })()
 
-  // 인증 로딩 중
   if (authLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -171,19 +104,12 @@ export default function RestaurantsPage() {
     )
   }
 
-  // 인증되지 않은 경우
   if (!isAuthenticated) {
     return null
   }
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 pt-safe">
-        <h1 className="text-xl font-bold text-gray-900 mt-2">맛집</h1>
-      </header>
-
-      {/* 인기 맛집 */}
       <div className="p-4 bg-white border-b">
         <h4 className="text-sm font-medium text-gray-600 mb-2">인기 맛집</h4>
         <div className="grid grid-cols-2 gap-2">
@@ -212,7 +138,6 @@ export default function RestaurantsPage() {
         </div>
       </div>
 
-      {/* View Mode Toggle */}
       <div className="p-4 bg-white border-b">
         <div className="flex gap-2">
           <button
@@ -240,14 +165,13 @@ export default function RestaurantsPage() {
         </div>
       </div>
 
-      {/* Map or List View */}
       {viewMode === 'map' ? (
         <div className="bg-white border-y">
           <div className="h-96 relative">
-            {currentLocation ? (
+            {location.latitude && location.longitude ? (
               <KakaoMap
-                latitude={currentLocation.lat}
-                longitude={currentLocation.lng}
+                latitude={location.latitude}
+                longitude={location.longitude}
                 level={5}
                 markers={sortedRestaurants
                   .filter(r => r.latitude && r.longitude)
@@ -271,13 +195,12 @@ export default function RestaurantsPage() {
               <div className="w-full h-full flex items-center justify-center bg-gray-100">
                 <div className="text-center text-gray-500">
                   <MapPin size={48} className="mx-auto mb-2 text-gray-400 animate-pulse" />
-                  <p className="text-sm">현재 위치를 가져오는 중...</p>
+                  <p className="text-sm">{location.isLoading ? '현재 위치를 가져오는 중...' : (location.error ? location.error.message : '위치 정보를 가져올 수 없습니다.')}</p>
                 </div>
               </div>
             )}
             
-            {/* 지도 위 카드 리스트 (하단에 가로 스크롤) */}
-            {sortedRestaurants.length > 0 && currentLocation && (
+            {sortedRestaurants.length > 0 && location.latitude && location.longitude && (
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                   {sortedRestaurants.slice(0, 10).map((restaurant) => (
@@ -312,7 +235,6 @@ export default function RestaurantsPage() {
           </div>
         </div>
       ) : (
-        /* Restaurant List */
         <>
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
@@ -401,8 +323,6 @@ export default function RestaurantsPage() {
           </div>
         </>
       )}
-
-      <BottomNavigation />
     </div>
   )
 }

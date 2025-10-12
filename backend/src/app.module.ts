@@ -46,9 +46,7 @@ import { RealTimeModule } from './realtime/realtime.module';
       logging: process.env.NODE_ENV === 'development',
     }),
     ServeStaticModule.forRoot({
-      rootPath: process.env.UPLOAD_DIR?.startsWith('/') 
-        ? process.env.UPLOAD_DIR 
-        : join(__dirname, '..', process.env.UPLOAD_DIR || 'uploads'),
+      rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
     }),
     AuthModule,

@@ -14,7 +14,8 @@ export interface MealRecord {
   companionNames?: string  // 같이 식사한 사람 이름 (텍스트)
   latitude?: number
   longitude?: number
-  address?: string
+  address?: string;
+  photoTakenAt?: string;
   createdAt: string
   updatedAt: string
   userId: string

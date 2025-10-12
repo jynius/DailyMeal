@@ -10,6 +10,7 @@ import { ShareModal } from '@/components/share-modal'
 import { createShare } from '@/lib/api/share'
 import Image from 'next/image'
 import type { MealRecord } from '@/types'
+import { Header } from '@/components/header'
 
 export default function MealDetailPage({ params }: { params: { id: string } }) {
   const [meal, setMeal] = useState<MealRecord | null>(null)
@@ -118,16 +119,6 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* 헤더 */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-10">
-        <div className="flex items-center gap-3">
-          <Link href="/feed">
-            <ArrowLeft size={24} className="text-gray-600" />
-          </Link>
-          <h1 className="text-lg font-semibold flex-1">식사 기록</h1>
-        </div>
-      </div>
-
       {/* 사진 갤러리 */}
       {photos.length > 0 && (
         <div className="relative">

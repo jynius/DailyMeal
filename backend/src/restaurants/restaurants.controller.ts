@@ -6,8 +6,11 @@ import {
   Body,
   UseGuards,
   Request,
+  Query,
+  ParseFloatPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RestaurantsService } from './restaurants.service';
 
@@ -20,14 +23,27 @@ export class RestaurantsController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '사용자의 음식점 목록 조회' })
   @ApiResponse({ status: 200, description: '음식점 목록 조회 성공' })
-  async getRestaurants(@Request() req: any) {
-    return this.restaurantsService.getRestaurantsFromMeals(req.user.id);
+  @ApiQuery({ name: 'lat', required: false, type: Number, description: '현재 위도' })
+  @ApiQuery({ name: 'lon', required: false, type: Number, description: '현재 경도' })
+  @ApiQuery({ name: 'radius', required: false, type: Number, description: '검색 반경 (km)' })
+  async getRestaurants(
+    @Request() req: any,
+    @Query('lat', new DefaultValuePipe(0), ParseFloatPipe) lat: number,
+    @Query('lon', new DefaultValuePipe(0), ParseFloatPipe) lon: number,
+    @Query('radius', new DefaultValuePipe(5), ParseFloatPipe) radius: number,
+  ) {
+    const currentLat = lat !== 0 ? lat : undefined;
+    const currentLon = lon !== 0 ? lon : undefined;
+    return this.restaurantsService.getRestaurantsFromMeals(req.user.id, currentLat, currentLon, radius);
   }
 
   @Post('maps')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '맛집 지도 생성' })
   @ApiResponse({ status: 201, description: '맛집 지도 생성 성공' })
+  @ApiQuery({ name: 'lat', required: false, type: Number, description: '현재 위도' })
+  @ApiQuery({ name: 'lon', required: false, type: Number, description: '현재 경도' })
+  @ApiQuery({ name: 'radius', required: false, type: Number, description: '검색 반경 (km)' })
   async createMap(
     @Body()
     createMapDto: {
@@ -37,13 +53,22 @@ export class RestaurantsController {
       isPublic: boolean;
     },
     @Request() req: any,
+    @Query('lat', new DefaultValuePipe(0), ParseFloatPipe) lat: number,
+    @Query('lon', new DefaultValuePipe(0), ParseFloatPipe) lon: number,
+    @Query('radius', new DefaultValuePipe(5), ParseFloatPipe) radius: number,
   ) {
+    const currentLat = lat !== 0 ? lat : undefined;
+    const currentLon = lon !== 0 ? lon : undefined;
+
     return this.restaurantsService.createRestaurantMap(
       req.user.id,
       createMapDto.title,
       createMapDto.description || '',
       createMapDto.restaurantIds,
       createMapDto.isPublic,
+      currentLat,
+      currentLon,
+      radius,
     );
   }
 }

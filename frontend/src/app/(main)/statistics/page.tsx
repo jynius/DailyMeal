@@ -19,10 +19,11 @@ export default function StatisticsPage() {
         const data = await profileApi.getStatistics()
         setStats(data)
       } catch (error) {
-        console.error('통계 로딩 실패:', error)
-        toast.error('통계를 불러올 수 없습니다', '오류')
+        console.error('통계 로딩 실패:', error);
+        // 에러를 다시 던져서 Error Boundary가 처리하도록 함
+        throw error;
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
@@ -52,15 +53,6 @@ export default function StatisticsPage() {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
-      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 pt-safe">
-        <div className="flex items-center gap-3 mt-2">
-          <button onClick={() => router.back()}>
-            <ArrowLeft size={24} className="text-gray-600" />
-          </button>
-          <h1 className="text-xl font-bold text-gray-900">통계</h1>
-        </div>
-      </header>
-
       <div className="p-4 space-y-4">
         <section className="bg-white rounded-lg border p-4">
           <div className="flex items-center gap-2 mb-4">
@@ -148,8 +140,6 @@ export default function StatisticsPage() {
           </section>
         )}
       </div>
-
-      <BottomNavigation />
     </div>
   )
 }

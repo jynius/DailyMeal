@@ -192,7 +192,7 @@ export class UsersService {
       .where('meal.userId = :userId', { userId })
       .andWhere('meal.createdAt >= :startDate', { startDate: sixMonthsAgo })
       .select([
-        "strftime('%Y-%m', meal.createdAt) as month",
+        "to_char(meal.createdAt, 'YYYY-MM') as month",
         'COUNT(*) as reviewCount',
         'COUNT(DISTINCT meal.name) as restaurantCount',
         'AVG(meal.rating) as averageRating',

@@ -157,123 +157,123 @@ export async function apiRequest<T>(
 }
 
 // 인증 API
-export const authApi = {
+const authApi = {
   register: async (data: { email: string; password: string; name: string }) => {
     return apiRequest<{ user: User; token: string; message: string }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
-    })
+    });
   },
 
   login: async (data: { email: string; password: string }) => {
     return apiRequest<{ user: User; token: string; message: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
-    })
+    });
   },
-}
+};
 
 // 식사 기록 API
-export const mealRecordsApi = {
+const mealRecordsApi = {
   create: async (data: CreateMealRecordData) => {
-    const formData = new FormData()
+    const formData = new FormData();
     
-    formData.append('name', data.name)
-    formData.append('rating', data.rating.toString())
+    formData.append('name', data.name);
+    formData.append('rating', data.rating.toString());
     
     if (data.photos && data.photos.length > 0) {
       data.photos.forEach((photo) => {
-        formData.append('photos', photo)
-      })
+        formData.append('photos', photo);
+      });
     }
     if (data.location) {
-      formData.append('location', data.location)
+      formData.append('location', data.location);
     }
     if (data.memo) {
-      formData.append('memo', data.memo)
+      formData.append('memo', data.memo);
     }
     if (data.price) {
-      formData.append('price', data.price.toString())
+      formData.append('price', data.price.toString());
     }
     if (data.latitude) {
-      formData.append('latitude', data.latitude.toString())
+      formData.append('latitude', data.latitude.toString());
     }
     if (data.longitude) {
-      formData.append('longitude', data.longitude.toString())
+      formData.append('longitude', data.longitude.toString());
     }
     if (data.address) {
-      formData.append('address', data.address)
+      formData.append('address', data.address);
     }
     
     return apiRequest<MealRecord>('/meal-records', {
       method: 'POST',
       body: formData,
-    })
+    });
   },
 
   createWithFiles: async (formData: FormData) => {
     return apiRequest<MealRecord>('/meal-records', {
       method: 'POST',
       body: formData,
-    })
+    });
   },
 
   getAll: async (page: number = 1, limit: number = 10) => {
     return apiRequest<{
-      data: MealRecord[]
-      total: number
-      page: number
-      limit: number
-      totalPages: number
-    }>(`/meal-records?page=${page}&limit=${limit}`)
+      data: MealRecord[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>(`/meal-records?page=${page}&limit=${limit}`);
   },
 
   getOne: async (id: string) => {
-    return apiRequest<MealRecord>(`/meal-records/${id}`)
+    return apiRequest<MealRecord>(`/meal-records/${id}`);
   },
 
   update: async (id: string, data: Partial<CreateMealRecordData>) => {
     return apiRequest<MealRecord>(`/meal-records/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
-    })
+    });
   },
 
   delete: async (id: string) => {
     return apiRequest<{ message: string }>(`/meal-records/${id}`, {
       method: 'DELETE',
-    })
+    });
   },
 
   search: async (query: string, page: number = 1, limit: number = 10) => {
     return apiRequest<{
-      data: MealRecord[]
-      total: number
-      page: number
-      limit: number
-      totalPages: number
-    }>(`/meal-records/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`)
+      data: MealRecord[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>(`/meal-records/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
   },
 
   getStatistics: async () => {
     return apiRequest<{
-      totalRecords: number
-      avgRating: string
-      uniqueLocations: number
-    }>('/meal-records/statistics')
+      totalRecords: number;
+      avgRating: string;
+      uniqueLocations: number;
+    }>('/meal-records/statistics');
   },
-}
+};
 
 // 친구 API
-export const friendsApi = {
+const friendsApi = {
   // 친구 목록 조회
   getFriends: async () => {
-    return apiRequest<Friend[]>('/friends')
+    return apiRequest<Friend[]>('/friends');
   },
 
   // 친구 검색
   searchUsers: async (query: string) => {
-    return apiRequest<Friend[]>(`/friends/search?query=${encodeURIComponent(query)}`)
+    return apiRequest<Friend[]>(`/friends/search?query=${encodeURIComponent(query)}`);
   },
 
   // 친구 요청 보내기
@@ -281,20 +281,35 @@ export const friendsApi = {
     return apiRequest<{ message: string }>('/friends/request', {
       method: 'POST',
       body: JSON.stringify({ email }),
-    })
+    });
   },
-}
+};
+
+// 맛집 API
+const restaurantsApi = {
+  getRestaurants: async () => {
+    return apiRequest<any[]>('/restaurants');
+  },
+};
 
 // 장소 API (자주 가는 장소 목록 조회)
-export const locationsApi = {
+const locationsApi = {
   // 자주 가는 장소 목록 (meal-records에서 추출)
   getFrequentLocations: async () => {
     return apiRequest<Array<{
-      location: string
-      count: number
-      latitude?: number
-      longitude?: number
-      address?: string
-    }>>('/meal-records/locations/frequent')
+      location: string;
+      count: number;
+      latitude?: number;
+      longitude?: number;
+      address?: string;
+    }>>('/meal-records/locations/frequent');
   },
+};
+
+export {
+  authApi,
+  mealRecordsApi,
+  friendsApi,
+  restaurantsApi,
+  locationsApi,
 }

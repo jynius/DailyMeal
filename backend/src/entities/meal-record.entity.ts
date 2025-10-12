@@ -63,6 +63,9 @@ export class MealRecord {
   @Column({ nullable: true, length: 200 })
   companionNames: string;
 
+  @Column({ type: 'timestamp', nullable: true })
+  photoTakenAt: Date;
+
   @Column('uuid')
   userId: string;
 

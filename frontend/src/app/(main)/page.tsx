@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, TrendingUp, MapPin, Users, Sparkles, ArrowRight, Zap } from 'lucide-react'
+import { Camera, TrendingUp, MapPin, Users, Sparkles, ArrowRight, Zap, Star } from 'lucide-react'
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { tokenManager, mealRecordsApi } from "@/lib/api/client";
 import type { MealRecord } from "@/types";
@@ -11,6 +11,7 @@ import { useSocket } from "@/contexts/socket-context";
 import { AIMenuRecommendation } from "@/components/ai-menu-recommendation";
 import Link from "next/link";
 import { isWebView, setupWebViewDebug, logClick } from "@/lib/webview-utils";
+import { Header } from '@/components/header';
 
 
 export default function Home() {
@@ -161,18 +162,6 @@ export default function Home() {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-24">
-      {/* Header with Gradient */}
-      <header className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-6 sticky top-0 z-10 shadow-lg pt-safe">
-        <div className="flex items-center gap-3 mt-2">
-          {/* 장식 아이콘 */}
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <Sparkles size={20} className="text-white" />
-          </div>
-          
-          <h1 className="text-2xl font-bold">DailyMeal</h1>
-        </div>
-      </header>
-
       {/* 빠른 액션 카드들 */}
       <div className="px-6 py-4">
         <div className="grid grid-cols-2 gap-4">
@@ -355,9 +344,15 @@ export default function Home() {
                           {meal.rating && (
                             <div className="flex items-center gap-1">
                               {[...Array(5)].map((_, i) => (
-                                <span key={i} className={i < meal.rating! ? "text-yellow-500" : "text-gray-300"}>
-                                  ⭐
-                                </span>
+                                <Star
+                                  key={i}
+                                  size={16}
+                                  className={`${
+                                    i < meal.rating!
+                                      ? "text-yellow-500 fill-current"
+                                      : "text-gray-300"
+                                  }`}
+                                />
                               ))}
                               <span className="ml-1 text-sm font-semibold text-gray-700">
                                 {meal.rating}/5
@@ -383,8 +378,6 @@ export default function Home() {
           <AIMenuRecommendation />
         </div>
       )}
-
-      <BottomNavigation />
     </div>
   );
 }

@@ -55,88 +55,84 @@ export class RestaurantsService {
     private mealRecordRepository: Repository<MealRecord>,
   ) {}
 
+  // Haversine formula to calculate distance
+  private getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Radius of the Earth in km
+    const dLat = this.deg2rad(lat2 - lat1);
+    const dLon = this.deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+  }
+
+  private deg2rad(deg: number): number {
+    return deg * (Math.PI / 180);
+  }
+
   // 사용자의 식사 기록을 기반으로 음식점 목록을 생성
-  async getRestaurantsFromMeals(userId: string): Promise<RestaurantSummary[]> {
-    const meals = await this.mealRecordRepository.find({
-      where: { userId },
-      order: { createdAt: 'DESC' },
-    });
+  async getRestaurantsFromMeals(
+    userId: string,
+    currentLat?: number,
+    currentLon?: number,
+    radius?: number, // in km
+  ): Promise<RestaurantSummary[]> {
+    const query = this.mealRecordRepository.createQueryBuilder('meal')
+      .where('meal.userId = :userId', { userId })
+      .andWhere('meal.location IS NOT NULL');
 
-    // 장소별로 그룹화
-    const restaurantMap = new Map<
-      string,
-      {
-        meals: MealRecord[];
-        totalRating: number;
-        firstVisit: Date;
-        lastVisit: Date;
-      }
-    >();
+    const restaurantsRaw = await query
+      .select([
+        'meal.location as name',
+        'meal.address as address',
+        'AVG(meal.rating)::float as "averageRating"',
+        'COUNT(meal.id)::int as "totalVisits"',
+        'MIN(meal.createdAt) as "firstVisit"',
+        'MAX(meal.createdAt) as "lastVisit"',
+        'MAX(meal.latitude) as latitude',
+        'MAX(meal.longitude) as longitude',
+        '(array_agg(meal.photos))[1] as "representativePhoto"',
+        'AVG(meal.price)::float as "averagePrice"',
+      ])
+      .groupBy('meal.location, meal.address')
+      .getRawMany();
 
-    meals.forEach((meal) => {
-      if (!meal.location) return;
-
-      const key = meal.location;
-      if (!restaurantMap.has(key)) {
-        restaurantMap.set(key, {
-          meals: [],
-          totalRating: 0,
-          firstVisit: new Date(meal.createdAt),
-          lastVisit: new Date(meal.createdAt),
-        });
-      }
-
-      const restaurant = restaurantMap.get(key)!;
-      restaurant.meals.push(meal);
-      restaurant.totalRating += meal.rating;
-
-      const mealDate = new Date(meal.createdAt);
-      if (mealDate < restaurant.firstVisit) restaurant.firstVisit = mealDate;
-      if (mealDate > restaurant.lastVisit) restaurant.lastVisit = mealDate;
-    });
-
-    // RestaurantSummary로 변환
-    const restaurants: RestaurantSummary[] = [];
-    let id = 1;
-
-    restaurantMap.forEach((data, location) => {
-      const averageRating = data.totalRating / data.meals.length;
-      const representativeMeal = data.meals.find(
-        (m) => m.photos && m.photos.length > 0,
-      );
-
-      // 가격대 계산 (평균 가격 기준)
-      const avgPrice =
-        data.meals
-          .filter((m) => m.price)
-          .reduce((sum, m) => sum + (m.price || 0), 0) /
-        data.meals.filter((m) => m.price).length;
-
+    const restaurants = restaurantsRaw.map((r, index) => {
       let priceRange: 'budget' | 'mid' | 'expensive' = 'mid';
-      if (avgPrice < 15000) priceRange = 'budget';
-      else if (avgPrice > 30000) priceRange = 'expensive';
+      if (r.averagePrice < 15000) priceRange = 'budget';
+      else if (r.averagePrice > 30000) priceRange = 'expensive';
 
-      restaurants.push({
-        id: id.toString(),
-        name: location,
-        address: location,
-        latitude: data.meals[0].latitude,
-        longitude: data.meals[0].longitude,
-        category: this.inferCategory(location, data.meals),
-        averageRating: Math.round(averageRating * 10) / 10,
-        totalVisits: data.meals.length,
-        firstVisit: data.firstVisit.toISOString(),
-        lastVisit: data.lastVisit.toISOString(),
-        representativePhoto: representativeMeal?.photos?.[0]
-          ? `/uploads/${representativeMeal.photos[0]}`
-          : undefined,
+      return {
+        id: (index + 1).toString(),
+        name: r.name,
+        address: r.address || r.name,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        averageRating: Math.round(r.averageRating * 10) / 10,
+        totalVisits: r.totalVisits,
+        firstVisit: new Date(r.firstVisit).toISOString(),
+        lastVisit: new Date(r.lastVisit).toISOString(),
+        representativePhoto: r.representativePhoto ? `/uploads/${r.representativePhoto}` : undefined,
         priceRange,
-      });
-
-      id++;
+        category: this.inferCategory(r.name, []), // Category inference needs adjustment
+      };
     });
 
-    return restaurants.sort((a, b) => b.totalVisits - a.totalVisits);
+    let filteredRestaurants = restaurants;
+
+    if (currentLat && currentLon && radius) {
+      filteredRestaurants = restaurants.filter(r => {
+        if (r.latitude && r.longitude) {
+          const distance = this.getDistance(currentLat, currentLon, r.latitude, r.longitude);
+          return distance <= radius;
+        }
+        return false;
+      });
+    }
+
+    return filteredRestaurants.sort((a, b) => b.totalVisits - a.totalVisits);
   }
 
   // 음식점 카테고리 추론 (간단한 키워드 매칭)
@@ -181,8 +177,11 @@ export class RestaurantsService {
     description: string,
     restaurantIds: string[],
     isPublic: boolean,
+    currentLat?: number,
+    currentLon?: number,
+    radius?: number,
   ): Promise<RestaurantMap> {
-    const restaurants = await this.getRestaurantsFromMeals(userId);
+    const restaurants = await this.getRestaurantsFromMeals(userId, currentLat, currentLon, radius);
     const selectedRestaurants = restaurants.filter((r) =>
       restaurantIds.includes(r.id),
     );

@@ -40,7 +40,7 @@ export function useKakaoMap() {
     }
 
     const script = document.createElement('script')
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false&libraries=services`
     script.async = true
 
     script.onload = () => {

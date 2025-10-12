@@ -15,19 +15,20 @@ import type { MealRecord } from '@/types'
 const log = createLogger('MealCard')
 
 interface MealCardProps {
-  id: string
-  name: string
-  photo?: string
-  photos?: string[]  // 여러 사진 지원
-  location?: string
-  rating?: number
-  memo?: string
-  createdAt: string
-  price?: number
-  companionNames?: string
-  category?: string
-  onEvaluated?: () => void  // 평가 완료 후 콜백
-  onDeleted?: () => void  // 삭제 후 콜백
+  id: string;
+  name: string;
+  photo?: string;
+  photos?: string[];
+  location?: string;
+  rating?: number;
+  memo?: string;
+  createdAt: string;
+  price?: number;
+  companionNames?: string;
+  category?: string;
+  photoTakenAt?: string; // 사진 촬영 시간 추가
+  onEvaluated?: () => void;
+  onDeleted?: () => void;
 }
 
 export function MealCard({
@@ -42,6 +43,7 @@ export function MealCard({
   price,
   companionNames,
   category,
+  photoTakenAt, // props로 받기
   onEvaluated,
   onDeleted,
 }: MealCardProps) {
@@ -272,7 +274,8 @@ export function MealCard({
           )}
           <div className="flex items-center">
             <Clock size={12} className="mr-1" />
-            <span>{createdAt}</span>
+            {/* photoTakenAt이 있으면 우선 표시, 없으면 createdAt 표시 */}
+            <span>{photoTakenAt ? new Date(photoTakenAt).toLocaleString('ko-KR') : createdAt}</span>
           </div>
         </div>
         
