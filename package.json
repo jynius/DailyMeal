@@ -15,14 +15,14 @@
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
     "build:all": "cd frontend && npm run build && cd ../backend && npm run build",
     "deploy": "./bin/deploy.sh",
-    "setup": "./bin/dev-setup.sh",
     "stop": "./bin/stop-pm2.sh all",
     "stop:dev": "./bin/stop-pm2.sh dev",
     "stop:prod": "./bin/stop-pm2.sh prod",
     "lint:all": "cd frontend && npm run lint && cd ../backend && npm run lint"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "sharp": "^0.34.4"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
