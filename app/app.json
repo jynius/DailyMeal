@@ -37,6 +37,8 @@
         "barStyle": "light-content"
       },
       "package": "com.dailymeal.app",
+      "enableProguardInReleaseBuilds": true,
+      "enableShrinkResourcesInReleaseBuilds": true,
       "permissions": [
         "INTERNET",
         "CAMERA",
