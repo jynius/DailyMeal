@@ -21,6 +21,10 @@ export function AuthForm({ initialMode = 'login', onSuccess }: AuthFormProps) {
     password: '',
     name: '',
   })
+  const [agreements, setAgreements] = useState({
+    terms: false,
+    privacy: false,
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const toast = useToast()
@@ -97,6 +101,13 @@ export function AuthForm({ initialMode = 'login', onSuccess }: AuthFormProps) {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    // 회원가입 시 약관 동의 확인
+    if (mode === 'register' && (!agreements.terms || !agreements.privacy)) {
+      setError('서비스 이용약관과 개인정보 처리방침에 동의해주세요.')
+      setLoading(false)
+      return
+    }
 
     try {
       let result
@@ -202,19 +213,68 @@ export function AuthForm({ initialMode = 'login', onSuccess }: AuthFormProps) {
         </div>
 
         {mode === 'register' && (
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              이름
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
+          <>
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                이름
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            {/* 약관 동의 */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-start">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={agreements.terms}
+                  onChange={(e) => setAgreements(prev => ({ ...prev, terms: e.target.checked }))}
+                  className="mt-1 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
+                  <span className="text-red-500">*</span> 
+                  <a 
+                    href="/terms" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    서비스 이용약관
+                  </a>
+                  에 동의합니다
+                </label>
+              </div>
+
+              <div className="flex items-start">
+                <input
+                  type="checkbox"
+                  id="privacy"
+                  checked={agreements.privacy}
+                  onChange={(e) => setAgreements(prev => ({ ...prev, privacy: e.target.checked }))}
+                  className="mt-1 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="privacy" className="ml-2 text-sm text-gray-700">
+                  <span className="text-red-500">*</span> 
+                  <a 
+                    href="/privacy" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    개인정보 처리방침
+                  </a>
+                  에 동의합니다
+                </label>
+              </div>
+            </div>
+          </>
         )}
 
         <Button

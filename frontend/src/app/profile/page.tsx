@@ -347,6 +347,29 @@ export default function ProfilePage() {
 
       {/* Delete Account */}
       <div className="px-4 pb-4">
+        {/* 계정 삭제 안내 */}
+        <div className="bg-gray-50 p-4 rounded-lg mb-3 border border-gray-200">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">회원 탈퇴 시 삭제되는 데이터</h3>
+          <ul className="text-xs text-gray-600 space-y-1 mb-3">
+            <li>• 프로필 정보 (이메일, 닉네임, 프로필 사진)</li>
+            <li>• 모든 식사 기록 및 사진</li>
+            <li>• 평점 및 리뷰</li>
+            <li>• 친구 관계 및 공유 기록</li>
+            <li>• 위치 정보</li>
+          </ul>
+          <p className="text-xs text-gray-500 mb-2">
+            ⚠️ 삭제된 데이터는 복구할 수 없으며, 법적 의무로 보관이 필요한 정보는 일정 기간 보관될 수 있습니다.
+          </p>
+          <a 
+            href="/privacy#account-deletion" 
+            className="text-xs text-blue-600 hover:text-blue-800 underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            개인정보 처리방침에서 자세히 보기 →
+          </a>
+        </div>
+
         <button 
           onClick={handleDeleteAccount}
           className="w-full flex items-center justify-center bg-red-50 text-red-600 p-4 rounded-lg border border-red-200 hover:bg-red-100 transition-colors"
@@ -354,6 +377,34 @@ export default function ProfilePage() {
           <span className="mr-2">⚠️</span>
           회원 탈퇴
         </button>
+      </div>
+
+      {/* Legal Links */}
+      <div className="px-4 pb-20 border-t pt-4 mt-4">
+        <h3 className="text-xs font-semibold text-gray-500 mb-3">법적 고지</h3>
+        <div className="space-y-2">
+          <a 
+            href="/terms" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between text-sm text-gray-700 hover:text-blue-600 p-2 rounded hover:bg-gray-50"
+          >
+            <span>서비스 이용약관</span>
+            <span className="text-gray-400">→</span>
+          </a>
+          <a 
+            href="/privacy" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between text-sm text-gray-700 hover:text-blue-600 p-2 rounded hover:bg-gray-50"
+          >
+            <span>개인정보 처리방침</span>
+            <span className="text-gray-400">→</span>
+          </a>
+        </div>
+        <p className="text-xs text-gray-400 mt-4 text-center">
+          DailyMeal v1.0.0
+        </p>
       </div>
 
       <BottomNavigation />

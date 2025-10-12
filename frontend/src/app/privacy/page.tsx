@@ -105,8 +105,66 @@ export default function PrivacyPage() {
             </div>
           </section>
 
+          <section id="account-deletion">
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">8. 회원 탈퇴 및 데이터 삭제</h2>
+            
+            <h3 className="font-semibold mt-4 mb-2">8.1 탈퇴 방법</h3>
+            <p className="mb-2">회원은 언제든지 다음 방법으로 탈퇴를 요청할 수 있습니다:</p>
+            <ul className="list-disc list-inside space-y-1 ml-4">
+              <li>앱 내: 프로필 페이지 → 회원 탈퇴 버튼</li>
+              <li>웹: https://www.dailymeal.life/profile → 회원 탈퇴 버튼</li>
+              <li>이메일: support@dailymeal.life로 탈퇴 요청</li>
+            </ul>
+            
+            <h3 className="font-semibold mt-4 mb-2">8.2 즉시 삭제되는 데이터</h3>
+            <p className="mb-2">회원 탈퇴 시 다음 데이터는 즉시 삭제되며 복구할 수 없습니다:</p>
+            <ul className="list-disc list-inside space-y-1 ml-4">
+              <li><strong>계정 정보:</strong> 이메일, 비밀번호, 닉네임</li>
+              <li><strong>프로필 정보:</strong> 프로필 사진, 자기소개</li>
+              <li><strong>식사 기록:</strong> 모든 식사 기록, 식사 사진, 메모</li>
+              <li><strong>평가 정보:</strong> 음식점 평점, 리뷰</li>
+              <li><strong>위치 정보:</strong> GPS 좌표, 방문 장소 기록</li>
+              <li><strong>소셜 데이터:</strong> 친구 관계, 공유 기록, 댓글</li>
+              <li><strong>설정 정보:</strong> 알림 설정, 개인 설정</li>
+            </ul>
+            
+            <h3 className="font-semibold mt-4 mb-2">8.3 법적 의무로 보관되는 데이터</h3>
+            <p className="mb-2">관계 법령에 따라 일정 기간 보관해야 하는 정보는 다음과 같습니다:</p>
+            <div className="ml-4 space-y-2">
+              <div>
+                <p className="font-semibold text-sm">계약 또는 청약철회 등에 관한 기록</p>
+                <p className="text-sm text-gray-600 ml-4">- 보관 기간: 5년 (전자상거래법)</p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm">대금결제 및 재화 등의 공급에 관한 기록</p>
+                <p className="text-sm text-gray-600 ml-4">- 보관 기간: 5년 (전자상거래법)</p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm">소비자 불만 또는 분쟁처리에 관한 기록</p>
+                <p className="text-sm text-gray-600 ml-4">- 보관 기간: 3년 (전자상거래법)</p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm">서비스 방문 기록</p>
+                <p className="text-sm text-gray-600 ml-4">- 보관 기간: 3개월 (통신비밀보호법)</p>
+              </div>
+            </div>
+            <p className="mt-3 text-sm text-gray-600 bg-yellow-50 p-3 rounded">
+              💡 <strong>참고:</strong> 현재 DailyMeal은 결제 기능이 없으므로, 실제로는 서비스 방문 기록(로그)만 3개월간 보관되며, 
+              그 외 모든 개인정보는 즉시 삭제됩니다.
+            </p>
+            
+            <h3 className="font-semibold mt-4 mb-2">8.4 탈퇴 시 주의사항</h3>
+            <ul className="list-disc list-inside space-y-1 ml-4 text-sm text-gray-700">
+              <li>탈퇴 후 동일한 이메일로 재가입이 가능합니다</li>
+              <li>삭제된 데이터는 복구가 불가능합니다</li>
+              <li>탈퇴 전 필요한 데이터는 미리 백업하시기 바랍니다</li>
+              <li>본인 확인을 위해 비밀번호 입력이 필요합니다</li>
+              <li>탈퇴 처리는 즉시 완료되며 되돌릴 수 없습니다</li>
+            </ul>
+          </section>
+
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">8. 개인정보 보호책임자</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">9. 개인정보 보호책임자</h2>
             <div className="ml-4">
               <p>이름: DailyMeal 개인정보 보호팀</p>
               <p>이메일: privacy@dailymeal.life</p>
@@ -115,7 +173,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">9. 개인정보의 안전성 확보조치</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">10. 개인정보의 안전성 확보조치</h2>
             <p className="mb-2">회사는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
             <ul className="list-disc list-inside space-y-1 ml-4">
               <li>개인정보 취급 직원의 최소화 및 교육</li>
@@ -128,7 +186,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">10. 위치정보 수집 및 이용</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">11. 위치정보 수집 및 이용</h2>
             <p className="mb-2">DailyMeal은 식사 장소 기록을 위해 위치정보를 수집합니다.</p>
             <ul className="list-disc list-inside space-y-1 ml-4">
               <li>수집 방법: 기기의 GPS를 통한 자동 수집</li>
@@ -139,7 +197,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">11. 개인정보 처리방침 변경</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">12. 개인정보 처리방침 변경</h2>
             <p>이 개인정보 처리방침은 시행일로부터 적용되며, 법령 및 방침에 따른 변경내용의 추가, 삭제 및 정정이 있는 경우에는 변경사항의 시행 7일 전부터 공지사항을 통하여 고지할 것입니다.</p>
           </section>
 
