@@ -10,9 +10,11 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [initialUrl, setInitialUrl] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [serverError, setServerError] = useState(false); // 서버 연결 오류
   const webViewRef = useRef(null);
   const hasLoadedOnce = useRef(false); // 첫 로딩 완료 여부
   const fileInputRef = useRef(null); // 파일 입력 참조
+  const retryIntervalRef = useRef(null); // 자동 재시도 타이머
   
   useEffect(() => {
     // Android 내비게이션 바 숨기기 (전체화면 모드)
@@ -259,6 +261,45 @@ export default function App() {
     
     return `${baseUrl}${path || ''}${queryString}`;
   };
+
+  // 자동 재시도 시작
+  const startAutoRetry = () => {
+    stopAutoRetry(); // 기존 타이머 제거
+    console.log('⏱️ Auto retry scheduled in 10 seconds');
+    retryIntervalRef.current = setTimeout(() => {
+      console.log('🔄 Auto retrying...');
+      if (webViewRef.current) {
+        webViewRef.current.reload();
+      }
+    }, 10000); // 10초 후 재시도
+  };
+
+  // 자동 재시도 중지
+  const stopAutoRetry = () => {
+    if (retryIntervalRef.current) {
+      clearTimeout(retryIntervalRef.current);
+      retryIntervalRef.current = null;
+      console.log('⏱️ Auto retry stopped');
+    }
+  };
+
+  // 수동 재시도
+  const handleRetry = () => {
+    console.log('🔄 Manual retry');
+    setServerError(false);
+    setLoading(true);
+    stopAutoRetry();
+    if (webViewRef.current) {
+      webViewRef.current.reload();
+    }
+  };
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      stopAutoRetry();
+    };
+  }, []);
   
   // Deep Link로 시작한 경우 해당 URL로, 아니면 기본 URL
   const Constants = require('expo-constants').default;
@@ -313,6 +354,8 @@ export default function App() {
           console.log('✅ Load ended');
           setLoading(false);
           setRefreshing(false); // Pull-to-Refresh 종료
+          setServerError(false); // 연결 성공 시 에러 상태 리셋
+          stopAutoRetry(); // 자동 재시도 중지
           console.log('🔄 [Pull-to-Refresh] Ended');
           hasLoadedOnce.current = true; // 첫 로딩 완료 표시
         }}
@@ -395,12 +438,20 @@ export default function App() {
           const { nativeEvent } = syntheticEvent;
           console.error('WebView error:', nativeEvent);
           setLoading(false);
+          setServerError(true);
+          // 10초 후 자동 재시도
+          startAutoRetry();
         }}
         // HTTP 에러 처리
         onHttpError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.error('HTTP error:', nativeEvent.statusCode, nativeEvent.url);
           setLoading(false);
+          // 5xx 에러만 서버 작업 중으로 표시
+          if (nativeEvent.statusCode >= 500) {
+            setServerError(true);
+            startAutoRetry();
+          }
         }}
         // 네비게이션 상태 변경 감지
         onNavigationStateChange={(navState) => {
@@ -408,6 +459,25 @@ export default function App() {
         }}
       />
       
+      {/* 서버 오류 화면 */}
+      {serverError && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={styles.errorTitle}>서버 작업 중</Text>
+          <Text style={styles.errorMessage}>
+            서버에 연결할 수 없습니다.{'\n'}
+            잠시 후 자동으로 재시도됩니다.
+          </Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={handleRetry}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.retryButtonText}>지금 다시 시도</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* 플로팅 새로고침 버튼 */}
       <TouchableOpacity 
         style={styles.refreshButton}
@@ -477,5 +547,50 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textAlignVertical: 'center',
     includeFontPadding: false,
+  },
+  errorContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    zIndex: 2,
+    padding: 24,
+  },
+  errorIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 32,
+  },
+  retryButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 8,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });
