@@ -15,10 +15,12 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   const pathname = usePathname()
   
-  // 공개 페이지 체크
+  // 공개 페이지 체크 (Socket 연결 및 실시간 알림 불필요)
   const isPublicPage = pathname?.startsWith('/share/') || 
                        pathname === '/login' || 
-                       pathname === '/signup'
+                       pathname === '/signup' ||
+                       pathname === '/privacy' ||
+                       pathname === '/terms'
 
   return (
     <AlertProvider>

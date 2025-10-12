@@ -80,7 +80,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     // 토큰 확인 - 로그인하지 않았으면 Socket 연결하지 않음
     const token = tokenManager.get()
     if (!token) {
-      console.log('🔌 Socket connection skipped: No authentication token')
+      // 로그인이 필요한 경우에만 조용히 스킵 (로그 최소화)
       return
     }
     
@@ -90,7 +90,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     const isDev = process.env.NODE_ENV === 'development'
     const serverUrl = isDev ? 'http://localhost:8000' : ''
     
-    console.log('🔌 Attempting to connect to Socket.IO server:', serverUrl || 'current domain');
+    if (isDev) {
+      console.log('🔌 Socket.IO connecting:', serverUrl || 'current domain')
+    }
     
     // Socket.IO 연결 - 에러에 강한 설정
     const newSocket = io(serverUrl, {
@@ -111,7 +113,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // 연결 이벤트
     newSocket.on('connect', () => {
-      console.log('✅ Socket connected:', newSocket.id)
+      if (isDev) console.log('✅ Socket connected:', newSocket.id)
       setIsConnected(true)
 
       // 사용자 인증 (토큰이 있을 경우)
@@ -124,18 +126,18 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             username: payload.username || 'Anonymous'
           })
         } catch (error) {
-          console.error('Token decode error:', error)
+          if (isDev) console.error('Token decode error:', error)
         }
       }
     })
 
     newSocket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', reason)
+      if (isDev) console.log('Socket disconnected:', reason)
       setIsConnected(false)
     })
 
     newSocket.on('connect_error', (error) => {
-      console.warn('Socket connection error (will retry):', error.message)
+      if (isDev) console.warn('Socket connection error (will retry):', error.message)
       // 에러를 조용히 처리 - 사용자에게 알림 없음
     })
 
@@ -202,12 +204,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // 인증 성공 응답
     newSocket.on('authSuccess', (data) => {
-      console.log('Authentication successful:', data)
+      if (isDev) console.log('Authentication successful:', data)
     })
 
     // 정리
     return () => {
-      console.log('🔌 Cleaning up socket connection');
+      if (isDev) console.log('🔌 Cleaning up socket connection')
       newSocket.close()
     }
   }, [mounted]) // mounted 상태에 의존
