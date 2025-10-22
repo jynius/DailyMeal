@@ -31,12 +31,22 @@
 
 ### ✨ [features/](features/) - 기능 구현
 주요 기능 구현 가이드
+- [2단계 식사 기록 시스템](features/TWO_PHASE_MEAL_SYSTEM.md)
+- [평가 Modal 시스템](features/EVALUATE_MODAL_SYSTEM.md)
+- [평가 선택적 업데이트](features/RATING_OPTIONAL_UPDATE.md)
+- [사용자 시나리오](features/SCENARIOS.md)
+- [웹앱 통합 보고서](features/WEB_APP_INTEGRATION_REPORT.md)
 - [카카오톡 공유 설정](features/KAKAO_SHARE_SETUP.md)
 - [공유 시스템 백엔드](features/SHARE_SYSTEM_PHASE1_BACKEND.md)
 - [공유 시스템 프론트엔드](features/SHARE_SYSTEM_PHASE2_FRONTEND.md)
 - [PWA 아이콘 가이드](features/PWA_ICONS_GUIDE.md)
 - [웹앱 통합](features/WEB_APP_INTEGRATION.md)
 - [웹앱 통합 퀵스타트](features/WEB_APP_INTEGRATION_QUICKSTART.md)
+
+### 🔌 [backend/](backend/) - 백엔드
+NestJS 관련 문서
+- [Socket.IO 구조 정리](backend/SOCKET_IO_FINAL.md)
+- [업로드 경로 리팩토링](backend/UPLOAD_PATH_REFACTORING.md)
 
 ### 🔧 [fixes/](fixes/) - 버그 수정
 발견된 문제와 해결 방법
@@ -69,20 +79,16 @@ Next.js 관련 문서
 - [로거 시스템](frontend/LOGGER_README.md)
 - [API 모니터링](frontend/API_MONITOR_README.md)
 
-### 🔌 [backend/](backend/) - 백엔드
-NestJS 관련 문서 (향후 추가 예정)
-
 ### 📜 [scripts/](scripts/) - 스크립트
 유틸리티 스크립트 문서
+- [스크립트 최종 보고서](scripts/SCRIPTS_FINAL_REPORT.md)
+- [스크립트 재구성](scripts/SCRIPTS_REORGANIZATION.md)
 - [SVG to PNG 변환기](scripts/README.md)
 
 ### 🐙 [github/](github/) - GitHub 설정
 GitHub Actions, 브랜치 전략
 - [브랜치 설정](github/BRANCH_SETUP.md)
 - [GitHub Actions 설정](github/GITHUB_ACTIONS_SETUP.md)
-
-### 📦 [archive/](archive/) - 아카이브
-과거 마이그레이션, 리팩토링, 분석 기록
 
 ## 🎯 빠른 링크
 

@@ -1,475 +1,243 @@
-# DailyMeal 🍽️# DailyMeal 🍽️
+# DailyMeal 🍽️
 
+매일의 식사를 기록하고 음식점을 공유하는 소셜 식단 플랫폼입니다. 웹(Next.js), 모바일(Expo React Native), 백엔드(NestJS)로 구성된 풀스택 프로젝트입니다.
 
+## ✨ 주요 기능
 
-매일의 식사를 기록하고 공유하는 풀스택 웹/앱 서비스매일의 식사를 기록하고 음식점을 공유하는 소셜 식단 플랫폼
+- **📱 2단계 식사 기록 시스템**:
+  - **1단계**: 바쁠 땐 사진만 찍어 빠르게 기록 (자동 제목 생성)
+  - **2단계**: 시간 여유가 있을 때 평점, 메모, 위치 등 상세 정보 추가
+- **🗺️ 음식점 공유 & 맵**:
+  - 음식점 정보 관리 및 위치를 지도에서 확인
+  - 지역, 카테고리별 검색 및 필터링
+- **💬 소셜 및 공유**:
+  - 사용자 프로필, 식사 기록에 대한 댓글 및 공유
+  - 고유 링크로 식사 기록 공유 및 조회 수 추적
+- **🔔 실시간 기능**:
+  - Socket.IO 기반의 실시간 피드 및 알림
 
+## 🏗️ 기술 스택
 
+- **Frontend**: Next.js 14.2.13 (App Router), TypeScript, Tailwind CSS, Zustand, TanStack Query, Socket.IO Client
+- **Backend**: NestJS 11.x, TypeScript, PostgreSQL 16, TypeORM, JWT + Passport, Socket.IO, Multer
+- **Mobile**: Expo SDK 54, React Native WebView
+- **Infrastructure**: Nginx/Caddy, PM2, Let's Encrypt, Ubuntu (Production: AWS EC2)
 
-## ✨ 주요 기능## ✨ 주요 기능
+## 🚀 빠른 시작
 
+### 1. 저장소 클론
+```bash
+git clone https://github.com/jynius/DailyMeal.git
+cd DailyMeal
+```
 
+### 2. 의존성 설치
+```bash
+npm run install:all
+```
 
-- 📸 **식사 사진 등록**: 갤러리/카메라로 여러 장의 사진 업로드### 📱 **2단계 식사 기록 시스템**
+### 3. 환경 변수 설정 (필수)
+`.env.example` 파일을 복사하여 각 환경에 맞는 설정 파일을 생성합니다.
+```bash
+# Backend
+cp backend/.env.example backend/.env
 
-- ⭐ **평점 및 메모**: 1-5점 별점과 상세 메모 작성- 📸 **1단계**: 사진만 찍고 즉시 저장 (자동 제목 생성)
+# Frontend
+cp frontend/.env.local.example frontend/.env.local
 
-- 📍 **위치 자동 기록**: GPS 기반 자동 위치 저장 및 지도 표시- ⭐ **2단계**: 나중에 평가 추가 (평점, 메모, 위치 등)
+# 생성된 .env 파일들에 DB 정보, API 키 등 환경에 맞는 값을 입력합니다.
+nano backend/.env
+nano frontend/.env.local
+```
 
-- 💬 **소셜 기능**: 좋아요, 댓글, 실시간 피드- 🎯 **간편함**: 바쁠 때는 사진만, 여유있을 때 상세 평가
+### 4. 개발 서버 실행
+```bash
+# 프론트엔드, 백엔드 동시 실행
+npm run dev
+```
 
-- 🔔 **실시간 알림**: Socket.IO 기반 실시간 알림 시스템- 🏷️ **미평가 표시**: 아직 평가하지 않은 식사를 한눈에 확인
+## 📦 프로젝트 구조
 
-- 🔗 **공유 기능**: 카카오톡 공유, 딥링크 지원- 📱 **Modal 평가**: 어디서든 팝업으로 즉시 평가 가능
+```
+DailyMeal/
+├── frontend/       # Next.js 프론트엔드 (Port: 3000)
+├── backend/        # NestJS 백엔드 (Port: 8000)
+├── app/            # React Native 앱 (Expo)
+├── docs/           # 프로젝트 문서
+├── scripts/        # 유틸리티 스크립트
+└── bin/            # 배포/운영 스크립트
+```
 
+## 📝 최근 변경사항
 
+### 2025.10.10 - PostgreSQL 마이그레이션 완료 🎉
+- PostgreSQL 16 설치 및 데이터베이스 설정
+- 전체 테이블 구조 마이그레이션 및 데이터 이전 완료
+- 관련 문서 정리 및 환경 변수 설정 업데이트
 
-## 🏗️ 기술 스택### � **웹-앱 연동** (NEW! ⭐)
+### 2025.10.08 - 문서 구조 및 안정성 개선
+- 모든 기술 문서를 `docs/` 폴더로 통합
+- Next.js, React 버전 다운그레이드를 통해 Bus Error 해결
+- Socket.IO 및 TailwindCSS 호환성 문제 해결로 빌드 안정성 확보
+
+## 📄 라이선스
+
+This project is licensed under the MIT License.
+
+---
+
+**Made with ❤️ by [@jynius](https://github.com/jynius)**
+
+## 🏗️ 기술 스택
+
+### � **웹-앱 연동** (NEW! ⭐)
 
 - 📲 **Smart App Banner**: 모바일 웹에서 앱 설치 유도
-
 | 구분 | 기술 |- 🔗 **Deep Linking**: 웹 링크로 앱 자동 실행
-
 |------|------|- 🌐 **Universal Links**: iOS/Android 네이티브 연동
-
 | **Frontend** | Next.js 15, TypeScript, Tailwind CSS, Zustand, Socket.IO |- 📱 **PWA 지원**: 모바일 브라우저에서 앱처럼 사용
-
 | **Backend** | NestJS, TypeScript, PostgreSQL, TypeORM, Socket.IO, JWT |
-
 | **Mobile** | React Native (Expo), WebView, expo-image-picker |### 💬 **공유 시스템**
-
 | **Infrastructure** | Nginx/Caddy, PM2, Let's Encrypt, Ubuntu |- 🔗 **식사 공유**: 고유 링크로 식사 기록 공유
 
 - 📊 **조회 추적**: 공유 링크 조회 수 및 통계
 
 ## 🚀 빠른 시작- 👥 **친구 추천**: 공유 링크를 통한 친구 연결
-
-
-
-```bash### 🗺️ **음식점 공유 & 맵**
-
-# 저장소 클론- 🏪 **음식점 데이터베이스**: 개별 음식점 정보 관리
-
-git clone https://github.com/jynius/DailyMeal.git- 🗺️ **지도 연동**: 음식점 위치 지도에서 확인
-
-cd DailyMeal- 🔍 **검색 & 필터**: 지역, 카테고리별 음식점 검색
-
-
-
-# 환경 변수 설정### 💬 **소셜 기능**
-
-cp backend/.env.example backend/.env- 👥 **사용자 프로필**: 개인 식사 기록 및 통계
-
-cp frontend/.env.example frontend/.env- 💬 **댓글 & 공유**: 식사 기록에 댓글 및 공유
-
-- 📊 **통계 & 인사이트**: 식사 패턴 분석
-
-# 개발 환경 실행
-
-npm run dev---
-
-
-
-# 프로덕션 배포## 🚀 최신 업데이트
-
-pm2 start ecosystem.config.js
-
-```- [⭐ **웹-앱 연동 구현**](./docs/WEB_APP_INTEGRATION_REPORT.md) - Smart Banner + Deep Linking (NEW!)
-
-- [📱 **빠른 시작 가이드**](./docs/WEB_APP_INTEGRATION_QUICKSTART.md) - 웹-앱 연동 테스트 방법
-
-**📖 자세한 가이드**: [환경 설정](docs/setup/ENVIRONMENT_SETUP.md) | [배포 가이드](docs/deployment/BUILD_DEPLOY_GUIDE.md)- [🔄 **Socket.IO 구조 정리**](./docs/SOCKET_IO_FINAL.md) - 실시간 통신 최적화
-
-- [⭐ **2단계 식사 기록 시스템**](./docs/TWO_PHASE_MEAL_SYSTEM.md) - 사진 등록과 평가 분리
-
-## 📁 프로젝트 구조- [🔐 **JWT 인증 문제 해결**](./docs/JWT_AUTH_FIX.md) - PM2 환경 변수 및 자동 리다이렉션
-
-- [⚙️ **평가 선택적 업데이트**](./docs/RATING_OPTIONAL_UPDATE.md) - 기술 구현 상세
-
-```
-
-DailyMeal/---
-
-├── frontend/          # Next.js 프론트엔드 (Port: 3000)
-
-├── backend/           # NestJS 백엔드 (Port: 8000)## 📚 문서
-
-├── app/               # React Native 앱 (Expo)
-
-├── docs/              # 📚 전체 문서 (체계적으로 정리)프로젝트의 모든 기술 문서는 [`docs/`](./docs/) 폴더에 체계적으로 정리되어 있습니다.
-
-│   ├── setup/         # 환경 설정
-
-│   ├── deployment/    # 배포 관련### 📖 문서 구조
-
-│   ├── infrastructure/# 인프라 설정
-
-│   ├── features/      # 기능 구현```
-
-│   ├── fixes/         # 버그 수정docs/
-
-│   ├── app/           # 앱 개발├── 🔗 웹-앱 연동 (신규!)
-
-│   ├── app-store/     # 앱 스토어 등록│   ├── WEB_APP_INTEGRATION_REPORT.md   # 구현 완료 보고서
-
-│   └── archive/       # 히스토리│   ├── WEB_APP_INTEGRATION_QUICKSTART.md # 빠른 시작 가이드
-
-├── scripts/           # 유틸리티 스크립트│   └── WEB_APP_INTEGRATION.md          # 구현 전략 문서
-
-└── bin/               # 실행 스크립트│
-
-```├── 🚀 배포 & 운영 (10개)
-
-│   ├── BUILD_DEPLOY_GUIDE.md           # 빌드 및 배포 프로세스
-
-## 📚 문서│   ├── CLEANUP_SUMMARY.md              # 스크립트 정리 완료
-
-│   ├── ECOSYSTEM_BUILD_SOLUTION.md     # 빌드 문제 해결
-
-프로젝트의 모든 기술 문서는 **[`docs/`](./docs/)** 폴더에 체계적으로 정리되어 있습니다.│   ├── ECOSYSTEM_CONFIG_GUIDE.md       # PM2 설정 가이드
-
-│   ├── ENVIRONMENT_SETUP.md ⭐          # 환경 변수 설정 (필수!)
-
-### 🎯 주요 문서│   ├── ENV_INTEGRATION_REPORT.md       # 환경 변수 통합 보고서
-
-│   ├── ENV_ANALYSIS.md                 # 환경 변수 파일 분석
-
-#### 시작하기│   ├── DEV_ENV_CONFLICT.md             # 개발 환경 충돌 해결
-
-- [📖 환경 설정](docs/setup/ENVIRONMENT_SETUP.md)│   ├── SCRIPTS_REORGANIZATION.md       # Shell 스크립트 재구성
-
-- [🗄️ 데이터베이스 설정](docs/setup/DATABASE.md)│   └── SUMMARY.md                      # 문서 재구성 요약
-
-- [🐘 PostgreSQL 설정](docs/setup/POSTGRES_SETUP_GUIDE.md)│
-
-├── 🔧 PM2 프로세스 관리 (2개)
-
-#### 배포하기│   ├── PM2_NAMING_STRATEGY.md
-
-- [🚀 빌드 및 배포 가이드](docs/deployment/BUILD_DEPLOY_GUIDE.md)│   └── PM2_SCRIPT_GUIDE.md
-
-- [⚙️ PM2 스크립트 가이드](docs/deployment/PM2_SCRIPT_GUIDE.md)│
-
-- [🔧 에코시스템 설정](docs/deployment/ECOSYSTEM_CONFIG_GUIDE.md)├── 🗄️ 데이터베이스 (5개)
-
-│   ├── DATABASE.md                      # DB 구조 및 관리 📊
-
-#### 인프라│   ├── POSTGRES_SETUP_GUIDE.md ⭐        # PostgreSQL 설치 및 초기 설정 (NEW!)
-
-- [🌐 네트워크 아키텍처](docs/infrastructure/NETWORK_ARCHITECTURE.md)│   ├── POSTGRES_MIGRATION.md            # PostgreSQL 마이그레이션 가이드 🔄
-
-- [🔒 HTTPS 설정](docs/infrastructure/HTTPS_SETUP.md)│   ├── POSTGRES_MIGRATION_COMPLETE.md   # 마이그레이션 완료 보고서
-
-- [🔥 방화벽 설정](docs/infrastructure/FIREWALL_SETUP.md)│   └── WHEN_TO_MIGRATE_POSTGRES.md      # 마이그레이션 타이밍 ⏰
-
-│
-
-#### 앱 개발├── 🌐 네트워크 & 인프라 (4개)
-
-- [📱 앱 배포 가이드](docs/app/DEPLOYMENT.md)│   ├── NETWORK_ARCHITECTURE.md
-
-- [🔍 디버깅 가이드](docs/app/DEBUGGING_GUIDE.md)│   ├── NGINX_PROXY_SETUP.md
-
-- [🏪 Play Store 등록](docs/app-store/PLAYSTORE_DEPLOYMENT.md)│   ├── FIREWALL_SETUP.md
-
-│   └── HTTPS_SETUP.md
-
-**📚 전체 문서 목록**: [docs/README.md](docs/README.md)│
-
-├── ✨ 기능 업데이트 (4개) 🆕
-
-## 🛠️ 개발│   ├── TWO_PHASE_MEAL_SYSTEM.md ⭐      # 2단계 식사 기록 시스템 (NEW!)
-
-│   ├── EVALUATE_MODAL_SYSTEM.md ⭐      # 평가 Modal 시스템 (NEW!)
-
-### Frontend 개발│   ├── RATING_OPTIONAL_UPDATE.md        # 평가 선택적 업데이트
-
-```bash│   └── SCENARIOS.md                     # 사용자 시나리오
-
-cd frontend│
-
-npm install├── 🔧 기술 최적화 (3개) 🆕
-
-npm run dev  # http://localhost:3000│   ├── SOCKET_IO_FINAL.md ⭐            # Socket.IO 구조 정리 (NEW!)
-
-```│   ├── SOCKET_IO_ANALYSIS.md            # Socket.IO 분석 과정
-
-**문서**: [frontend/README.md](frontend/README.md)│   └── UPLOAD_PATH_REFACTORING.md       # 업로드 경로 리팩토링
-
-│
-
-### Backend 개발└── 🔍 문제 해결 (6개)
-
-```bash    ├── LOCALHOST_CLEANUP.md             # Localhost 클린업
-
-cd backend    ├── JWT_TOKEN_ERROR_FIX.md           # JWT 인증 문제 해결
-
-npm install    ├── KAKAO_MAP_401_FIX.md             # 카카오 맵 인증 문제
-
-npm run start:dev  # http://localhost:8000    ├── POSTGRES_MIGRATION_REPORT.md     # PostgreSQL 마이그레이션 보고서
-
-```    └── DATABASE_DOCUMENTATION_REPORT.md # DB 문서화 보고서
-
-**문서**: [backend/README.md](backend/README.md)```
-
-
-
-### Mobile App 개발bin/  # 스크립트 (11개)
-
-```bash├── check-build.sh              # 빌드 상태 확인 (Linux/macOS)
-
-cd app├── check-firewall.sh           # 방화벽 상태 확인 (Linux)
-
-npm install├── check-firewall-windows.ps1  # 방화벽 상태 확인 (Windows) 🪟
-
-npx expo start├── check-status.sh             # PM2 상태 진단
-
-```├── deploy.sh                   # 프로덕션 배포
-
-**문서**: [app/README.md](app/README.md)├── dev-setup.sh                # 개발 환경 설정
-
-├── restart-pm2.sh              # PM2 재시작
-
-## 🌐 배포 URL├── start-pm2.sh                # PM2 개발 서버 시작
-
-├── startup.sh                  # PM2 프로덕션 시작
-
-- **웹사이트**: https://www.dailymeal.life├── stop-pm2.sh                 # PM2 중지
-
-- **API**: https://www.dailymeal.life/api└── wsl-port-forward.ps1        # WSL2 포트 포워딩 (Windows) 🪟
-
-- **개인정보 처리방침**: https://www.dailymeal.life/privacy```
-
-- **이용약관**: https://www.dailymeal.life/terms
-
-### 🎯 빠른 링크
-
-## 📧 문의
-
-#### 🆕 최신 업데이트
-
-- **이메일**: support@dailymeal.life- [⭐ **환경 변수 체크리스트**](./docs/ENV_SETUP_CHECKLIST.md) - 신규 설치 필수 확인 사항 (2025-10-10)
-
-- **개인정보**: privacy@dailymeal.life- [⭐ **PostgreSQL 설치 가이드**](./docs/POSTGRES_SETUP_GUIDE.md) - 신규 서버에서 PostgreSQL 설치 자동화 (2025-10-10)
-
-- **GitHub**: https://github.com/jynius/DailyMeal- [⭐ **PostgreSQL 마이그레이션 완료**](./docs/POSTGRES_MIGRATION_COMPLETE.md) - SQLite → PostgreSQL 16 성공!
-
-- [⭐ **Socket.IO 구조 정리**](./docs/SOCKET_IO_FINAL.md) - 실시간 통신 최적화
-
-## 📄 라이선스- [⭐ **2단계 식사 기록 시스템**](./docs/TWO_PHASE_MEAL_SYSTEM.md) - 사진 등록과 평가 분리!
-
-- [🔐 **JWT 인증 문제 해결**](./docs/JWT_AUTH_FIX.md) - PM2 환경 변수 및 자동 리다이렉션
-
-이 프로젝트는 개인 프로젝트입니다.
-
-#### 필수 문서 (처음 시작하시나요?)
-- [⭐ **환경 변수 설정**](./docs/ENVIRONMENT_SETUP.md) - 가장 먼저 읽어야 할 문서!
-- [📊 **데이터베이스**](./docs/DATABASE.md) - DB 구조 및 테이블 스키마
-- [📘 **배포 가이드**](./docs/BUILD_DEPLOY_GUIDE.md) - 처음 배포하는 방법
-- [🌐 **네트워크 구조**](./docs/NETWORK_ARCHITECTURE.md) - 시스템 아키텍처 이해
-- [🔧 **PM2 설정**](./docs/ECOSYSTEM_CONFIG_GUIDE.md) - 프로세스 관리
-
-#### 운영 가이드
-- [🗄️ **데이터베이스 관리**](./docs/DATABASE.md) - SQL 쿼리 및 마이그레이션
-- [🔒 **HTTPS 설정**](./docs/HTTPS_SETUP.md) - SSL 인증서 설정
-- [🛡️ **방화벽 설정**](./docs/FIREWALL_SETUP.md) - 보안 설정
-- [🔄 **PM2 스크립트**](./docs/PM2_SCRIPT_GUIDE.md) - 프로세스 관리 스크립트
-
-#### 문제 해결
-- [🐛 **시나리오 가이드**](./docs/SCENARIOS.md) - 상황별 해결 방법
-- [📖 **전체 문서 목록**](./docs/README.md) - 모든 문서 보기
-
----
-
-## 🚀 빠른 시작
-
-### 1️⃣ 환경 변수 설정 (필수!)
-
-프로젝트를 처음 설치한 경우, 환경 변수 파일을 설정해야 합니다:
-
-```bash
-# Backend 환경 변수 복사
-cp backend/.env.example backend/.env
-
-# Frontend 환경 변수 복사
-cp frontend/.env.local.example frontend/.env.local
-
-# 환경 변수 편집 (DB 비밀번호, API 키 등)
-nano backend/.env
-nano frontend/.env.local
-```
-
-**⚠️ 중요**: `.env` 파일은 **절대 Git에 커밋하지 마세요!** (이미 `.gitignore`에 포함됨)
-
-자세한 설정 방법은 [환경 변수 설정 가이드](./docs/ENVIRONMENT_SETUP.md)를 참조하세요.
-
-### 2️⃣ PostgreSQL 설치 및 설정
-
-```bash
-# 자동 설치 스크립트 실행 (Ubuntu/Debian)
-sudo bash backend/scripts/setup-postgres.sh
-
-# 또는 수동 설치는 아래 가이드 참조
-# → docs/POSTGRES_SETUP_GUIDE.md
-```
-
-### 3️⃣ 배포 (권장)
 ```bash
 # 저장소 클론
 git clone https://github.com/jynius/DailyMeal.git
 cd DailyMeal
-
-# 1. 환경 변수 설정 (위 1️⃣ 참조)
+# 환경 변수 설정
 cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+# 개발 환경 실행
+npm run dev
+```
+
+### 🗺️ **음식점 공유 & 맵**
+- 🏪 **음식점 데이터베이스**: 개별 음식점 정보 관리
+- 🗺️ **지도 연동**: 음식점 위치 지도에서 확인
+- 🔍 **검색 & 필터**: 지역, 카테고리별 음식점 검색
+
+### 💬 **소셜 기능**
+- 👥 **사용자 프로필**: 개인 식사 기록 및 통계
+- 💬 **댓글 & 공유**: 식사 기록에 댓글 및 공유
+- 📊 **통계 & 인사이트**: 식사 패턴 분석
+
+---
+# DailyMeal 🍽️
+
+간단한 소개
+-----------------
+DailyMeal은 매일의 식사를 사진으로 기록하고 평가를 공유하는 풀스택 서비스입니다. 웹(Next.js), 모바일(Expo React Native), 백엔드(NestJS)로 구성되어 있으며, 소셜 피드, 댓글/좋아요, 위치 기반 음식점 정보, 실시간 알림(Socket.IO) 등을 제공합니다.
+
+주요 기능
+-----------------
+- 식사 사진 업로드 및 갤러리
+- 2단계 식사 기록: 사진 저장(빠른 입력) → 이후 평가(평점, 메모, 위치)
+- 평점(1-5) 및 상세 메모
+- 위치(음식점) 자동 기록 및 지도 표시
+- 공유(딥링크, 카카오톡 등) 및 조회 통계
+- 좋아요, 댓글, 실시간 알림
+
+기술 스택
+-----------------
+- Frontend: Next.js (TypeScript), Tailwind CSS, Zustand, TanStack Query, Socket.IO Client
+- Backend: NestJS (TypeScript), PostgreSQL 16, TypeORM, JWT + Passport, Socket.IO, Multer
+- Mobile: Expo React Native (WebView, expo-image-picker)
+- Infra: Nginx/Caddy, PM2, Let's Encrypt, Ubuntu (Production: AWS EC2)
+
+빠른 시작
+-----------------
+1) 리포지토리 클론
+
+```bash
+git clone https://github.com/jynius/DailyMeal.git
+cd DailyMeal
+```
+
+2) 환경 변수 설정 (필수)
+
+```bash
+# Backend
+cp backend/.env.example backend/.env
+
+# Frontend
 cp frontend/.env.local.example frontend/.env.local
 
-# 2. 의존성 설치
-npm run install:all
-
-# 3. PostgreSQL 설정 (위 2️⃣ 참조)
-
-# 4. 프로덕션 배포
-npm run deploy
-# 또는: ./bin/deploy.sh
+# 환경값 편집
+nano backend/.env
+nano frontend/.env.local
 ```
 
-### 4️⃣ 개발 모드
+3) 의존성 설치
+
 ```bash
-# 로컬 개발 (Concurrently)
+npm run install:all
+```
+
+4) 개발 모드 실행
+
+```bash
+# 전체 개발 서버 (Concurrently)
 npm run dev
 
-# PM2로 개발 (백그라운드)
-npm run dev:pm2
-# 또는: ./bin/start-pm2.sh
+# 백엔드 개발
+cd backend && npm install && npm run start:dev
+
+# 프론트엔드 개발
+cd frontend && npm install && npm run dev
 ```
 
-자세한 내용은 [배포 가이드](./docs/BUILD_DEPLOY_GUIDE.md)를 참조하세요.
+프로덕션 배포 예시
+-----------------
 
-### Windows 개발자 (WSL2)
-
-Windows + WSL2 환경에서 개발하는 경우, 추가 네트워크 설정이 필요할 수 있습니다:
-
-```powershell
-# Windows PowerShell (관리자 권한)
-# WSL2 IP 자동 감지 및 포트 포워딩 설정
-.\bin\wsl-port-forward.ps1
-
-# Windows 방화벽 규칙 확인
-.\bin\check-firewall-windows.ps1
-```
-
-**참고**: 이 PowerShell 스크립트들은 Windows 호스트에서만 실행됩니다. Linux/macOS 개발자는 필요하지 않습니다.
-
----
-
-## 🛠️ 기술 스택
-
-### Frontend
-- **Framework**: Next.js 14.2.13 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS 3.4.15
-- **State**: Zustand
-- **Data Fetching**: TanStack Query (React Query)
-- **Real-time**: Socket.IO Client
-
-### Backend
-- **Framework**: NestJS 11.x
-- **Language**: TypeScript
-- **Database**: ~~SQLite (개발)~~, **PostgreSQL 16** ✅ (프로덕션)
-- **ORM**: TypeORM 0.3.27
-- **Authentication**: JWT + Passport
-- **Real-time**: Socket.IO
-- **File Upload**: Multer
-
-### DevOps & Infrastructure
-- **Process Manager**: PM2
-- **Web Server**: Nginx (리버스 프록시)
-- **SSL**: Let's Encrypt (Certbot)
-- **Development**: WSL2 (Ubuntu)
-- **Production**: AWS EC2 (Ubuntu)
-
-### Mobile
-- **Framework**: Expo SDK 54
-- **WebView**: React Native WebView 13.15.0
-
----
-
-## 🔧 개발 참고사항
-
-### 📋 브랜치 전략
-| 브랜치 | 환경 | 자동 배포 | 용도 |
-|--------|------|-----------|------|
-| **`main`** | 🔧 개발 | ❌ | 소스 코드 관리, 기본 개발 브랜치 |
-| **`dev`** | 🧪 스테이징 | ✅ | 테스트 서버 자동 배포 |
-
-### 🛠️ 개발 도구 설정
 ```bash
-# ESLint + Prettier 설정 완료
-# TypeScript 엄격 모드 활성화  
-# Next.js 14 안정 버전 사용
+# PM2로 프로덕션 시작
+pm2 start ecosystem.config.js
 
-# VS Code 권장 확장:
-# - TypeScript + JavaScript
-# - Tailwind CSS IntelliSense
-# - ESLint + Prettier
+# 또는 배포 스크립트 사용
+./bin/deploy.sh
 ```
 
-### 📊 프로젝트 메트릭스 (현재)
-- **총 라인수**: ~3,000+ lines
-- **컴포넌트**: 15+ 개 재사용 컴포넌트
-- **페이지**: 11개 라우트 (SSG 7개 + Dynamic 4개)
-- **API 엔드포인트**: 15+ 개
-- **번들 크기**: 153kB (First Load JS)
-- **빌드 시간**: ~5-10초
+프로젝트 구조(요약)
+-----------------
+DailyMeal/
+- frontend/    # Next.js 프론트엔드 (포트: 3000)
+- backend/     # NestJS 백엔드 (포트: 8000)
+- app/         # React Native (Expo)
+- docs/        # 프로젝트 문서
+- scripts/     # 유틸 스크립트
+- bin/         # 배포/운영 스크립트
 
----
+문서
+-----------------
+전체 문서는 `docs/` 폴더에 정리되어 있습니다. 주요 문서 링크:
 
-## 🚀 향후 개선 계획
+- 환경 설정: `docs/setup/ENVIRONMENT_SETUP.md`
+- 배포 가이드: `docs/deployment/BUILD_DEPLOY_GUIDE.md`
+- PostgreSQL 설치: `docs/setup/POSTGRES_SETUP_GUIDE.md`
+- Socket.IO 구조: `docs/SOCKET_IO_FINAL.md`
+- 2단계 식사 기록: `docs/TWO_PHASE_MEAL_SYSTEM.md`
 
-### 🎯 단기 목표 (v1.1)
-- [ ] **PWA 지원**: 오프라인 기능, 푸시 알림
-- [ ] **실시간 기능 강화**: Socket.io 최적화
-- [ ] **지도 API 연동**: Kakao Map / Google Maps
-- [ ] **이미지 최적화**: 썸네일 생성, CDN 연동
+운영/엔터프라이즈 참고
+-----------------
+- PM2, Nginx/Caddy 설정 문서 및 ECOSYSTEM 관련 가이드가 `docs/deployment/`에 포함되어 있습니다.
 
-### 🔮 중기 목표 (v1.5)
-- [ ] **소셜 로그인**: Google, Kakao, Naver 연동
-- [ ] **팔로우 시스템**: 친구 맺기, 피드 구독
-- [ ] **추천 알고리즘**: 개인 취향 기반 음식점 추천
-- [ ] **데이터 분석**: 대시보드, 인사이트 제공
+연락처
+-----------------
+- 이메일: support@dailymeal.life
+- 개인정보 관련: privacy@dailymeal.life
+- GitHub: https://github.com/jynius/DailyMeal
 
-### 🌟 장기 비전 (v2.0)
-- [ ] **Multi-tenant**: 여러 지역/그룹 지원
-- [ ] **Native 모바일 앱**: React Native 완전 네이티브
-- [ ] **AI 기능**: 음식 인식, 자동 태깅
-- [ ] **마이크로서비스**: 확장 가능한 아키텍처
+라이선스
+-----------------
+이 프로젝트는 개인 프로젝트입니다. 필요한 경우 별도 라이선스 파일을 추가하세요.
 
----
+추가 참고
+-----------------
+더 상세한 설정/문서/스크립트는 `docs/`, `frontend/README.md`, `backend/README.md`, `app/README.md`에서 확인하세요.
 
-## 🤝 기여 방법
-
-### 🔧 개발 환경 설정
-1. **Fork & Clone**
-   ```bash
-   git clone https://github.com/your-username/DailyMeal.git
-   cd DailyMeal
-   ```
-
-2. **브랜치 생성**
-   ```bash
-   git checkout -b feature/새기능명
-   ```
-
-3. **개발 서버 실행**
-   ```bash
-   npm run dev
-   ```
-
-4. **커밋 규칙**
-   ```bash
-   git commit -m "feat: 새로운 기능 추가"
-   # feat: 새 기능
-   # fix: 버그 수정  
    # docs: 문서 수정
    # style: 코드 포맷팅
    # refactor: 코드 리팩토링
