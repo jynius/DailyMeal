@@ -39,7 +39,7 @@ import {
 } from '../common/upload.utils';
 
 // 파일 업로드 설정 (환경 변수)
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
+const UPLOAD_DIR = process.env.UPLOAD_DIR || '../uploads';
 const UPLOAD_MAX_FILE_SIZE = parseInt(
   process.env.UPLOAD_MAX_FILE_SIZE || '5242880',
 ); // 5MB

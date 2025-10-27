@@ -23,13 +23,13 @@ ServeStaticModule.forRoot({
 ```
 
 **문제점:**
-- `process.env.UPLOAD_DIR` = `/data/uploads` (절대 경로)
+- `process.env.UPLOAD_DIR` = `/data/uploads/dailymeal` (절대 경로)
 - `join(__dirname, '..', '/data/uploads')`를 실행하면:
   - `__dirname` = `/home/ubuntu/DailyMeal/backend/dist`
   - 결과: `/home/ubuntu/DailyMeal/backend/data/uploads` ❌
 
 **실제 파일 위치:**
-- `/data/uploads/meals/2025/10/10/...` ✅
+- `/data/uploads/dailymeal/meals/2025/10/10/...` ✅
 
 ### 경로 매핑 오류
 
@@ -57,18 +57,18 @@ ServeStaticModule.forRoot({
 ```
 
 **동작:**
-- 절대 경로(`/data/uploads`) → 그대로 사용 ✅
-- 상대 경로(`./uploads`) → `__dirname`과 결합 ✅
+- 절대 경로(`/data/uploads/dailymeal`) → 그대로 사용 ✅
+- 상대 경로(`../uploads`) → `__dirname`과 결합 ✅
 
 ### 2. 경로 확인
 
 ```bash
 # PM2 환경 변수 확인
 pm2 env 0 | grep UPLOAD
-# UPLOAD_DIR: /data/uploads ✅
+# UPLOAD_DIR: /data/uploads/dailymeal ✅
 
 # 실제 파일 존재 확인
-ls -la /data/uploads/meals/2025/10/10/
+ls -la /data/uploads/dailymeal/meals/2025/10/10/
 # -rw-rw-r-- df4bc48e-65f6-45b1-8d3d-654311030b46.png ✅
 
 # 파일 권한 확인
@@ -135,7 +135,7 @@ location /uploads/ {
 
 ```typescript
 // main.ts
-const uploadDir = process.env.UPLOAD_DIR || './uploads';
+const uploadDir = process.env.UPLOAD_DIR || '../uploads';
 console.log('📁 Upload directory:', uploadDir);
 
 if (!fs.existsSync(uploadDir)) {
@@ -157,10 +157,10 @@ export function resolveUploadPath(path: string): string {
 
 ```typescript
 // .env.development
-UPLOAD_DIR=./uploads
+UPLOAD_DIR=../uploads
 
 // ecosystem.config.js (production)
-UPLOAD_DIR=/data/uploads
+UPLOAD_DIR=/data/uploads/dailymeal
 ```
 
 ## 관련 파일

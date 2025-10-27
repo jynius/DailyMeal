@@ -22,7 +22,7 @@ cp backend/.env.example backend/.env
 - `DB_HOST`: 데이터베이스 호스트 (기본: localhost)
 - `DB_PORT`: 데이터베이스 포트 (기본: 5432)
 - `PORT`: API 서버 포트 (기본: 8000)
-- `UPLOAD_DIR`: 업로드 디렉토리 (기본: ./uploads)
+- `UPLOAD_DIR`: 업로드 디렉토리 (기본: ../uploads)
 
 #### Frontend (.env.local)
 ```bash

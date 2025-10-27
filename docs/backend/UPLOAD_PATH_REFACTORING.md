@@ -45,7 +45,7 @@
 **backend/.env.example에 추가:**
 ```bash
 # File Upload Configuration
-UPLOAD_DIR=./uploads
+UPLOAD_DIR=../uploads
 UPLOAD_MAX_FILE_SIZE=5242880  # 5MB in bytes
 UPLOAD_MAX_FILES=5
 ```
@@ -63,13 +63,13 @@ UPLOAD_MAX_FILES=5
 const uploadDir = './uploads';
 
 // After
-const uploadDir = process.env.UPLOAD_DIR || './uploads';
+const uploadDir = process.env.UPLOAD_DIR || '../uploads';
 ```
 
 #### backend/src/meal-records/meal-records.controller.ts
 ```typescript
 // 파일 상단에 상수 정의 추가
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
+const UPLOAD_DIR = process.env.UPLOAD_DIR || '../uploads';
 const UPLOAD_MAX_FILE_SIZE = parseInt(process.env.UPLOAD_MAX_FILE_SIZE || '5242880');
 const UPLOAD_MAX_FILES = parseInt(process.env.UPLOAD_MAX_FILES || '5');
 
