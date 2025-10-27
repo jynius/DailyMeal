@@ -17,6 +17,8 @@ import {
   createUploadPath,
   ensureDirectoryExists,
 } from '../common/upload.utils';
+import { EmailService } from '../email/email.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -29,7 +31,79 @@ export class UsersService {
     private friendshipRepository: Repository<Friendship>,
     @InjectRepository(UserSettings)
     private userSettingsRepository: Repository<UserSettings>,
+    private readonly emailService: EmailService,
   ) {}
+
+  // 아이디 찾기 (이름으로)
+  async findUserIdByName(name: string): Promise<{ email: string }> {
+    const user = await this.userRepository.findOne({ where: { name } });
+
+    if (!user) {
+      throw new NotFoundException('해당 이름의 사용자를 찾을 수 없습니다.');
+    }
+
+    // 이메일 마스킹 (e.g., user@example.com -> us**@e******.com)
+    const [localPart, domain] = user.email.split('@');
+    const [domainName, domainTld] = domain.split('.');
+    const maskedLocal =
+      localPart.length > 2
+        ? `${localPart.slice(0, 2)}${'*'.repeat(localPart.length - 2)}`
+        : `${localPart.slice(0, 1)}*`;
+    const maskedDomain =
+      domainName.length > 1
+        ? `${domainName.slice(0, 1)}${'*'.repeat(domainName.length - 1)}`
+        : '*';
+
+    return { email: `${maskedLocal}@${maskedDomain}.${domainTld}` };
+  }
+
+  // 비밀번호 재설정 요청
+  async requestPasswordReset(email: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      // 존재하지 않는 이메일이라도 성공 메시지를 보내 보안 강화
+      return { message: '비밀번호 재설정 이메일이 전송되었습니다.' };
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 1); // 1시간 후 만료
+
+    user.passwordResetToken = token;
+    user.passwordResetExpires = expires;
+
+    await this.userRepository.save(user);
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+    await this.emailService.sendPasswordResetEmail(user.email, user.name, resetLink);
+
+    return { message: '비밀번호 재설정 이메일이 전송되었습니다.' };
+  }
+
+  // 비밀번호 재설정
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({
+      where: {
+        passwordResetToken: token,
+      },
+    });
+
+    if (!user || user.passwordResetExpires < new Date()) {
+      throw new UnauthorizedException('토큰이 유효하지 않거나 만료되었습니다.');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
+
+    await this.userRepository.save(user);
+
+    return { message: '비밀번호가 성공적으로 재설정되었습니다.' };
+  }
 
   // 사용자 프로필 조회
   async getUserProfile(userId: string) {
@@ -134,7 +208,7 @@ export class UsersService {
     // 새 이미지 저장 (사용자 해시 기반 분산)
     const filename = `${userId}-${Date.now()}${path.extname(file.originalname)}`;
     const { dirPath, urlPath } = createUploadPath(filename, {
-      uploadDir: process.env.UPLOAD_DIR || './uploads',
+      uploadDir: process.env.UPLOAD_DIR || '../uploads',
       category: 'profiles',
       userId,
       useDate: false, // 프로필은 날짜별 불필요

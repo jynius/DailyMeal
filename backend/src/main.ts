@@ -2,12 +2,18 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ConfigService } from './config/config.service';
 import * as fs from 'fs';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
+  // Secrets Manager에서 설정 로드
+  const configService = app.get(ConfigService);
+  const secretName = configService.get('SECRETS_MANAGER_SECRET_NAME') || 'production/dailymeal/backend';
+  await configService.loadFromSecretsManager(secretName);
+  
   // CORS 설정 (Nginx 리버스 프록시 고려)
   app.enableCors({
     origin: [
@@ -40,12 +46,12 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document);
 
   // 업로드 폴더 생성
-  const uploadDir = process.env.UPLOAD_DIR || './uploads';
+  const uploadDir = configService.get('UPLOAD_DIR') || './uploads';
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  const port = process.env.PORT || 8000;
+  const port = configService.get('PORT') || 8000;
   await app.listen(port);
 
   logger.log(`🚀 DailyMeal API Server running on http://localhost:${port}`);

@@ -30,6 +30,12 @@ export class User {
   @Column({ type: 'text', nullable: true })
   bio: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  passwordResetToken: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  passwordResetExpires: Date | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -14,13 +14,41 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
+import { FindUserDto } from '../dto/find-user.dto';
+import {
+  RequestPasswordResetDto,
+  ResetPasswordDto,
+} from '../dto/reset-password.dto';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  // 아이디 찾기 (이름 기반)
+  @Post('find-id')
+  async findUserId(@Body() findUserDto: FindUserDto) {
+    return this.usersService.findUserIdByName(findUserDto.name);
+  }
+
+  // 비밀번호 재설정 요청
+  @Post('request-password-reset')
+  async requestPasswordReset(
+    @Body() requestPasswordResetDto: RequestPasswordResetDto,
+  ) {
+    return this.usersService.requestPasswordReset(requestPasswordResetDto.email);
+  }
+
+  // 비밀번호 재설정
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.usersService.resetPassword(
+      resetPasswordDto.token,
+      resetPasswordDto.password,
+    );
+  }
+
   // 내 프로필 조회
+  @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMyProfile(@Request() req) {
     return this.usersService.getUserProfile(req.user.id);
@@ -77,6 +105,7 @@ export class UsersController {
   }
 
   // 설정 업데이트
+  @UseGuards(JwtAuthGuard)
   @Patch('me/settings')
   async updateSettings(@Request() req, @Body() settings: any) {
     return this.usersService.updateUserSettings(req.user.id, settings);
