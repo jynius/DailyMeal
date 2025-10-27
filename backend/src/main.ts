@@ -11,9 +11,11 @@ async function bootstrap() {
 
   // Secrets Manager에서 설정 로드
   const configService = app.get(ConfigService);
-  const secretName = configService.get('SECRETS_MANAGER_SECRET_NAME') || 'production/dailymeal/backend';
-  await configService.loadFromSecretsManager(secretName);
-  
+  const secretName = configService.get('SECRETS_MANAGER_SECRET_NAME');
+  if (process.env.NODE_ENV === 'production' && secretName) {
+    await configService.loadFromSecretsManager(secretName);
+  }
+
   // CORS 설정 (Nginx 리버스 프록시 고려)
   app.enableCors({
     origin: [
@@ -46,12 +48,18 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document);
 
   // 업로드 폴더 생성
-  const uploadDir = configService.get('UPLOAD_DIR') || './uploads';
+  const uploadDir = configService.get('UPLOAD_DIR');
+  if (!uploadDir) {
+    throw new Error('UPLOAD_DIR must be defined in the environment.');
+  }
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  const port = configService.get('PORT') || 8000;
+  const port = configService.get('PORT');
+  if (!port) {
+    throw new Error('PORT must be defined in the environment.');
+  }
   await app.listen(port);
 
   logger.log(`🚀 DailyMeal API Server running on http://localhost:${port}`);

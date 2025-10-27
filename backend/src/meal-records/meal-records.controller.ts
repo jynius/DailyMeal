@@ -14,7 +14,6 @@ import {
   ValidationPipe,
   Request,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -29,21 +28,15 @@ import {
   UpdateMealRecordDto,
 } from '../dto/meal-record.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { v4 as uuidv4 } from 'uuid';
 import { AppLoggerService } from '../common/logger.service';
 import {
   createUploadPath,
   ensureDirectoryExists,
 } from '../common/upload.utils';
+import { ConfigService } from '../config/config.service';
+import { DynamicFilesInterceptor } from '../common/interceptors/dynamic-files.interceptor';
 
-// 파일 업로드 설정 (환경 변수)
-const UPLOAD_DIR = process.env.UPLOAD_DIR || '../uploads';
-const UPLOAD_MAX_FILE_SIZE = parseInt(
-  process.env.UPLOAD_MAX_FILE_SIZE || '5242880',
-); // 5MB
-const UPLOAD_MAX_FILES = parseInt(process.env.UPLOAD_MAX_FILES || '5');
+// 파일 업로드 설정은 DynamicFilesInterceptor에서 ConfigService를 통해 처리합니다.
 
 @ApiTags('Meal Records')
 @ApiBearerAuth()
@@ -52,39 +45,13 @@ const UPLOAD_MAX_FILES = parseInt(process.env.UPLOAD_MAX_FILES || '5');
 export class MealRecordsController {
   private readonly logger = AppLoggerService.getLogger('MealRecordsController');
 
-  constructor(private readonly mealRecordsService: MealRecordsService) {}
+  constructor(
+    private readonly mealRecordsService: MealRecordsService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post()
-  @UseInterceptors(
-    FilesInterceptor('photos', UPLOAD_MAX_FILES, {
-      storage: diskStorage({
-        destination: (req, file, callback) => {
-          // 날짜별 폴더 생성 (예: /data/upload/meals/2025/10/11)
-          const { dirPath } = createUploadPath('', {
-            uploadDir: UPLOAD_DIR,
-            category: 'meals',
-            useDate: true,
-          });
-          ensureDirectoryExists(dirPath);
-          callback(null, dirPath);
-        },
-        filename: (req, file, callback) => {
-          const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
-          callback(null, uniqueName);
-        },
-      }),
-      fileFilter: (req, file, callback) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
-          return callback(new Error('이미지 파일만 업로드 가능합니다'), false);
-        }
-        callback(null, true);
-      },
-      limits: {
-        fileSize: UPLOAD_MAX_FILE_SIZE,
-        files: UPLOAD_MAX_FILES,
-      },
-    }),
-  )
+  @UseInterceptors(DynamicFilesInterceptor('photos'))
   @ApiOperation({ summary: '식사 기록 생성' })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({ status: 201, description: '식사 기록 생성 성공' })
@@ -106,7 +73,7 @@ export class MealRecordsController {
       files.forEach((file) => {
         // file.path는 전체 경로, 여기서 /uploads 이후만 추출
         const { urlPath } = createUploadPath(file.filename, {
-          uploadDir: UPLOAD_DIR,
+          uploadDir: this.configService.get('UPLOAD_DIR'),
           category: 'meals',
           useDate: true,
         });

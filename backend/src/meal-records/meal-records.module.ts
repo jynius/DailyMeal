@@ -3,11 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MealRecordsService } from './meal-records.service';
 import { MealRecordsController } from './meal-records.controller';
 import { MealRecord } from '../entities/meal-record.entity';
-import { RealTimeModule } from '../realtime/realtime.module';
+import { User } from '../entities/user.entity';
+import { ConfigService } from '../config/config.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MealRecord]), RealTimeModule],
+  imports: [TypeOrmModule.forFeature([MealRecord, User])],
   controllers: [MealRecordsController],
-  providers: [MealRecordsService],
+  providers: [MealRecordsService, ConfigService],
 })
 export class MealRecordsModule {}

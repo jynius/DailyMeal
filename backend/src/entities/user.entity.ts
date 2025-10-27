@@ -25,7 +25,7 @@ export class User {
   name: string;
 
   @Column({ nullable: true })
-  profileImage: string;
+  profileImage: string | null;
 
   @Column({ type: 'text', nullable: true })
   bio: string;

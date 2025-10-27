@@ -19,6 +19,7 @@ import {
 } from '../common/upload.utils';
 import { EmailService } from '../email/email.service';
 import * as crypto from 'crypto';
+import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class UsersService {
@@ -32,6 +33,7 @@ export class UsersService {
     @InjectRepository(UserSettings)
     private userSettingsRepository: Repository<UserSettings>,
     private readonly emailService: EmailService,
+    private readonly configService: ConfigService,
   ) {}
 
   // 아이디 찾기 (이름으로)
@@ -75,8 +77,16 @@ export class UsersService {
 
     await this.userRepository.save(user);
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
-    await this.emailService.sendPasswordResetEmail(user.email, user.name, resetLink);
+    const frontendUrl = this.configService.get('FRONTEND_URL');
+    if (!frontendUrl) {
+      throw new Error('FRONTEND_URL must be defined in the environment.');
+    }
+    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+    await this.emailService.sendPasswordResetEmail(
+      user.email,
+      user.name,
+      resetLink,
+    );
 
     return { message: '비밀번호 재설정 이메일이 전송되었습니다.' };
   }
@@ -92,7 +102,7 @@ export class UsersService {
       },
     });
 
-    if (!user || user.passwordResetExpires < new Date()) {
+    if (!user || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
       throw new UnauthorizedException('토큰이 유효하지 않거나 만료되었습니다.');
     }
 
@@ -189,16 +199,19 @@ export class UsersService {
 
   // 프로필 이미지 업로드
   async uploadProfileImage(userId: string, file: Express.Multer.File) {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-    });
-
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    // 이전 이미지 삭제
+    const uploadDir = this.configService.get('UPLOAD_DIR');
+    if (!uploadDir) {
+      throw new Error('UPLOAD_DIR must be defined in the environment.');
+    }
+
+    // 기존 이미지 삭제
     if (user.profileImage) {
+      // profileImageUrl -> profileImage 로 수정
       const oldImagePath = path.join(process.cwd(), user.profileImage);
       if (fs.existsSync(oldImagePath)) {
         fs.unlinkSync(oldImagePath);
@@ -206,23 +219,43 @@ export class UsersService {
     }
 
     // 새 이미지 저장 (사용자 해시 기반 분산)
-    const filename = `${userId}-${Date.now()}${path.extname(file.originalname)}`;
+    const filename = `${userId}-${Date.now()}${path.extname(
+      file.originalname,
+    )}`;
     const { dirPath, urlPath } = createUploadPath(filename, {
-      uploadDir: process.env.UPLOAD_DIR || '../uploads',
+      uploadDir: uploadDir,
       category: 'profiles',
       userId,
-      useDate: false, // 프로필은 날짜별 불필요
-      useUserHash: true, // 사용자별 해시 폴더 사용
+      useUserHash: true,
     });
 
     ensureDirectoryExists(dirPath);
     const filepath = path.join(dirPath, filename);
-    fs.writeFileSync(filepath, file.buffer);
+    fs.writeFileSync(file.buffer, filepath);
 
-    user.profileImage = urlPath;
+    user.profileImage = urlPath; // profileImageUrl -> profileImage 로 수정
     await this.userRepository.save(user);
 
     return { profileImage: urlPath };
+  }
+
+  // 프로필 이미지 삭제
+  async deleteProfileImage(userId: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    if (user.profileImage) {
+      const imagePath = path.join(process.cwd(), user.profileImage);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+      user.profileImage = null; // profileImage는 nullable이므로 null 할당 가능
+      await this.userRepository.save(user);
+    }
+
+    return { message: '프로필 이미지가 삭제되었습니다.' };
   }
 
   // 사용자 통계 조회

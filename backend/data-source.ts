@@ -7,10 +7,23 @@ import { Friendship } from './src/entities/friendship.entity';
 import { MealShare } from './src/entities/meal-share.entity';
 import { ShareTracking } from './src/entities/share-tracking.entity';
 
+// TypeORM CLI가 환경 변수를 올바르게 인식하도록 보장
+if (
+  !process.env.DB_HOST ||
+  !process.env.DB_PORT ||
+  !process.env.DB_USERNAME ||
+  !process.env.DB_PASSWORD ||
+  !process.env.DB_NAME
+) {
+  throw new Error(
+    'Database configuration is incomplete. Please check your .env file.',
+  );
+}
+
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432'),
+  port: parseInt(process.env.DB_PORT, 10),
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
