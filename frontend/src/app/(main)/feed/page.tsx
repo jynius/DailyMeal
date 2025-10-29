@@ -12,6 +12,7 @@ import { createLogger } from '@/lib/logger'
 import { Users, Filter, Zap } from 'lucide-react'
 import type { MealRecord } from '@/types'
 import { Header } from '@/components/header'
+import Spinner from '@/components/ui/spinner'
 
 const log = createLogger('FeedPage')
 
@@ -75,14 +76,7 @@ function FeedContent() {
 
   // 인증 로딩 중
   if (authLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">인증 확인 중...</p>
-        </div>
-      </div>
-    )
+    return <Spinner container="page" text="로딩 중..." />
   }
 
   // 인증되지 않은 경우 (훅에서 리다이렉트 처리)
@@ -107,14 +101,7 @@ function FeedContent() {
   }
 
   if (loading) {
-    return (
-      <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">식사 기록을 불러오는 중...</p>
-        </div>
-      </div>
-    )
+    return <Spinner container="page" text="식사 기록을 불러오는 중..." className="pb-20" />
   }
 
   return (
@@ -178,12 +165,7 @@ function FeedContent() {
 export default function FeedPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
-        </div>
-      </div>
+      <Spinner container="page" size="lg" text="로딩 중..." />
     }>
       <FeedContent />
     </Suspense>

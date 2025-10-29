@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { BottomNavigation } from '@/components/bottom-navigation'
 import { profileApi, UserStatistics } from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
+import Spinner from '@/components/ui/spinner'
 
 export default function StatisticsPage() {
   const router = useRouter()
@@ -31,14 +32,7 @@ export default function StatisticsPage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
-    return (
-      <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">통계 로딩 중...</p>
-        </div>
-      </div>
-    )
+    return <Spinner container="page" text="통계 로딩 중..." />
   }
 
   if (!stats) {

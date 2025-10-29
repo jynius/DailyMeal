@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
 import { useRequireAuth } from '@/hooks/use-auth'
 import { profileApi, UserProfile } from '@/lib/api'
+import Spinner from '@/components/ui/spinner'
 
 export default function ProfilePage() {
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth()
@@ -58,12 +59,7 @@ export default function ProfilePage() {
   // 인증 로딩 중
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">인증 확인 중...</p>
-        </div>
-      </div>
+      <Spinner container="page" text="인증 확인 중..." />
     )
   }
 
@@ -175,14 +171,7 @@ export default function ProfilePage() {
   }
 
   if (loading) {
-    return (
-      <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">프로필 로딩 중...</p>
-        </div>
-      </div>
-    )
+    return <Spinner container="page" text="프로필 로딩 중..." />
   }
 
   if (!profile) {

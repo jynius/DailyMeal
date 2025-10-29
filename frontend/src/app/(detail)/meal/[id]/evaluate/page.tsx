@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { useAlert } from '@/components/ui/alert'
 import { useToast } from '@/components/ui/toast'
 import Image from 'next/image'
+import Spinner from '@/components/ui/spinner'
 
 interface EvaluateFormData {
   rating: number
@@ -202,14 +203,7 @@ export default function EvaluatePage({ params }: { params: { id: string } }) {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
-        </div>
-      </div>
-    )
+    return <Spinner container="page" size="lg" text="로딩 중..." />
   }
 
   if (!meal) {

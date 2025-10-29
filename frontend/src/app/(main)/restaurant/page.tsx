@@ -6,6 +6,7 @@ import { KakaoMap } from '@/components/kakao-map'
 import { useRequireAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
 import { useLocation } from '@/contexts/location-context'
+import Spinner from '@/components/ui/spinner'
 
 interface Restaurant {
   id: string
@@ -94,14 +95,7 @@ export default function RestaurantsPage() {
   })()
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">인증 확인 중...</p>
-        </div>
-      </div>
-    )
+    return <Spinner container="page" text="인증 확인 중..." />
   }
 
   if (!isAuthenticated) {
@@ -253,10 +247,7 @@ export default function RestaurantsPage() {
             </div>
 
         {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">맛집 불러오는 중...</p>
-          </div>
+          <Spinner container="page" text="맛집 불러오는 중..." />
         ) : sortedRestaurants.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg">
             <p className="text-gray-500 mb-2">

@@ -4,6 +4,7 @@ import { useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { AuthForm } from '@/components/auth/auth-form'
 import { tokenManager } from '@/lib/api'
+import Spinner from '@/components/ui/spinner'
 
 // 동적 렌더링 강제
 export const dynamic = 'force-dynamic'
@@ -37,12 +38,7 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-green-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
-        </div>
-      </div>
+      <Spinner container="page" size="lg" text="로딩 중..." />
     }>
       <LoginContent />
     </Suspense>

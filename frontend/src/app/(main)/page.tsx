@@ -12,6 +12,7 @@ import { AIMenuRecommendation } from "@/components/ai-menu-recommendation";
 import Link from "next/link";
 import { isWebView, setupWebViewDebug, logClick } from "@/lib/webview-utils";
 import { Header } from '@/components/header';
+import Spinner from "@/components/ui/spinner";
 
 
 export default function Home() {
@@ -63,14 +64,7 @@ export default function Home() {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩중...</p>
-        </div>
-      </div>
-    )
+    return <Spinner container="page" text="로딩 중..." />
   }
 
   // 비로그인 상태: 랜딩 페이지 표시

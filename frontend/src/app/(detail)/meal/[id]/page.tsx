@@ -11,6 +11,7 @@ import { createShare } from '@/lib/api'
 import Image from 'next/image'
 import type { MealRecord } from '@/types'
 import { Header } from '@/components/header'
+import Spinner from '@/components/ui/spinner'
 
 export default function MealDetailPage({ params }: { params: { id: string } }) {
   const [meal, setMeal] = useState<MealRecord | null>(null)
@@ -46,14 +47,7 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
   }, [params, showAlert])
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
-        </div>
-      </div>
-    )
+    return <Spinner container="page" size="lg" text="로딩 중..." />
   }
 
   if (!meal) {

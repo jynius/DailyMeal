@@ -11,6 +11,7 @@ import { createShare } from '@/lib/api/share'
 import { ROUTES, APP_CONFIG } from '@/lib/constants'
 import { createLogger } from '@/lib/logger'
 import type { MealRecord } from '@/types'
+import Spinner from './ui/spinner'
 
 const log = createLogger('MealCard')
 
@@ -322,11 +323,7 @@ export function MealCard({
             className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
             title="공유하기"
           >
-            {isCreatingShare ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-            ) : (
-              <Share2 size={16} className="text-gray-600" />
-            )}
+            {isCreatingShare ? <Spinner size="sm" /> : <Share2 size={16} className="text-gray-600" />}
           </button>
           
           {/* 삭제 버튼 */}
