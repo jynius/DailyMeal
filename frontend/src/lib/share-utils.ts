@@ -1,5 +1,6 @@
 // 공유 기능을 위한 유틸리티 함수들
 import { kakaoShare, type KakaoShareData } from './kakao-share'
+import { APP_CONFIG } from './constants'
 
 export interface ShareData {
   title: string
@@ -50,10 +51,7 @@ export const shareUtils = {
     // 이미지 URL을 절대 경로로 변환
     let imageUrl = data.imageUrl
     if (imageUrl && !imageUrl.startsWith('http')) {
-      const apiUrl = process.env.NODE_ENV === 'development'
-        ? 'http://localhost:8000'
-        : (process.env.NEXT_PUBLIC_API_URL || '/api')
-      imageUrl = `${apiUrl}${imageUrl}`
+      imageUrl = `${APP_CONFIG.API_SERVER_URL}${imageUrl}`
     }
     
     const kakaoData: KakaoShareData = {

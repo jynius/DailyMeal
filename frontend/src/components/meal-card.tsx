@@ -8,7 +8,7 @@ import { useAlert } from './ui/alert'
 import { useToast } from './ui/toast'
 import { mealRecordsApi } from '@/lib/api'
 import { createShare } from '@/lib/api/share'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES, APP_CONFIG } from '@/lib/constants'
 import { createLogger } from '@/lib/logger'
 import type { MealRecord } from '@/types'
 
@@ -145,10 +145,7 @@ export function MealCard({
     if (url.startsWith('http')) return url
     
     // 개발 환경: localhost:8000, 프로덕션: 상대 경로
-    const apiUrl = process.env.NODE_ENV === 'development'
-      ? 'http://localhost:8000'
-      : (process.env.NEXT_PUBLIC_API_URL || '')
-    const absoluteUrl = apiUrl ? `${apiUrl}${url}` : url
+    const absoluteUrl = APP_CONFIG.API_SERVER_URL ? `${APP_CONFIG.API_SERVER_URL}${url}` : url
     
     // localhost URL은 카카오톡에서 표시 안되므로 플레이스홀더 사용
     if (absoluteUrl.includes('localhost')) {
