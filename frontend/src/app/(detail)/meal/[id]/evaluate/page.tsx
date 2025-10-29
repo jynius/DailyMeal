@@ -55,7 +55,7 @@ export default function EvaluatePage({ params }: { params: { id: string } }) {
     const fetchMeal = async () => {
       try {
         const resolvedParams = await params
-        const { mealRecordsApi } = await import('@/lib/api/client')
+        const { mealRecordsApi } = await import('@/lib/api')
         const data = await mealRecordsApi.getOne(resolvedParams.id)
         
         if (data) {
@@ -155,7 +155,7 @@ export default function EvaluatePage({ params }: { params: { id: string } }) {
     
     try {
       const resolvedParams = await params
-      const { mealRecordsApi } = await import('@/lib/api/client')
+      const { mealRecordsApi } = await import('@/lib/api')
       
       const updateData: any = {
         rating: formData.rating

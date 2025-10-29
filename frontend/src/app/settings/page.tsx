@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Bell, Lock, MapPin, Home, Briefcase, Save } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
-import { profileApi } from '@/lib/api/profile'
+import { profileApi } from '@/lib/api'
 
 export default function SettingsPage() {
   const router = useRouter()

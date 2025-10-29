@@ -1,6 +1,6 @@
 // 인증 보호를 위한 유틸리티
 
-import { tokenManager } from './api/client'
+import { tokenManager } from './api'
 
 /**
  * 현재 사용자가 로그인되어 있는지 확인

@@ -5,13 +5,13 @@ import { Users, UserPlus, UserCheck, Search, Bell, BellOff } from 'lucide-react'
 import { BottomNavigation } from '@/components/bottom-navigation'
 import { Button } from '@/components/ui/button'
 import { useAlert } from '@/components/ui/alert'
-import { friendsApi } from '@/lib/api/friends'
+import { friendsApi } from '@/lib/api'
 import type { 
   User, 
   FriendRequest, 
   SentRequest, 
   SearchResult 
-} from '@/lib/api/friends'
+} from '@/lib/api'
 
 export default function UsersPage() {
   const [friends, setFriends] = useState<User[]>([])                    // 내 친구 목록

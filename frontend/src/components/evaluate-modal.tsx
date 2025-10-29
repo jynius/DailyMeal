@@ -5,7 +5,7 @@ import { X, Star, MapPin, Home, Bike, UtensilsCrossed, Users, Plus } from 'lucid
 import { Button } from '@/components/ui/button'
 import { useAlert } from '@/components/ui/alert'
 import { useToast } from '@/components/ui/toast'
-import { mealRecordsApi, friendsApi, locationsApi } from '@/lib/api/client'
+import { mealRecordsApi, friendsApi, locationsApi } from '@/lib/api'
 import { formatPrice, parsePrice } from '@/lib/utils/format'
 import type { MealRecord, Friend } from '@/types'
 

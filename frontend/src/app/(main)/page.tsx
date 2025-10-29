@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, TrendingUp, MapPin, Users, Sparkles, ArrowRight, Zap, Star } from 'lucide-react'
 import { BottomNavigation } from "@/components/bottom-navigation";
-import { tokenManager, mealRecordsApi } from "@/lib/api/client";
+import { tokenManager, mealRecordsApi } from "@/lib/api";
 import type { MealRecord } from "@/types";
 import { MealCard } from "@/components/meal-card";
 import { useSocket } from "@/contexts/socket-context";
@@ -34,23 +34,8 @@ export default function Home() {
     const token = tokenManager.get()
     const authenticated = !!token
     setIsAuthenticated(authenticated)
-    
-    // 비로그인 상태일 때 재방문자 체크
-    if (!authenticated) {
-      const hasVisited = localStorage.getItem('hasVisited')
-      if (hasVisited === 'true') {
-        // 재방문자는 바로 로그인 페이지로
-        console.log('[Navigation] Redirecting to /login (returning user)');
-        router.push('/login')
-      } else {
-        // 첫 방문자는 랜딩 페이지 보여주고 방문 기록
-        localStorage.setItem('hasVisited', 'true')
-        console.log('[Navigation] First visit, showing landing page');
-      }
-    }
-    
     setIsLoading(false)
-  }, [router])
+  }, [])
 
   // 로그인 상태일 때 식사 기록 불러오기
   useEffect(() => {

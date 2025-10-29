@@ -50,7 +50,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
   const fetchRestaurantDetail = async () => {
     try {
       setLoading(true)
-      const { mealRecordsApi } = await import('@/lib/api/client')
+      const { mealRecordsApi } = await import('@/lib/api')
       
       const response = await mealRecordsApi.getAll(1, 1000)
       const allMeals = response.data

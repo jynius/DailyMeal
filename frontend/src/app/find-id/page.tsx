@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/api/client';
+import { authApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,10 +17,7 @@ import {
 import Link from 'next/link';
 
 const findIdMutation = async (name: string) => {
-  return apiRequest<{ email: string }>('/users/find-id', {
-    method: 'POST',
-    body: JSON.stringify({ name }),
-  });
+  return authApi.findId(name);
 };
 
 export default function FindIdPage() {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, TrendingUp, Star, MapPin, Calendar } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { BottomNavigation } from '@/components/bottom-navigation'
-import { profileApi, UserStatistics } from '@/lib/api/profile'
+import { profileApi, UserStatistics } from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
 
 export default function StatisticsPage() {

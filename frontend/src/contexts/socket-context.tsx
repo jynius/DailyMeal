@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { io, Socket } from 'socket.io-client'
-import { tokenManager } from '@/lib/api/client'
+import { tokenManager } from '@/lib/api'
 
 interface SocketContextType {
   socket: Socket | null

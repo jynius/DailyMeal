@@ -6,7 +6,7 @@
  * - ✅ 성공 로그 (응답 시간 포함)
  * - ⚠️ 느린 API 경고 (>1초)
  * - ❌ 에러 로그
- * - 📊 주기적 통계 출력
+ * - 📊 통계 출력 (콘솔에서 apiStats() 호출)
  * - 🔔 반복 호출 감지
  */
 
@@ -51,31 +51,11 @@ class ApiPerformanceMonitor {
   private readonly WARNING_ERROR_RATE = 0.1 // 10%
   private readonly REPEAT_WARNING_THRESHOLD = 10 // 10초 내 10회 호출
   private readonly REPEAT_TIME_WINDOW = 10000 // 10초
-  private statsInterval: NodeJS.Timeout | null = null
-
   constructor() {
-    // 개발 환경에서만 주기적 통계 출력 (30초마다)
-    if (process.env.NODE_ENV === 'development') {
-      this.startPeriodicStats()
-    }
-  }
-
-  /**
-   * 주기적 통계 출력 시작
-   */
-  private startPeriodicStats(): void {
-    this.statsInterval = setInterval(() => {
-      this.printStats()
-    }, 30000) // 30초마다
-  }
-
-  /**
-   * 통계 출력 중지
-   */
-  stopPeriodicStats(): void {
-    if (this.statsInterval) {
-      clearInterval(this.statsInterval)
-      this.statsInterval = null
+    // 개발 환경에서 콘솔에서 통계 확인 가능하도록 함수 노출
+    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+      (window as any).apiStats = () => this.printStats()
+      console.log('%c💡 Tip: 콘솔에서 apiStats()를 호출하면 API 성능 통계를 확인할 수 있습니다.', 'color: #6366f1; font-style: italic')
     }
   }
 

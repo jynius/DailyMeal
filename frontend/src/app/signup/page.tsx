@@ -3,7 +3,7 @@
 import { useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { AuthForm } from '@/components/auth/auth-form'
-import { tokenManager } from '@/lib/api/client'
+  import { tokenManager } from '@/lib/api'
 
 // 동적 렌더링 강제
 export const dynamic = 'force-dynamic'

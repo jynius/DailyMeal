@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { APP_CONFIG } from '@/lib/constants'
-import { authApi, tokenManager } from '@/lib/api/client'
+import { authApi, tokenManager } from '@/lib/api'
 import { connectFriend } from '@/lib/api/share'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'

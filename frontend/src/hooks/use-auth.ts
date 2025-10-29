@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { tokenManager } from '@/lib/api/client'
+import { tokenManager } from '@/lib/api'
 
 /**
  * 인증이 필요한 페이지에서 사용하는 훅

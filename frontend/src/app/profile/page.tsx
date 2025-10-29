@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { User, Settings, Calendar, LogOut, Edit2, Camera, Save, X } from 'lucide-react'
 import { BottomNavigation } from '@/components/bottom-navigation'
-import { tokenManager } from '@/lib/api/client'
+import { tokenManager } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
 import { useRequireAuth } from '@/hooks/use-auth'
-import { profileApi, UserProfile } from '@/lib/api/profile'
+import { profileApi, UserProfile } from '@/lib/api'
 
 export default function ProfilePage() {
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth()

@@ -1,37 +1,4 @@
-// API 요청 헬퍼 함수
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  }
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  }
-
-  // ✅ 개발 환경에서만 localhost 사용, 프로덕션에서는 환경변수 필수
-  const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:8000'
-    : process.env.NEXT_PUBLIC_API_URL || '/api'
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  })
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ 
-      message: '서버 오류가 발생했습니다' 
-    }))
-    throw new Error(error.message || '요청 실패')
-  }
-
-  return response.json()
-}
+import { apiRequest } from './client';
 
 export interface User {
   id: string

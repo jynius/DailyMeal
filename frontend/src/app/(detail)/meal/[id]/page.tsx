@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useAlert } from '@/components/ui/alert'
 import { useToast } from '@/components/ui/toast'
 import { ShareModal } from '@/components/share-modal'
-import { createShare } from '@/lib/api/share'
+import { createShare } from '@/lib/api'
 import Image from 'next/image'
 import type { MealRecord } from '@/types'
 import { Header } from '@/components/header'
@@ -26,7 +26,7 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
   const fetchMeal = async () => {
     try {
       const resolvedParams = await params
-      const { mealRecordsApi } = await import('@/lib/api/client')
+      const { mealRecordsApi } = await import('@/lib/api')
       const data = await mealRecordsApi.getOne(resolvedParams.id)
       setMeal(data)
     } catch (error) {

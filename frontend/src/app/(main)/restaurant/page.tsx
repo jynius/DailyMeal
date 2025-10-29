@@ -42,7 +42,7 @@ export default function RestaurantsPage() {
   const fetchRestaurants = async () => {
     try {
       setLoading(true)
-      const { restaurantsApi } = await import('@/lib/api/client')
+      const { restaurantsApi } = await import('@/lib/api')
       
       const params: { lat?: number; lon?: number; radius?: number } = {}
       if (latitude && longitude) {
