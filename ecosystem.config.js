@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'dailymeal-backend',
-      script: 'dist/main.js',
+      script: 'dist/src/main.js',
       cwd: './backend',
       env: {
         NODE_ENV: 'production',
