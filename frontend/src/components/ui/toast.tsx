@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react'
 import * as Toast from '@radix-ui/react-toast'
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 
@@ -71,6 +71,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const info = (message: string, title?: string) => 
     showToast({ message, title, type: 'info' })
 
+  const value = React.useMemo(() => ({ showToast, success, error, warning, info }), []);
+
   const getIcon = (type: string) => {
     switch (type) {
       case 'success':
@@ -98,29 +100,28 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ToastContext.Provider value={{ showToast, success, error, warning, info }}>
+    <ToastContext.Provider value={value}>
       {children}
-      
       <Toast.Provider swipeDirection="right" duration={5000}>
-        {toasts.map((toast) => (
+        {toasts.map(({ id, isOpen, message, title, type }) => (
           <Toast.Root
-            key={toast.id}
-            open={toast.isOpen}
-            onOpenChange={(open) => !open && removeToast(toast.id)}
-            className={`fixed top-4 right-4 w-96 p-4 rounded-lg border shadow-lg z-50 animate-in slide-in-from-right duration-300 ${getColorClass(toast.type || 'info')}`}
+            key={id}
+            open={isOpen}
+            onOpenChange={(open) => !open && removeToast(id)}
+            className={`fixed top-4 right-4 w-96 p-4 rounded-lg border shadow-lg z-50 animate-in slide-in-from-right duration-300 ${getColorClass(type || 'info')}`}
           >
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 mt-0.5">
-                {getIcon(toast.type || 'info')}
+                {getIcon(type || 'info')}
               </div>
               <div className="flex-1 min-w-0">
-                {toast.title && (
+                {title && (
                   <Toast.Title className="font-semibold text-sm mb-1">
-                    {toast.title}
+                    {title}
                   </Toast.Title>
                 )}
                 <Toast.Description className="text-sm opacity-90">
-                  {toast.message}
+                  {message}
                 </Toast.Description>
               </div>
               <Toast.Close asChild>
@@ -134,8 +135,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             </div>
           </Toast.Root>
         ))}
-        
-        <Toast.Viewport className="fixed top-0 right-0 p-4 w-96 max-w-full z-50" />
+        <Toast.Viewport className="fixed top-0 right-0 flex flex-col p-4 gap-3 w-96 max-w-full z-[100]" />
       </Toast.Provider>
     </ToastContext.Provider>
   )

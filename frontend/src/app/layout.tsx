@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from "@/components/providers";
-import { PWAInstaller } from "@/components/pwa-installer";
-import { AppInstallBanner } from "@/components/app-install-banner";
-import { LocationProvider } from "@/contexts/location-context";
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { Providers } from "@/components/providers"
+import { PWAInstaller } from "@/components/pwa-installer"
+import { AppInstallBanner } from "@/components/app-install-banner"
+import { LocationProvider } from "@/contexts/location-context"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -60,5 +60,5 @@ export default function RootLayout({
         </Providers>
       </body>
     </html>
-  );
+  )
 }
