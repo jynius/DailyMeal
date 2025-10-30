@@ -48,9 +48,9 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         return reject(notLoadedError);
       }
 
-      const geocoder = new window.kakao.maps.services.Geocoder();
-      geocoder.coord2Address(lon, lat, (result, status) => {
-        if (status === window.kakao.maps.services.Status.OK) {
+      const geocoder = new (window.kakao.maps as any).services.Geocoder();
+      geocoder.coord2Address(lon, lat, (result: any, status: any) => {
+        if (status === (window.kakao.maps as any).services.Status.OK) {
           const newAddress = result[0]?.road_address?.address_name || result[0]?.address?.address_name;
           if (newAddress) {
             setAddress(newAddress);

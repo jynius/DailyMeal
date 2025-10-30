@@ -6,9 +6,6 @@ import { AuthForm } from '@/components/auth/auth-form'
 import { tokenManager } from '@/lib/api'
 import Spinner from '@/components/ui/spinner'
 
-// 동적 렌더링 강제
-export const dynamic = 'force-dynamic'
-
 function LoginContent() {
   const router = useRouter()
 
