@@ -143,7 +143,7 @@ export class ShareService {
       category: meal.category,
       createdAt: formattedDate,
       sharerName: sharer.name,
-      sharerProfileImage: sharer.profileImage,
+      sharerProfileImage: sharer.profileImage ?? undefined,
       viewCount: mealShare.viewCount,
     };
   }

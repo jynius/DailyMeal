@@ -21,10 +21,10 @@ export class User {
   @Column()
   password: string;
 
-  @Column()
+  @Column({ type: 'varchar', nullable: true })
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   profileImage: string | null;
 
   @Column({ type: 'text', nullable: true })

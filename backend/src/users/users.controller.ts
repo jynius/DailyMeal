@@ -56,6 +56,7 @@ export class UsersController {
 
   // 프로필 업데이트
   @Patch('me')
+  @UseGuards(JwtAuthGuard)
   async updateProfile(
     @Request() req,
     @Body() updateData: { username?: string; email?: string; bio?: string },
@@ -65,6 +66,7 @@ export class UsersController {
 
   // 프로필 이미지 업로드
   @Post('me/profile-image')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async uploadProfileImage(
     @Request() req,
@@ -75,12 +77,14 @@ export class UsersController {
 
   // 사용자 통계 조회
   @Get('me/statistics')
+  @UseGuards(JwtAuthGuard)
   async getStatistics(@Request() req) {
     return this.usersService.getUserStatistics(req.user.id);
   }
 
   // 비밀번호 변경
   @Patch('me/password')
+  @UseGuards(JwtAuthGuard)
   async changePassword(
     @Request() req,
     @Body() passwordData: { currentPassword: string; newPassword: string },
@@ -94,19 +98,21 @@ export class UsersController {
 
   // 계정 삭제
   @Delete('me')
+  @UseGuards(JwtAuthGuard)
   async deleteAccount(@Request() req, @Body() body: { password: string }) {
     return this.usersService.deleteAccount(req.user.id, body.password);
   }
 
   // 설정 조회
   @Get('me/settings')
+  @UseGuards(JwtAuthGuard)
   async getSettings(@Request() req) {
     return this.usersService.getUserSettings(req.user.id);
   }
 
   // 설정 업데이트
-  @UseGuards(JwtAuthGuard)
   @Patch('me/settings')
+  @UseGuards(JwtAuthGuard)
   async updateSettings(@Request() req, @Body() settings: any) {
     return this.usersService.updateUserSettings(req.user.id, settings);
   }
