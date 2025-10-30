@@ -108,15 +108,16 @@ function AddMealPage() {
   // 위치 컨텍스트에서 위치 정보 업데이트
   useEffect(() => {
     if (location.latitude && location.longitude && location.address) {
+      const shortAddress = location.address.split(',').slice(0, 2).join(',')
       setFormData(prev => ({
         ...prev,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        address: location.address,
-        location: location.address.split(',').slice(0, 2).join(','),
+        latitude: location.latitude ?? undefined,
+        longitude: location.longitude ?? undefined,
+        address: location.address ?? undefined,
+        location: shortAddress,
       }));
       if (!location.isLoading) {
-        toast.success(`현재 위치: ${location.address.split(',').slice(0, 2).join(',')}`, '위치 정보')
+        toast.success(`현재 위치: ${shortAddress}`, '위치 정보')
       }
     }
   }, [location.latitude, location.longitude, location.address, location.isLoading, toast])
@@ -258,7 +259,9 @@ function AddMealPage() {
 
         {location.error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
-            <span className="text-sm text-red-700">{location.error}</span>
+            <span className="text-sm text-red-700">
+              {location.error instanceof Error ? location.error.message : String(location.error)}
+            </span>
           </div>
         )}
 

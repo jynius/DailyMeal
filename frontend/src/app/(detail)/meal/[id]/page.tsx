@@ -13,7 +13,17 @@ import type { MealRecord } from '@/types'
 import { Header } from '@/components/header'
 import Spinner from '@/components/ui/spinner'
 
-export default function MealDetailPage({ params }: { params: { id: string } }) {
+export default async function MealDetailPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const { id } = await params
+  
+  return <MealDetailContent id={id} />
+}
+
+function MealDetailContent({ id }: { id: string }) {
   const [meal, setMeal] = useState<MealRecord | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
@@ -26,9 +36,8 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
 
   const fetchMeal = async () => {
     try {
-      const resolvedParams = await params
       const { mealRecordsApi } = await import('@/lib/api')
-      const data = await mealRecordsApi.getOne(resolvedParams.id)
+      const data = await mealRecordsApi.getOne(id)
       setMeal(data)
     } catch (error) {
       console.error('Failed to fetch meal:', error)
@@ -44,7 +53,7 @@ export default function MealDetailPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetchMeal()
-  }, [params, showAlert])
+  }, [id, showAlert])
 
   if (loading) {
     return <Spinner container="page" size="lg" text="로딩 중..." />

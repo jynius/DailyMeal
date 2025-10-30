@@ -76,7 +76,14 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
   const loadFriends = async () => {
     try {
       const data = await friendsApi.getFriends()
-      setFriends(data)
+      // friendsApi.User 타입을 Friend 타입으로 변환
+      const friendData: Friend[] = data.map(user => ({
+        id: user.id,
+        email: user.email,
+        name: user.username, // username을 name으로 매핑
+        profileImage: user.avatar || undefined // avatar를 profileImage로 매핑
+      }))
+      setFriends(friendData)
     } catch (error) {
       console.error('친구 목록 불러오기 실패:', error)
     }

@@ -36,17 +36,23 @@ interface RestaurantDetail {
 }
 
 interface RestaurantPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
-export default function RestaurantPage({ params }: RestaurantPageProps) {
+export default async function RestaurantPage({ params }: RestaurantPageProps) {
+  const { id } = await params
+  
+  return <RestaurantContent id={id} />
+}
+
+function RestaurantContent({ id }: { id: string }) {
   const router = useRouter()
   const [restaurant, setRestaurant] = useState<RestaurantDetail | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchRestaurantDetail()
-  }, [params.id])
+  }, [id])
 
   const fetchRestaurantDetail = async () => {
     try {
@@ -56,7 +62,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
       const response = await mealRecordsApi.getAll(1, 1000)
       const allMeals = response.data
 
-      const targetMeal = allMeals.find((m: any) => m.id === params.id)
+      const targetMeal = allMeals.find((m: any) => m.id === id)
       if (!targetMeal || !targetMeal.location) {
         throw new Error('Restaurant not found')
       }
@@ -72,7 +78,7 @@ export default function RestaurantPage({ params }: RestaurantPageProps) {
       const lastVisit = new Date(Math.max(...dates.map(d => d.getTime()))).toISOString()
 
       const restaurantDetail: RestaurantDetail = {
-        id: params.id,
+        id: id,
         name: targetMeal.location,
         address: targetMeal.address || '주소 정보 없음',
         latitude: targetMeal.latitude,

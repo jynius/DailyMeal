@@ -15,14 +15,19 @@ interface SharedMealPageProps {
   params: Promise<{ shareId: string }>
 }
 
-export default function SharedMealPage({ params }: SharedMealPageProps) {
+export default async function SharedMealPage({ params }: SharedMealPageProps) {
+  const { shareId } = await params
+  
+  return <SharedMealContent shareId={shareId} />
+}
+
+function SharedMealContent({ shareId }: { shareId: string }) {
   const [meal, setMeal] = useState<PublicMealResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [showShareModal, setShowShareModal] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [shareId, setShareId] = useState<string>('')
   
   const searchParams = useSearchParams()
   const ref = searchParams.get('ref')
@@ -38,16 +43,14 @@ export default function SharedMealPage({ params }: SharedMealPageProps) {
     }
 
     fetchMeal()
-  }, [params, ref])
+  }, [shareId, ref])
 
   const fetchMeal = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      const resolvedParams = await params
-      const currentShareId = resolvedParams.shareId
-      setShareId(currentShareId) // 상태에 저장
+      const currentShareId = shareId
       
       // 공개 Meal 조회
       const data = await getPublicMeal(currentShareId)

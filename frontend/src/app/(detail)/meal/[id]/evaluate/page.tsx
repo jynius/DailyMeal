@@ -32,7 +32,17 @@ interface MealRecord {
   createdAt: string
 }
 
-export default function EvaluatePage({ params }: { params: { id: string } }) {
+export default async function EvaluatePage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const { id } = await params
+  
+  return <EvaluatePageContent id={id} />
+}
+
+function EvaluatePageContent({ id }: { id: string }) {
   const [meal, setMeal] = useState<MealRecord | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -55,9 +65,8 @@ export default function EvaluatePage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchMeal = async () => {
       try {
-        const resolvedParams = await params
         const { mealRecordsApi } = await import('@/lib/api')
-        const data = await mealRecordsApi.getOne(resolvedParams.id)
+        const data = await mealRecordsApi.getOne(id)
         
         if (data) {
           setMeal(data)
@@ -85,7 +94,7 @@ export default function EvaluatePage({ params }: { params: { id: string } }) {
     }
     
     fetchMeal()
-  }, [params, showAlert])
+  }, [id, showAlert])
 
   // GPS 위치 가져오기
   const handleGetLocation = () => {
@@ -155,7 +164,6 @@ export default function EvaluatePage({ params }: { params: { id: string } }) {
     setIsSubmitting(true)
     
     try {
-      const resolvedParams = await params
       const { mealRecordsApi } = await import('@/lib/api')
       
       const updateData: any = {
@@ -181,13 +189,13 @@ export default function EvaluatePage({ params }: { params: { id: string } }) {
         updateData.address = formData.address
       }
 
-      await mealRecordsApi.update(resolvedParams.id, updateData)
+      await mealRecordsApi.update(id, updateData)
       
       console.log('✅ 평가 저장 완료')
       toast.success('평가가 저장되었습니다! ⭐', '완료')
       
       // 서버 응답 완료 후 즉시 리다이렉트
-      router.push(`/meal/${resolvedParams.id}`)
+      router.push(`/meal/${id}`)
     } catch (error: unknown) {
       const err = error as Error
       console.error('❌ 평가 저장 실패:', err)
