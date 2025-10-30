@@ -7,7 +7,7 @@ import { BottomNavigation } from '@/components/bottom-navigation'
 import { Button } from '@/components/ui/button'
 import { mealRecordsApi } from '@/lib/api'
 import { useSocket } from '@/contexts/socket-context'
-import { useRequireAuth } from '@/hooks/use-auth'
+import AuthGuard from '@/components/auth/AuthGuard'
 import { createLogger } from '@/lib/logger'
 import { Users, Filter, Zap } from 'lucide-react'
 import type { MealRecord } from '@/types'
@@ -20,7 +20,6 @@ const log = createLogger('FeedPage')
 export const dynamic = 'force-dynamic'
 
 function FeedContent() {
-  const { isAuthenticated, isLoading: authLoading } = useRequireAuth()
   const searchParams = useSearchParams()
   const [meals, setMeals] = useState<MealRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,9 +45,6 @@ function FeedContent() {
       setLoading(true)
       setError(null)
       
-      // 인증되지 않았으면 리턴
-      if (!isAuthenticated) return
-      
       log.debug('Fetching meals from API')
       
       const result = await mealRecordsApi.getAll()
@@ -69,20 +65,8 @@ function FeedContent() {
   }
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchMeals()
-    }
-  }, [isAuthenticated])
-
-  // 인증 로딩 중
-  if (authLoading) {
-    return <Spinner container="page" text="로딩 중..." />
-  }
-
-  // 인증되지 않은 경우 (훅에서 리다이렉트 처리)
-  if (!isAuthenticated) {
-    return null
-  }
+    fetchMeals()
+  }, [])
 
   const formatDate = (dateString: string) => {
     // 클라이언트에서만 실행되도록 체크
@@ -105,6 +89,7 @@ function FeedContent() {
   }
 
   return (
+    <AuthGuard>
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
       {/* Content */}
       <div className="p-4 space-y-4">
@@ -159,6 +144,7 @@ function FeedContent() {
         })()}
       </div>
     </div>
+    </AuthGuard>
   )
 }
 

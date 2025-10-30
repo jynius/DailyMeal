@@ -6,12 +6,11 @@ import { BottomNavigation } from '@/components/bottom-navigation'
 import { tokenManager } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
-import { useRequireAuth } from '@/hooks/use-auth'
+import AuthGuard from '@/components/auth/AuthGuard'
 import { profileApi, UserProfile } from '@/lib/api'
 import Spinner from '@/components/ui/spinner'
 
 export default function ProfilePage() {
-  const { isAuthenticated, isLoading: authLoading } = useRequireAuth()
   const router = useRouter()
   const toast = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -33,8 +32,6 @@ export default function ProfilePage() {
 
   // 프로필 데이터 가져오기
   useEffect(() => {
-    if (!isAuthenticated) return
-
     const fetchProfile = async () => {
       try {
         const data = await profileApi.getProfile()
@@ -54,19 +51,7 @@ export default function ProfilePage() {
     }
 
     fetchProfile()
-  }, [isAuthenticated])
-
-  // 인증 로딩 중
-  if (authLoading) {
-    return (
-      <Spinner container="page" text="인증 확인 중..." />
-    )
-  }
-
-  // 인증되지 않은 경우
-  if (!isAuthenticated) {
-    return null
-  }
+  }, [])
 
   const handleLogout = () => {
     tokenManager.remove()
@@ -176,15 +161,19 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">프로필을 불러올 수 없습니다</p>
+      <AuthGuard>
+        <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-600">프로필을 불러올 수 없습니다</p>
+          </div>
         </div>
-      </div>
+      </AuthGuard>
     )
   }
+
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
+    <AuthGuard>
+      <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
       {/* Header - 단순화 */}
       <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 pt-safe">
         <h1 className="text-xl font-bold text-gray-900 mt-2">프로필</h1>
@@ -391,12 +380,13 @@ export default function ProfilePage() {
             <span className="text-gray-400">→</span>
           </a>
         </div>
-        <p className="text-xs text-gray-400 mt-4 text-center">
+                <p className="text-xs text-gray-400 mt-4 text-center">
           DailyMeal v1.0.0
         </p>
       </div>
 
       <BottomNavigation />
-    </div>
+      </div>
+    </AuthGuard>
   )
 }

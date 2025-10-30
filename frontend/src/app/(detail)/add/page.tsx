@@ -8,6 +8,9 @@ import { useAlert } from '@/components/ui/alert'
 import { useToast } from '@/components/ui/toast'
 import { createLogger } from '@/lib/logger'
 import { useLocation } from '@/contexts/location-context'
+import AuthGuard from '@/components/auth/AuthGuard'
+import { mealRecordsApi } from '@/lib/api'
+import Spinner from '@/components/ui/spinner'
 
 const log = createLogger('AddMealPage')
 
@@ -29,7 +32,7 @@ interface FormData {
   location?: string
 }
 
-export default function AddMealPage() {
+function AddMealPage() {
   // 자동으로 날짜 기반 제목 생성
   const generateMealName = () => {
     const now = new Date()
@@ -65,10 +68,10 @@ export default function AddMealPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const { showAlert } = useAlert()
-  const { toast } = useToast()
+  const toast = useToast();
   const location = useLocation()
 
-  // 모바일 앱 환경 감지 및 로그인 확인
+  // 모바일 앱 환경 감지
   useEffect(() => {
     const isApp = /DailyMeal/.test(navigator.userAgent) || window.ReactNativeWebView !== undefined
     setIsMobileApp(isApp)
@@ -100,12 +103,7 @@ export default function AddMealPage() {
         document.removeEventListener('message', handleMessage as any)
       }
     }
-
-    const token = localStorage.getItem('accessToken')
-    if (!token) {
-      router.push('/login')
-    }
-  }, [router])
+  }, [])
 
   // 위치 컨텍스트에서 위치 정보 업데이트
   useEffect(() => {
@@ -223,31 +221,16 @@ export default function AddMealPage() {
     if (formData.address) data.append('address', formData.address)
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/meal-records`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-        body: data
-      })
+      // Use centralized API client (handles base URL and auth header)
+      await mealRecordsApi.createWithFiles(data)
 
-      if (response.ok) {
-        toast.success('식사가 성공적으로 등록되었습니다.')
-        router.push('/')
-      } else {
-        const errorData = await response.json()
-        log.error('Failed to create meal record', errorData)
-        showAlert({
-          title: '등록 실패',
-          message: errorData.message || '식사 기록 등록에 실패했습니다.',
-          type: 'error'
-        })
-      }
-    } catch (error) {
-      log.error('An unexpected error occurred', error)
+      toast.success('식사가 성공적으로 등록되었습니다.')
+      router.push('/')
+    } catch (error: any) {
+      log.error('Failed to create meal record', error)
       showAlert({
-        title: '네트워크 오류',
-        message: '서버와 통신 중 오류가 발생했습니다.',
+        title: '등록 실패',
+        message: error?.message || '식사 기록 등록에 실패했습니다.',
         type: 'error'
       })
     } finally {
@@ -261,7 +244,7 @@ export default function AddMealPage() {
         {/* GPS 상태 표시 */}
         {location.isLoading && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+            <Spinner size="sm" />
             <span className="text-sm text-blue-700">현재 위치 가져오는 중...</span>
           </div>
         )}
@@ -344,5 +327,13 @@ export default function AddMealPage() {
         </Button>
       </form>
     </div>
+  )
+}
+
+export default function GuardedAddMealPage() {
+  return (
+    <AuthGuard>
+      <AddMealPage />
+    </AuthGuard>
   )
 }

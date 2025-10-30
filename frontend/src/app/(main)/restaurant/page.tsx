@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { MapPin, Star, Map as MapIcon, List } from 'lucide-react'
 import { KakaoMap } from '@/components/kakao-map'
-import { useRequireAuth } from '@/hooks/use-auth'
+import AuthGuard from '@/components/auth/AuthGuard'
 import Link from 'next/link'
 import { useLocation } from '@/contexts/location-context'
 import Spinner from '@/components/ui/spinner'
@@ -25,7 +25,6 @@ interface Restaurant {
 type SortOption = 'recent' | 'count' | 'rating'
 
 export default function RestaurantsPage() {
-  const { isAuthenticated, isLoading: authLoading } = useRequireAuth()
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [popularRestaurants, setPopularRestaurants] = useState<Restaurant[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,10 +34,8 @@ export default function RestaurantsPage() {
   const { latitude, longitude, error: locationError } = location
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchRestaurants()
-    }
-  }, [isAuthenticated, latitude, longitude])
+    fetchRestaurants()
+  }, [latitude, longitude])
 
   const fetchRestaurants = async () => {
     try {
@@ -94,15 +91,8 @@ export default function RestaurantsPage() {
     }
   })()
 
-  if (authLoading) {
-    return <Spinner container="page" text="인증 확인 중..." />
-  }
-
-  if (!isAuthenticated) {
-    return null
-  }
-
   return (
+    <AuthGuard>
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
       <div className="p-4 bg-white border-b">
         <h4 className="text-sm font-medium text-gray-600 mb-2">인기 맛집</h4>
@@ -307,7 +297,7 @@ export default function RestaurantsPage() {
                     최근 방문: {new Date(restaurant.lastVisited).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                   </span>
                 </div>
-              </Link>
+                            </Link>
                 ))}
               </div>
             )}
@@ -315,5 +305,6 @@ export default function RestaurantsPage() {
         </>
       )}
     </div>
+    </AuthGuard>
   )
 }
