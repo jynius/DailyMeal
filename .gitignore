@@ -40,7 +40,6 @@ bower_components/
 /deprecated
 .nuxt
 .vuepress/dist
-/uploads
 
 # ===================================
 # Logs
@@ -93,13 +92,7 @@ Thumbs.db
 # Editor directories and files
 # ===================================
 # VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.json
-.vscode-test
+**/.vscode
 
 # IntelliJ IDEA
 .idea/
@@ -203,7 +196,7 @@ storybook-static/
 # ===================================
 # Uploads & Assets
 # ===================================
-/backend/uploads/*
+**/uploads/*
 !.gitkeep
 
 # ===================================
