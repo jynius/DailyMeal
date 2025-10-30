@@ -8,7 +8,7 @@ import { createHash } from 'crypto';
  */
 
 export interface UploadPathOptions {
-  uploadDir: string; // 기본 업로드 디렉토리 (예: /data/upload)
+  uploadDir: string; // 기본 업로드 디렉토리 (예: /data/uploads)
   category: 'meals' | 'profiles'; // 파일 카테고리
   userId?: string; // 사용자 ID (선택)
   useDate?: boolean; // 날짜별 폴더 사용 여부 (기본: true)
@@ -39,8 +39,8 @@ function getDatePath(): string {
  * 업로드 파일 경로 생성
  * 
  * 예시:
- * - 식사 사진: /data/upload/meals/2025/10/11/abc123.jpg
- * - 프로필 사진: /data/upload/profiles/3a/user-123-timestamp.jpg
+ * - 식사 사진: /data/uploads/meals/2025/10/11/abc123.jpg
+ * - 프로필 사진: /data/uploads/profiles/3a/user-123-timestamp.jpg
  * 
  * @returns { dirPath: 실제 저장 경로, urlPath: DB 저장 URL }
  */

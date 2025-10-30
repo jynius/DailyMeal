@@ -27,8 +27,8 @@ location /uploads {
 ```nginx
 # ===== 업로드 파일 (이미지) - Nginx 직접 서빙 =====
 location /uploads/ {
-    # alias: URL의 /uploads/를 /data/upload/로 대체
-    alias /data/upload/;
+    # alias: URL의 /uploads/를 /data/uploads/로 대체
+    alias /data/uploads/;
     
     # 캐싱 설정 (30일)
     expires 30d;
@@ -68,21 +68,21 @@ location /uploads/ {
          ↓
 location: /uploads/
          ↓
-alias:    /data/upload/
+alias:    /data/uploads/
          ↓
-실제 경로: /data/upload/meals/2025/10/11/abc.jpg
+실제 경로: /data/uploads/meals/2025/10/11/abc.jpg
 ```
 
-**핵심**: `/uploads/` 부분이 `/data/upload/`로 **완전히 대체**
+**핵심**: `/uploads/` 부분이 `/data/uploads/`로 **완전히 대체**
 
 ### root와의 차이
 
 #### `alias` (대체)
 ```nginx
 location /uploads/ {
-    alias /data/upload/;
+    alias /data/uploads/;
 }
-# /uploads/abc.jpg → /data/upload/abc.jpg
+# /uploads/abc.jpg → /data/uploads/abc.jpg
 ```
 
 #### `root` (추가)
@@ -123,15 +123,15 @@ ps aux | grep nginx
 # 보통 www-data 또는 nginx
 
 # 디렉토리 권한 설정
-sudo chown -R www-data:www-data /data/upload
-sudo chmod -R 755 /data/upload
+sudo chown -R www-data:www-data /data/uploads
+sudo chmod -R 755 /data/uploads
 ```
 
 ### 5. 테스트
 
 ```bash
 # 파일 생성
-echo "test" | sudo tee /data/upload/test.txt
+echo "test" | sudo tee /data/uploads/test.txt
 
 # 브라우저 또는 curl로 접근
 curl https://dailymeal.life/uploads/test.txt
@@ -202,7 +202,7 @@ limit_req_zone $binary_remote_addr zone=uploads:10m rate=10r/s;
 # location에 적용
 location /uploads/ {
     limit_req zone=uploads burst=20;
-    alias /data/upload/;
+    alias /data/uploads/;
 }
 ```
 
@@ -212,28 +212,28 @@ location /uploads/ {
 
 ```bash
 # 권한 확인
-ls -la /data/upload
+ls -la /data/uploads
 
 # Nginx 사용자 확인
 ps aux | grep nginx
 
 # 권한 수정
-sudo chown -R www-data:www-data /data/upload
-sudo chmod -R 755 /data/upload
+sudo chown -R www-data:www-data /data/uploads
+sudo chmod -R 755 /data/uploads
 ```
 
 ### 404 Not Found
 
 ```bash
 # 파일 존재 확인
-ls -la /data/upload/meals/2025/10/11/
+ls -la /data/uploads/meals/2025/10/11/
 
 # Nginx 설정 확인
 sudo nginx -T | grep -A10 "location /uploads"
 
 # 슬래시 일치 확인
 location /uploads/ {
-    alias /data/upload/;  # 둘 다 / 로 끝나야 함
+    alias /data/uploads/;  # 둘 다 / 로 끝나야 함
 }
 ```
 
