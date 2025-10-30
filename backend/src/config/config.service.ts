@@ -11,14 +11,13 @@ export class ConfigService {
 
   constructor(private readonly nestConfigService: NestConfigService) {}
 
-  get(key: string): string {
-    // 1. 환경 변수 (process.env) 우선
-    const value = this.nestConfigService.get<string>(key);
-    if (value) {
-      return value;
+  get(key: string): string | undefined {
+    // 1. Secrets Manager 값 우선 (프로덕션에서)
+    if (this.secrets[key]) {
+      return this.secrets[key];
     }
-    // 2. Secrets Manager 값 차선
-    return this.secrets[key];
+    // 2. 환경 변수 (process.env) 차선
+    return this.nestConfigService.get<string>(key);
   }
 
   async loadFromSecretsManager(secretName: string): Promise<void> {

@@ -9,9 +9,11 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(255),
   "profileImage" VARCHAR(255),
   bio TEXT,
+  "passwordResetToken" VARCHAR(255),
+  "passwordResetExpires" TIMESTAMP,
   "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -37,6 +39,7 @@ CREATE TABLE IF NOT EXISTS meal_records (
   category VARCHAR(50) DEFAULT 'restaurant',
   "companionIds" TEXT,
   "companionNames" VARCHAR(200),
+  "photoTakenAt" TIMESTAMP,
   "userId" UUID NOT NULL,
   "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
