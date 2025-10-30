@@ -15,6 +15,9 @@ export function RealTimeNotifications() {
     ['NEW_MEAL', 'NEW_RESTAURANT'].includes(n.type)
   ).slice(0, 10)
 
+  // 나를 제외한 접속자 수
+  const otherUsers = Math.max(0, connectedUsers - 1)
+
   useEffect(() => {
     setUnreadCount(notifications.filter(n => !n.read).length)
   }, [notifications])
@@ -72,62 +75,48 @@ export function RealTimeNotifications() {
 
   return (
     <>
-      {/* Floating 상태 표시 - 우측 상단에 나란히 */}
-      <div className="fixed top-8 right-4 z-50 flex items-center gap-2">
-        {/* 연결 상태 + 사용자 수 - 버튼으로 변경 */}
-        <button
+      {/* 통합 알림 버튼 - 우측 상단 */}
+      <div className="fixed top-6 right-4 z-50">
+        <button type="button" title="통합 알림 버튼"
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg transition-all hover:shadow-xl ${
-            isConnected 
-              ? 'bg-green-500 text-white hover:bg-green-600' 
-              : 'bg-gray-500 text-white hover:bg-gray-600'
-          }`}
-          style={{ minHeight: 'auto', height: '28px' }}
+          className="relative shadow-lg hover:shadow-xl border rounded-full transition-all flex items-center justify-center"
+          style={{ minWidth: 'auto', minHeight: 'auto', width: '36px', height: '36px', padding: '0' }}
         >
-          <div className={`w-2 h-2 rounded-full ${
-            isConnected ? 'bg-white animate-pulse' : 'bg-white/70'
-          }`} />
-          <span>{isConnected ? '연결됨' : '오프라인'}</span>
-          {isConnected && (
-            <>
-              <div className="w-px h-3 bg-white/30" />
-              <Users size={12} />
-              <span>{connectedUsers}</span>
-              {/* 실시간 활동 뱃지 */}
-              {realtimeActivities.length > 0 && (
-                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 border-2 border-white animate-pulse">
-                  {realtimeActivities.length}
-                </div>
-              )}
-            </>
-          )}
-        </button>
-
-        {/* 알림 버튼 - 높이 통일 */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="relative bg-white text-gray-700 shadow-lg hover:shadow-xl border hover:bg-gray-50 rounded-full transition-all flex items-center justify-center"
-          style={{ minWidth: 'auto', minHeight: 'auto', width: '28px', height: '28px', padding: '0' }}
-        >
-          <Bell size={16} />
+          <Bell size={20} className={isConnected ? 'text-green-600' : 'text-gray-400'} />
+          
+          {/* 알림 개수 뱃지 (우측 상단) */}
           {unreadCount > 0 && (
-            <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium" style={{ fontSize: '10px' }}>
+            <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-[20px] flex items-center justify-center font-bold px-1 border-2 border-white">
               {unreadCount > 9 ? '9+' : unreadCount}
             </div>
+          )}
+          
+          {/* 접속자 수 뱃지 (우측 하단) - 나 제외 */}
+          {isConnected && otherUsers > 0 && (
+            <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-xs rounded-full min-w-[20px] h-[20px] flex items-center justify-center font-bold px-1 border-2 border-white">
+              {otherUsers > 99 ? '99+' : otherUsers}
+            </div>
+          )}
+          
+          {/* 실시간 활동 펄스 애니메이션 */}
+          {isConnected && realtimeActivities.length > 0 && (
+            <div className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-20" />
           )}
         </button>
       </div>
 
       {/* 알림 패널 */}
       {isOpen && (
-        <div className="fixed top-16 right-4 w-80 max-h-[500px] bg-white rounded-2xl shadow-2xl border z-50 overflow-hidden">
+        <div className="fixed top-20 right-4 w-80 max-h-[500px] bg-white rounded-2xl shadow-2xl border z-50 overflow-hidden">
           {/* 헤더 */}
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <div className={`w-2 h-2 rounded-full ${
+                isConnected ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
+              }`} />
               <h3 className="font-semibold">실시간 활동</h3>
               <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
-                {connectedUsers}명 접속중
+                {isConnected ? `${otherUsers}명 접속중` : '오프라인'}
               </span>
             </div>
             <button
