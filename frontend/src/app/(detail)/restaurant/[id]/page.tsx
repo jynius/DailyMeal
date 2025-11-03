@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { KakaoMap } from '@/components/kakao-map'
 import { Header } from '@/components/header'
 import Spinner from '@/components/ui/spinner'
+import { transformImageUrl } from '@/lib/constants'
 
 interface MealRecord {
   id: string
@@ -210,7 +211,7 @@ function RestaurantContent({ id }: { id: string }) {
                 <div className="w-20 h-20 flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-100">
                   {meal.photo ? (
                     <Image
-                      src={meal.photo.startsWith('http') ? meal.photo : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${meal.photo}`}
+                      src={transformImageUrl(meal.photo)}
                       alt={meal.name}
                       fill
                       className="object-cover"

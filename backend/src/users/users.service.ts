@@ -77,10 +77,7 @@ export class UsersService {
 
     await this.userRepository.save(user);
 
-    const frontendUrl = this.configService.get('FRONTEND_URL');
-    if (!frontendUrl) {
-      throw new Error('FRONTEND_URL must be defined in the environment.');
-    }
+    const frontendUrl = this.configService.getFrontendUrl();
     const resetLink = `${frontendUrl}/reset-password?token=${token}`;
     await this.emailService.sendPasswordResetEmail(
       user.email,

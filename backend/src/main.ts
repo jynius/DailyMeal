@@ -9,23 +9,23 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap')
   const app = await NestFactory.create(AppModule)
 
-  // Secrets Manager에서 설정 로드
+  // ConfigService 가져오기
   const configService = app.get(ConfigService)
-  const secretName = configService.get('SECRETS_MANAGER_SECRET_NAME')
-  if (process.env.NODE_ENV === 'production' && secretName) {
-    await configService.loadFromSecretsManager(secretName)
-  }
+  
+  // 필수 환경 변수 검증
+  configService.validateRequiredConfig()
+  
+  // Secrets Manager에서 설정 로드 (필요시 자동)
+  await configService.initializeSecretsManager()
 
-  // CORS 설정 (Nginx 리버스 프록시 고려)
+  // CORS 설정 (환경 변수 기반)
+  const corsOrigins = configService.getCorsOrigins()
   app.enableCors({
-    origin: [
-      'http://localhost:3000', // 개발 환경 (WSL2 내부)
-      'http://172.21.114.94:3000', // 개발 환경 (WSL2 IP - port forwarding 대상)
-      'http://www.dailymeal.life', // 프로덕션 도메인
-      'https://www.dailymeal.life', // HTTPS 프로덕션 도메인
-    ],
+    origin: corsOrigins,
     credentials: true,
-  });
+  })
+  
+  logger.log(`🔒 CORS enabled for: ${corsOrigins.join(', ')}`)
 
   // 글로벌 API 접두사 설정
   app.setGlobalPrefix('api')
@@ -39,33 +39,34 @@ async function bootstrap() {
     }),
   )
 
-  // Swagger 설정
-  const config = new DocumentBuilder()
-    .setTitle('DailyMeal API')
-    .setDescription('데일리밀 식단 기록 앱 API 문서')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build()
+  // Swagger 설정 (환경 변수로 제어)
+  const enableSwagger = configService.get('ENABLE_SWAGGER') === 'true'
+  if (enableSwagger) {
+    const config = new DocumentBuilder()
+      .setTitle('DailyMeal API')
+      .setDescription('데일리밀 식단 기록 앱 API 문서')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build()
 
-  const document = SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('api-docs', app, document)
-
-  // 업로드 폴더 생성
-  const uploadDir = configService.get('UPLOAD_DIR')
-  if (!uploadDir) {
-    throw new Error('UPLOAD_DIR must be defined in the environment.');
-  }
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true })
+    const document = SwaggerModule.createDocument(app, config)
+    SwaggerModule.setup('api-docs', app, document)
+    logger.log('📚 Swagger documentation enabled at /api-docs')
   }
 
-  const port = configService.get('PORT');
-  if (!port) {
-    throw new Error('PORT must be defined in the environment.')
+  // 업로드 폴더 생성 (ConfigService에서 검증된 설정 사용)
+  const uploadConfig = configService.getUploadConfig()
+  if (!fs.existsSync(uploadConfig.dir)) {
+    fs.mkdirSync(uploadConfig.dir, { recursive: true })
+    logger.log(`📁 Created upload directory: ${uploadConfig.dir}`)
   }
+
+  // 서버 시작
+  const port = configService.get('PORT') || '8000'
   await app.listen(port)
 
   logger.log(`🚀 DailyMeal API Server running on http://localhost:${port}`)
+  logger.log(`🌍 Environment: ${configService.get('NODE_ENV')}`)
   logger.log(`📚 API Documentation: http://localhost:${port}/api-docs`)
 }
 

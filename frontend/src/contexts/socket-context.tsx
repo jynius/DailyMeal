@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { tokenManager } from '@/lib/api'
+import { logger } from '@/lib/logger'
 
 interface SocketContextType {
   socket: Socket | null
@@ -85,14 +86,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
     
     // Socket.IO 서버 URL 설정
-    // 프로덕션: 현재 도메인 사용 (상대 경로)
-    // 개발: localhost:8000 사용
-    const isDev = process.env.NODE_ENV === 'development'
-    const serverUrl = isDev ? 'http://localhost:8000' : ''
+    // NEXT_PUBLIC_API_URL이 있으면 해당 서버 사용, 없으면 현재 도메인 사용
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    const serverUrl = apiUrl ? apiUrl.replace('/api', '') : ''
     
-    if (isDev) {
-      console.log('🔌 Socket.IO connecting:', serverUrl || 'current domain')
-    }
+    logger.debug('Socket.IO connecting', 'SocketContext', { serverUrl: serverUrl || 'current domain' })
     
     // Socket.IO 연결 - 에러에 강한 설정
     const newSocket = io(serverUrl, {
@@ -113,7 +111,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // 연결 이벤트
     newSocket.on('connect', () => {
-      if (isDev) console.log('✅ Socket connected:', newSocket.id)
+      logger.info('Socket connected', 'SocketContext', { socketId: newSocket.id })
       setIsConnected(true)
 
       // 사용자 인증 (토큰이 있을 경우)
@@ -126,18 +124,18 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             username: payload.username || 'Anonymous'
           })
         } catch (error) {
-          if (isDev) console.error('Token decode error:', error)
+          logger.error('Token decode error', error, 'SocketContext')
         }
       }
     })
 
     newSocket.on('disconnect', (reason) => {
-      if (isDev) console.log('Socket disconnected:', reason)
+      logger.info('Socket disconnected', 'SocketContext', { reason })
       setIsConnected(false)
     })
 
     newSocket.on('connect_error', (error) => {
-      if (isDev) console.warn('Socket connection error (will retry):', error.message)
+      logger.warn('Socket connection error (will retry)', 'SocketContext', { error: error.message })
       // 에러를 조용히 처리 - 사용자에게 알림 없음
     })
 
@@ -204,12 +202,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // 인증 성공 응답
     newSocket.on('authSuccess', (data) => {
-      if (isDev) console.log('Authentication successful:', data)
+      logger.debug('Authentication successful', 'SocketContext', data)
     })
 
     // 정리
     return () => {
-      if (isDev) console.log('🔌 Cleaning up socket connection')
+      logger.debug('Cleaning up socket connection', 'SocketContext')
       newSocket.close()
     }
   }, [mounted]) // mounted 상태에 의존

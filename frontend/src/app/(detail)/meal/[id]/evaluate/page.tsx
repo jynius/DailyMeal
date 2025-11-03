@@ -9,6 +9,7 @@ import { useAlert } from '@/components/ui/alert'
 import { useToast } from '@/components/ui/toast'
 import Image from 'next/image'
 import Spinner from '@/components/ui/spinner'
+import { transformImageUrl } from '@/lib/constants'
 
 interface EvaluateFormData {
   rating: number
@@ -244,7 +245,7 @@ function EvaluatePageContent({ id }: { id: string }) {
             <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
               {meal.photo || (meal.photos && meal.photos[0]) ? (
                 <Image
-                  src={meal.photo?.startsWith('http') ? meal.photo : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${meal.photo || meal.photos![0]}`}
+                  src={transformImageUrl(meal.photo || meal.photos![0])}
                   alt={meal.name}
                   width={80}
                   height={80}

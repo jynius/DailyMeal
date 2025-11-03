@@ -14,6 +14,8 @@
  * ```
  */
 
+import { APP_CONFIG } from './constants'
+
 export enum LogLevel {
   ERROR = 0,
   WARN = 1,
@@ -27,29 +29,113 @@ interface LoggerConfig {
   enableConsole: boolean
   enableTimestamp: boolean
   enableContext: boolean
-  productionLevel: LogLevel
+  // 모듈별 로그 레벨 설정 (예: { 'AuthService': LogLevel.DEBUG, 'API': LogLevel.TRACE })
+  moduleLogLevels: Record<string, LogLevel>
 }
 
 class Logger {
   private config: LoggerConfig
-  private isProduction: boolean
 
   constructor() {
-    this.isProduction = process.env.NODE_ENV === 'production'
+    // APP_CONFIG의 LOG_LEVEL을 LogLevel enum으로 변환
+    const logLevelStr = APP_CONFIG.LOG_LEVEL as keyof typeof LogLevel
+    const globalLevel = LogLevel[logLevelStr] ?? LogLevel.WARN
     
     this.config = {
-      level: this.isProduction ? LogLevel.WARN : LogLevel.DEBUG,
+      level: globalLevel,
       enableConsole: true,
-      enableTimestamp: !this.isProduction,
+      enableTimestamp: globalLevel >= LogLevel.DEBUG, // DEBUG 이상이면 타임스탬프 표시
       enableContext: true,
-      productionLevel: LogLevel.WARN,
+      moduleLogLevels: {}, // 초기에는 빈 객체
+    }
+    
+    // APP_CONFIG에서 모듈별 로그 레벨 설정 로드
+    this.loadModuleLevelsFromConfig()
+  }
+
+  /**
+   * APP_CONFIG에서 모듈별 로그 레벨 로드
+   */
+  private loadModuleLevelsFromConfig(): void {
+    const moduleLevels = APP_CONFIG.MODULE_LOG_LEVELS
+    for (const [module, levelStr] of Object.entries(moduleLevels)) {
+      const level = LogLevel[levelStr as keyof typeof LogLevel]
+      if (level !== undefined) {
+        this.config.moduleLogLevels[module] = level
+      }
     }
   }
 
   /**
-   * 로그 레벨 확인
+   * 특정 모듈의 에러 상세 정보 표시 여부 확인
+   * (DEBUG 레벨 이상이면 표시)
+   * 
+   * @example
+   * logger.shouldShowErrorDetails('GlobalError')
+   * // = shouldLog(LogLevel.DEBUG, 'GlobalError')
    */
-  private shouldLog(level: LogLevel): boolean {
+  shouldShowErrorDetails(moduleName: string): boolean {
+    return this.shouldLog(LogLevel.DEBUG, moduleName)
+  }
+
+  /**
+   * API Monitor 활성화 여부 확인
+   * (DEBUG 레벨 이상이면 활성화)
+   * 
+   * @example
+   * logger.shouldEnableMonitor('APIMonitor')
+   */
+  shouldEnableMonitor(moduleName: string = 'APIMonitor'): boolean {
+    return this.shouldLog(LogLevel.DEBUG, moduleName)
+  }
+
+  /**
+   * 모듈별 로그 레벨 설정
+   * @example
+   * logger.setModuleLevel('AuthService', LogLevel.TRACE)
+   * logger.setModuleLevel('API', LogLevel.DEBUG)
+   */
+  setModuleLevel(moduleName: string, level: LogLevel): void {
+    this.config.moduleLogLevels[moduleName] = level
+  }
+
+  /**
+   * 여러 모듈의 로그 레벨을 한번에 설정
+   * @example
+   * logger.setModuleLevels({
+   *   'AuthService': LogLevel.TRACE,
+   *   'API': LogLevel.DEBUG,
+   *   'Socket': LogLevel.INFO
+   * })
+   */
+  setModuleLevels(levels: Record<string, LogLevel>): void {
+    this.config.moduleLogLevels = { ...this.config.moduleLogLevels, ...levels }
+  }
+
+  /**
+   * 모듈별 로그 레벨 가져오기
+   */
+  getModuleLevel(moduleName: string): LogLevel | undefined {
+    return this.config.moduleLogLevels[moduleName]
+  }
+
+  /**
+   * 전역 로그 레벨 설정
+   */
+  setLevel(level: LogLevel): void {
+    this.config.level = level
+    this.info(`로그 레벨 변경: ${LogLevel[level]}`, 'Logger')
+  }
+
+  /**
+   * 로그 레벨 확인 (모듈별 설정 우선)
+   */
+  private shouldLog(level: LogLevel, context?: string): boolean {
+    // 모듈별 설정이 있으면 우선 적용
+    if (context && this.config.moduleLogLevels[context] !== undefined) {
+      return level <= this.config.moduleLogLevels[context]
+    }
+    // 전역 설정 적용
     return level <= this.config.level
   }
 
@@ -115,7 +201,7 @@ class Logger {
    * 에러 로그 (항상 출력)
    */
   error(message: string, error?: any, context?: string): void {
-    if (!this.shouldLog(LogLevel.ERROR)) return
+    if (!this.shouldLog(LogLevel.ERROR, context)) return
 
     const formatted = this.format('ERROR', message, context)
     
@@ -132,7 +218,7 @@ class Logger {
    * 경고 로그
    */
   warn(message: string, context?: string, data?: any): void {
-    if (!this.shouldLog(LogLevel.WARN)) return
+    if (!this.shouldLog(LogLevel.WARN, context)) return
 
     const formatted = this.format('WARN', message, context)
     
@@ -149,7 +235,7 @@ class Logger {
    * 정보 로그
    */
   info(message: string, context?: string, data?: any): void {
-    if (!this.shouldLog(LogLevel.INFO)) return
+    if (!this.shouldLog(LogLevel.INFO, context)) return
 
     const formatted = this.format('INFO', message, context)
     
@@ -166,7 +252,7 @@ class Logger {
    * 디버그 로그 (개발 환경에서만)
    */
   debug(message: string, context?: string, data?: any): void {
-    if (!this.shouldLog(LogLevel.DEBUG)) return
+    if (!this.shouldLog(LogLevel.DEBUG, context)) return
 
     const formatted = this.format('DEBUG', message, context)
     
@@ -183,7 +269,7 @@ class Logger {
    * 상세 추적 로그 (개발 환경에서만)
    */
   trace(message: string, context?: string, data?: any): void {
-    if (!this.shouldLog(LogLevel.TRACE)) return
+    if (!this.shouldLog(LogLevel.TRACE, context)) return
 
     const formatted = this.format('TRACE', message, context)
     
@@ -194,14 +280,6 @@ class Logger {
         console.log(formatted)
       }
     }
-  }
-
-  /**
-   * 로그 레벨 동적 변경 (디버깅용)
-   */
-  setLevel(level: LogLevel): void {
-    this.config.level = level
-    this.info(`로그 레벨 변경: ${LogLevel[level]}`, 'Logger')
   }
 
   /**

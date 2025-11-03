@@ -8,6 +8,10 @@
  * - ❌ 에러 로그
  * - 📊 통계 출력 (콘솔에서 apiStats() 호출)
  * - 🔔 반복 호출 감지
+ * 
+ * Logger 모듈로 통합:
+ * - MODULE_LOG_LEVELS의 'APIMonitor'로 제어
+ * - LogLevel.DEBUG 이상일 때 활성화
  */
 
 import { logger } from '../logger'
@@ -51,9 +55,10 @@ class ApiPerformanceMonitor {
   private readonly WARNING_ERROR_RATE = 0.1 // 10%
   private readonly REPEAT_WARNING_THRESHOLD = 10 // 10초 내 10회 호출
   private readonly REPEAT_TIME_WINDOW = 10000 // 10초
+  
   constructor() {
-    // 개발 환경에서 콘솔에서 통계 확인 가능하도록 함수 노출
-    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+    // Logger 모듈 레벨로 활성화 제어
+    if (logger.shouldEnableMonitor('APIMonitor') && typeof window !== 'undefined') {
       (window as any).apiStats = () => this.printStats()
       console.log('%c💡 Tip: 콘솔에서 apiStats()를 호출하면 API 성능 통계를 확인할 수 있습니다.', 'color: #6366f1; font-style: italic')
     }
@@ -63,6 +68,12 @@ class ApiPerformanceMonitor {
    * API 요청 시작
    */
   startRequest(endpoint: string, method: string) {
+    // Logger의 shouldEnableMonitor로 활성화 여부 확인
+    if (!logger.shouldEnableMonitor('APIMonitor')) {
+      // 비활성화 시 no-op 함수 반환
+      return () => {}
+    }
+
     const startTime = performance.now()
     const timestamp = Date.now()
 

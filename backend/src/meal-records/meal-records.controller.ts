@@ -70,10 +70,11 @@ export class MealRecordsController {
     const photoPaths: string[] = [];
     const fullPhotoPaths: string[] = [];
     if (files && files.length > 0) {
+      const uploadDir = this.configService.getUploadConfig().dir;
       files.forEach((file) => {
         // file.path는 전체 경로, 여기서 /uploads 이후만 추출
         const { urlPath } = createUploadPath(file.filename, {
-          uploadDir: this.configService.get('UPLOAD_DIR'),
+          uploadDir,
           category: 'meals',
           useDate: true,
         });

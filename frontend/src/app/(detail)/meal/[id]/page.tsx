@@ -12,6 +12,7 @@ import Image from 'next/image'
 import type { MealRecord } from '@/types'
 import { Header } from '@/components/header'
 import Spinner from '@/components/ui/spinner'
+import { transformImageUrl } from '@/lib/constants'
 
 export default async function MealDetailPage({ 
   params 
@@ -78,20 +79,10 @@ function MealDetailContent({ id }: { id: string }) {
   // 이미지 URL을 절대 경로로 변환 (카카오톡 공유용)
   const getAbsoluteImageUrl = (url?: string) => {
     if (!url) {
-      // 기본 플레이스홀더 이미지 (localhost는 카카오톡에서 안 보임)
+      // 기본 플레이스홀더 이미지
       return 'https://via.placeholder.com/600x400/3B82F6/FFFFFF?text=DailyMeal'
     }
-    if (url.startsWith('http')) return url
-    
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    const absoluteUrl = `${apiUrl}${url}`
-    
-    // localhost URL은 카카오톡에서 표시 안되므로 플레이스홀더 사용
-    if (absoluteUrl.includes('localhost')) {
-      return 'https://via.placeholder.com/600x400/3B82F6/FFFFFF?text=DailyMeal'
-    }
-    
-    return absoluteUrl
+    return transformImageUrl(url)
   }
 
   const handleShare = async () => {
@@ -135,10 +126,7 @@ function MealDetailContent({ id }: { id: string }) {
                 }`}
               >
                 <Image
-                  src={photoUrl.startsWith('http') 
-                    ? photoUrl
-                    : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${photoUrl}`
-                  }
+                  src={transformImageUrl(photoUrl)}
                   alt={`${meal.name} ${index + 1}`}
                   width={800}
                   height={800}
@@ -187,10 +175,7 @@ function MealDetailContent({ id }: { id: string }) {
                       }`}
                     >
                       <Image
-                        src={photoUrl.startsWith('http') 
-                          ? photoUrl
-                          : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${photoUrl}`
-                        }
+                        src={transformImageUrl(photoUrl)}
                         alt={`썸네일 ${index + 1}`}
                         width={64}
                         height={64}

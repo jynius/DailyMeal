@@ -12,6 +12,7 @@ import {
   UpdateMealRecordDto,
 } from '../dto/meal-record.dto';
 import { RealTimeService } from '../realtime/realtime.service';
+import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class MealRecordsService {
@@ -19,31 +20,8 @@ export class MealRecordsService {
     @InjectRepository(MealRecord)
     private mealRecordRepository: Repository<MealRecord>,
     private realTimeService: RealTimeService,
+    private configService: ConfigService,
   ) {}
-
-  /**
-   * 이미지 경로를 환경에 맞게 변환
-   * - 개발: 절대 URL (http://localhost:8000/uploads/...)
-   * - 프로덕션: 상대 경로 (/api/uploads/...) - Nginx가 프록시
-   */
-  private transformImageUrl(photo: string | null): string | null {
-    if (!photo) return null;
-
-    // 이미 절대 URL인 경우
-    if (photo.startsWith('http')) {
-      return photo;
-    }
-
-    // 프로덕션 환경: 상대 경로 반환
-    if (process.env.NODE_ENV === 'production') {
-      // /uploads/... -> /api/uploads/...
-      return photo.startsWith('/uploads') ? `/api${photo}` : photo;
-    }
-
-    // 개발 환경: 절대 URL 반환
-    const baseUrl = process.env.API_BASE_URL || 'http://localhost:8000';
-    return `${baseUrl}${photo}`;
-  }
 
   /**
    * MealRecord 엔티티의 이미지 URL을 변환
@@ -51,7 +29,7 @@ export class MealRecordsService {
   private transformMealRecord(mealRecord: MealRecord): any {
     return {
       ...mealRecord,
-      photo: this.transformImageUrl(mealRecord.photo),
+      photo: this.configService.transformImageUrl(mealRecord.photo),
     };
   }
 

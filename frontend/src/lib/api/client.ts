@@ -33,14 +33,15 @@ export async function apiRequest<T>(
   }
 
   // 성능 모니터링 시작
-  const endMonitoring = apiMonitor.startRequest(endpoint, options.method || 'GET')
+  const method = options.method || 'GET'
+  const endMonitoring = apiMonitor.startRequest(endpoint, method)
 
   // 타임아웃 설정
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), APP_CONFIG.API_TIMEOUT)
 
   try {
-    console.log(`🌐 API Request: ${options.method || 'GET'} ${API_BASE_URL}${endpoint}`)
+    console.log(`🌐 API Request: ${method} ${API_BASE_URL}${endpoint}`)
     console.log('🔑 Token:', token ? `${token.substring(0, 20)}...` : 'None')
     console.log('📋 Headers:', headers)
     if (isFormData) {
@@ -61,13 +62,15 @@ export async function apiRequest<T>(
 
     if (!response.ok) {
       // 인증 오류 처리 (401, 403)
-      if (response.status === 401 || response.status === 403) {
+      // 단, 로그인/회원가입 API는 예외 (에러 메시지만 전달)
+      const isAuthEndpoint = endpoint === '/auth/login' || endpoint === '/auth/register'
+      if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
         // 토큰 제거
         tokenManager.remove()
         
         // 로그인 페이지로 리다이렉트 (클라이언트 사이드에서만)
         if (typeof window !== 'undefined') {
-          window.location.href = '/'
+          window.location.href = '/login'
         }
         
         const errorMsg = '인증이 필요합니다. 로그인 페이지로 이동합니다.'

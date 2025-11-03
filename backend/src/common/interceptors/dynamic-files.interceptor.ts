@@ -25,29 +25,13 @@ export function DynamicFilesInterceptor(
     private readonly interceptor: NestInterceptor;
 
     constructor(private readonly configService: ConfigService) {
-      const UPLOAD_DIR = this.configService.get('UPLOAD_DIR');
-      const UPLOAD_MAX_FILE_SIZE = parseInt(
-        this.configService.get('UPLOAD_MAX_FILE_SIZE'),
-        10,
-      );
-      const UPLOAD_MAX_FILES = parseInt(
-        this.configService.get('UPLOAD_MAX_FILES'),
-        10,
-      );
-
-      if (
-        !UPLOAD_DIR ||
-        isNaN(UPLOAD_MAX_FILE_SIZE) ||
-        isNaN(UPLOAD_MAX_FILES)
-      ) {
-        throw new Error('Upload configuration is missing or invalid.');
-      }
-
+      // ConfigService에서 검증된 설정 가져오기
+      const uploadConfig = this.configService.getUploadConfig();
       const multerOptions: MulterOptions = {
         storage: diskStorage({
           destination: (req, file, callback) => {
             const { dirPath } = createUploadPath('', {
-              uploadDir: UPLOAD_DIR,
+              uploadDir: uploadConfig.dir,
               category: 'meals',
               useDate: true,
             });
@@ -66,14 +50,14 @@ export function DynamicFilesInterceptor(
           callback(null, true);
         },
         limits: {
-          fileSize: UPLOAD_MAX_FILE_SIZE,
-          files: UPLOAD_MAX_FILES,
+          fileSize: uploadConfig.maxFileSize,
+          files: uploadConfig.maxFiles,
         },
       };
 
       this.interceptor = new (FilesInterceptor(
         fieldName,
-        UPLOAD_MAX_FILES,
+        uploadConfig.maxFiles,
         multerOptions,
       ))();
     }

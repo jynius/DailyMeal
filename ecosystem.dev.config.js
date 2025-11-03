@@ -1,35 +1,28 @@
-require('dotenv').config({ path: './backend/.env' });
-
+// ==============================================
+// DailyMeal Development PM2 Configuration
+// ==============================================
+// 
+// 사용법:
+//   pm2 start ecosystem.dev.config.js
+//   pm2 logs
+//   pm2 restart all
+//
+// 환경 변수는 각 앱의 .env 파일에서 자동 로드됩니다.
+// ==============================================
 module.exports = {
   apps: [
     {
       name: 'dailymeal-backend',
       script: 'npm',
-      args: 'run start:dev',  // ← TypeScript watch 모드
+      args: 'run start:dev',  // TypeScript watch 모드
       cwd: './backend',
       env: {
-        NODE_ENV: process.env.NODE_ENV,
-        PORT: process.env.PORT,
-        DB_HOST: process.env.DB_HOST,
-        DB_PORT: process.env.DB_PORT,
-        DB_USERNAME: process.env.DB_USERNAME,
-        DB_PASSWORD: process.env.DB_PASSWORD,
-        DB_NAME: process.env.DB_NAME,
-        JWT_SECRET: process.env.JWT_SECRET,
-        ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
-        FRONTEND_URL: process.env.FRONTEND_URL,
-        API_BASE_URL: process.env.API_BASE_URL,
-        UPLOAD_DIR: process.env.UPLOAD_DIR,
-        UPLOAD_MAX_FILE_SIZE: process.env.UPLOAD_MAX_FILE_SIZE,
-        UPLOAD_MAX_FILES: process.env.UPLOAD_MAX_FILES
+        NODE_ENV: 'development',
+        PORT: 8000        
       },
       instances: 1,
       exec_mode: 'fork',
-      watch: true,
-      ignore_watch: ['node_modules', 'logs', 'uploads', 'dist'],
-      watch_options: {
-        followSymlinks: false
-      },
+      watch: false,  // nest start --watch가 이미 파일 감지
       max_memory_restart: '1G',
       error_file: '../logs/pm2-backend-error.log',
       out_file: '../logs/pm2-backend-out.log',
@@ -42,15 +35,15 @@ module.exports = {
     {
       name: 'dailymeal-frontend',
       script: 'npm',
-      args: 'run dev',  // ← Next.js dev 모드 (Hot Reload)
+      args: 'run dev',  // Next.js dev 모드 (Hot Reload)
       cwd: './frontend',
       env: {
-        NODE_ENV: process.env.NODE_ENV,
+        NODE_ENV: 'development',
         PORT: 3000
       },
       instances: 1,
       exec_mode: 'fork',
-      watch: false,
+      watch: false,  // Next.js가 이미 Hot Reload 처리
       max_memory_restart: '1G',
       error_file: '../logs/pm2-frontend-error.log',
       out_file: '../logs/pm2-frontend-out.log',

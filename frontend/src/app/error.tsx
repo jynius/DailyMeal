@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { logger } from '@/lib/logger'
 
 interface ErrorProps {
   error: Error & { digest?: string }
@@ -107,11 +108,11 @@ export default function Error({ error, reset }: ErrorProps) {
             {errorInfo.description}
           </p>
           
-          {/* 개발 모드에서만 에러 메시지 표시 */}
-          {process.env.NODE_ENV === 'development' && (
+          {/* Debug 모드 또는 ErrorPage 모듈이 DEBUG 이상일 때 에러 메시지 표시 */}
+          {logger.shouldShowErrorDetails('ErrorPage') && (
             <details className="mt-4 text-left">
               <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
-                상세 오류 정보 (개발 모드)
+                상세 오류 정보 (Debug 모드)
               </summary>
               <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-auto text-red-600">
                 {error.message}
