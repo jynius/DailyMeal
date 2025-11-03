@@ -9,8 +9,14 @@ export function AppInstallBanner() {
 
   useEffect(() => {
     // PWA로 설치되었는지 확인
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                  (window.navigator as any).standalone === true; // iOS Safari 지원
     setIsStandalone(isPWA);
+
+    // PWA로 실행 중이면 배너 표시 안 함
+    if (isPWA) {
+      return;
+    }
 
     // 앱이 설치되었는지 확인 (이미 배너를 닫았는지)
     const bannerDismissed = localStorage.getItem('app-banner-dismissed');
@@ -24,7 +30,7 @@ export function AppInstallBanner() {
     // 모바일이고, PWA가 아니고, 배너를 닫지 않았거나 7일 지났으면 표시
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
-    if (isMobile && !isPWA && (!bannerDismissed || shouldShowAgain)) {
+    if (isMobile && (!bannerDismissed || shouldShowAgain)) {
       // 3초 후 배너 표시
       const timer = setTimeout(() => setIsVisible(true), 3000);
       return () => clearTimeout(timer);
@@ -41,15 +47,19 @@ export function AppInstallBanner() {
     const userAgent = navigator.userAgent.toLowerCase();
     
     if (userAgent.includes('android')) {
-      // Android: Play Store로 이동 (앱 출시 후 URL 업데이트 필요)
-      window.location.href = 'https://play.google.com/store/apps/details?id=com.dailymeal.app';
+      // Android: PWA 설치 프롬프트 (추후 Play Store URL로 변경 가능)
+      // window.location.href = 'https://play.google.com/store/apps/details?id=com.dailymeal.app';
+      alert('브라우저 메뉴(⋮)에서 "홈 화면에 추가" 또는 "앱 설치"를 선택해주세요.');
     } else if (userAgent.includes('iphone') || userAgent.includes('ipad')) {
-      // iOS: App Store로 이동 (앱 출시 후 URL 업데이트 필요)
-      window.location.href = 'https://apps.apple.com/app/dailymeal/idYOUR_APP_ID';
+      // iOS: 홈 화면 추가 안내 (iOS는 PWA 자동 설치 불가)
+      // window.location.href = 'https://apps.apple.com/app/dailymeal/idYOUR_APP_ID';
+      alert('하단 공유 버튼(□↑)을 누른 후 "홈 화면에 추가"를 선택해주세요.');
     } else {
       // 기타: PWA 설치 안내
       alert('브라우저 메뉴에서 "홈 화면에 추가"를 선택해주세요.');
     }
+    
+    // 배너는 유지 (사용자가 직접 닫도록)
   };
 
   if (!isVisible || isStandalone) return null;
