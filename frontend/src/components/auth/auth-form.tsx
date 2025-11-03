@@ -127,7 +127,18 @@ export function AuthForm({ initialMode = 'login', onSuccess }: AuthFormProps) {
       await handleAuthSuccess(result.token, result.message)
     } catch (err: unknown) {
       const error = err as Error
-      setError(error.message || '인증에 실패했습니다.')
+      // 에러 메시지 개선
+      let errorMessage = error.message || '인증에 실패했습니다.'
+      
+      // 백엔드에서 받은 에러 메시지 우선 사용
+      if (errorMessage.includes('이메일 또는 비밀번호')) {
+        errorMessage = mode === 'login' 
+          ? '이메일 또는 비밀번호가 올바르지 않습니다.' 
+          : '이미 가입된 이메일입니다.'
+      }
+      
+      setError(errorMessage)
+      console.error(`❌ ${mode} failed:`, errorMessage)
     } finally {
       setLoading(false)
     }

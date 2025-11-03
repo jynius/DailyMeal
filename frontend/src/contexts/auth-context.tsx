@@ -27,8 +27,21 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  // 초기 상태를 동기적으로 설정 (SSR 안전)
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const token = tokenManager.get()
+    if (!token) return false
+    
+    try {
+      const decoded = jwtDecode<JwtPayload>(token)
+      return decoded.exp * 1000 > Date.now()
+    } catch {
+      return false
+    }
+  })
+  
+  const [isLoading, setIsLoading] = useState(false) // 초기값을 false로 변경
   const [isInitialized, setIsInitialized] = useState(false)
 
   const checkAuth = useCallback(() => {
