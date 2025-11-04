@@ -12,7 +12,7 @@
     "dev:pm2": "./bin/start-pm2.sh",
     "dev:backend": "cd backend && npm run start:dev",
     "dev:frontend": "cd frontend && npm run dev",
-    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install && cd ../app && npm install",
     "build:all": "cd frontend && npm run build && cd ../backend && npm run build",
     "deploy": "./bin/deploy.sh",
     "stop": "./bin/stop-pm2.sh all",

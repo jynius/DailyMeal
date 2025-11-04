@@ -1,12 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
+import { Transporter } from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-  constructor(private readonly mailerService: MailerService) {}
+  private transporter: Transporter;
+
+  constructor(private readonly configService: ConfigService) {
+    this.transporter = nodemailer.createTransport({
+      host: this.configService.get('EMAIL_HOST'),
+      port: parseInt(this.configService.get('EMAIL_PORT') || '587', 10),
+      secure: this.configService.get('EMAIL_SECURE') === 'true',
+      auth: {
+        user: this.configService.get('EMAIL_USER'),
+        pass: this.configService.get('EMAIL_PASS'),
+      },
+    });
+  }
 
   async sendPasswordResetEmail(email: string, name: string, url: string) {
-    await this.mailerService.sendMail({
+    await this.transporter.sendMail({
+      from: this.configService.get('EMAIL_FROM'),
       to: email,
       subject: '[DailyMeal] 비밀번호 재설정 안내',
       html: `
@@ -19,7 +34,8 @@ export class EmailService {
   }
 
   async sendUsernameReminderEmail(email: string, username: string) {
-    await this.mailerService.sendMail({
+    await this.transporter.sendMail({
+      from: this.configService.get('EMAIL_FROM'),
       to: email,
       subject: '[DailyMeal] 아이디 찾기 안내',
       html: `
