@@ -14,12 +14,15 @@ DailyMeal의 Next.js 기반 프론트엔드 애플리케이션입니다.
 ## 🚀 빠른 시작
 
 ### 개발 모드
+
 ```bash
 npm run dev
 ```
+
 Open [http://localhost:3000](http://localhost:3000)
 
 ### 프로덕션 빌드
+
 ```bash
 npm run build
 npm run start
@@ -84,9 +87,36 @@ npm run lint
 ## 📝 환경 변수
 
 ```env
+# API Base URL (반드시 /api 포함)
+# 개발: http://localhost:8000/api
+# 운영: /api (상대 경로)
 NEXT_PUBLIC_API_URL=/api
+
+# Frontend Site URL
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NODE_ENV=production
+
+# Log Level (ERROR, WARN, INFO, DEBUG, TRACE)
+NEXT_PUBLIC_LOG_LEVEL=ERROR
+
+# Kakao API Key (지도 + 공유 기능)
+NEXT_PUBLIC_KAKAO_API_KEY=your_kakao_javascript_key
+
+# NODE_ENV는 Next.js가 자동 설정 (명시 불필요)
+```
+
+**URL 구조:**
+
+- `SERVER_URL`: `NEXT_PUBLIC_API_URL`에서 `/api` 제거 (정적 파일용)
+- `API_BASE_URL`: `SERVER_URL + /api` (REST API용)
+
+```typescript
+// 예시: NEXT_PUBLIC_API_URL=http://localhost:8000/api
+SERVER_URL = "http://localhost:8000"; // 정적 파일
+API_BASE_URL = "http://localhost:8000/api"; // REST API
+
+// 예시: NEXT_PUBLIC_API_URL=/api (운영)
+SERVER_URL = ""; // 정적 파일 (상대 경로)
+API_BASE_URL = "/api"; // REST API (상대 경로)
 ```
 
 ## 🎯 페이지 구조

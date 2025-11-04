@@ -7,7 +7,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 8000,
-        SECRETS_MANAGER_SECRET_NAME: 'dailymeal/product' // AWS에 생성한 Secret 이름
+        SECRETS_MANAGER_SECRET_NAME: 'dailymeal/product', // AWS에 생성한 Secret 이름
       },
       instances: 1,
       exec_mode: 'fork',
@@ -19,7 +19,7 @@ module.exports = {
       time: true,
       autorestart: true,
       max_restarts: 10,
-      min_uptime: '10s'
+      min_uptime: '10s',
     },
     {
       // 🔥 프로덕션 프론트엔드: 빌드된 Next.js 서버
@@ -27,10 +27,11 @@ module.exports = {
       script: 'npm',
       args: 'run start',
       cwd: './frontend',
+      env_file: './frontend/.env.production', // 프로덕션 환경 변수
       env: {
         NODE_ENV: 'production',
-        PORT: 3000
-        // NEXT_PUBLIC_* 환경 변수는 빌드 시점에 .env.production에서 로드됨
+        PORT: 3000,
+        // NEXT_PUBLIC_* 환경 변수는 .env.production에서 로드됨
       },
       instances: 1,
       exec_mode: 'fork',
@@ -42,7 +43,7 @@ module.exports = {
       time: true,
       autorestart: true,
       max_restarts: 10,
-      min_uptime: '10s'
-    }
-  ]
-};
+      min_uptime: '10s',
+    },
+  ],
+}
