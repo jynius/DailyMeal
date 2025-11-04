@@ -11,11 +11,11 @@ const compat = new FlatCompat({
 })
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
-  eslintPluginPrettierRecommended, // Prettier 통합
   {
     ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts'],
   },
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  eslintPluginPrettierRecommended, // Prettier 통합
   {
     rules: {
       // console 직접 사용 금지 (logger 사용 강제)

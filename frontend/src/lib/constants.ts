@@ -3,13 +3,12 @@
 /**
  * 필수 환경 변수 검증 헬퍼
  */
-function getRequiredEnv(key: string, description: string): string {
-  const value = process.env[key]
+function getRequiredEnv(value: string | undefined, key: string, description: string): string {
   if (!value) {
     throw new Error(
       `Missing required environment variable: ${key}\n` +
         `Description: ${description}\n` +
-        `Please check your .env.local (dev) or .env.production (prod) file.`,
+        `Please check your .env.local (dev) or .env.production (prod) file.`
     )
   }
   return value
@@ -20,20 +19,26 @@ export const APP_CONFIG = {
   // 용도: 이미지/업로드 파일 접근 (예: /uploads/*)
   // 미래: CDN/S3로 분리 가능
   SERVER_URL: getRequiredEnv(
+    process.env.NEXT_PUBLIC_SERVER_URL,
     'NEXT_PUBLIC_SERVER_URL',
-    'Static file server URL (e.g., http://localhost:8000)',
+    'Static file server URL (e.g., http://localhost:8000)'
   ),
 
   // REST API Base URL (API 엔드포인트용)
   // 용도: REST API 호출 (예: /api/*)
   // Global Prefix가 적용된 API 엔드포인트
   API_BASE_URL: getRequiredEnv(
+    process.env.NEXT_PUBLIC_API_URL,
     'NEXT_PUBLIC_API_URL',
-    'REST API endpoint URL (e.g., http://localhost:8000/api)',
+    'REST API endpoint URL (e.g., http://localhost:8000/api)'
   ),
 
   // 로그 레벨 설정 (ERROR=0, WARN=1, INFO=2, DEBUG=3, TRACE=4)
-  LOG_LEVEL: getRequiredEnv('NEXT_PUBLIC_LOG_LEVEL', 'Log level (ERROR, WARN, INFO, DEBUG, TRACE)'),
+  LOG_LEVEL: getRequiredEnv(
+    process.env.NEXT_PUBLIC_LOG_LEVEL,
+    'NEXT_PUBLIC_LOG_LEVEL',
+    'Log level (ERROR, WARN, INFO, DEBUG, TRACE)'
+  ),
 
   // 모듈별 로그 레벨 설정
   // 예: { 'AuthService': 'TRACE', 'API': 'DEBUG', 'Socket': 'INFO' }

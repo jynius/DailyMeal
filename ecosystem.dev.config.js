@@ -7,8 +7,33 @@
 //   pm2 logs
 //   pm2 restart all
 //
-// 환경 변수는 각 앱의 .env 파일에서 자동 로드됩니다.
+// 환경 변수는 .env.local 파일에서 자동 로드됩니다.
 // ==============================================
+
+const fs = require('fs')
+const path = require('path')
+
+// .env.local 파일 읽기
+function loadEnvFile(filePath) {
+  const envVars = {}
+  if (fs.existsSync(filePath)) {
+    const content = fs.readFileSync(filePath, 'utf-8')
+    content.split('\n').forEach((line) => {
+      // 주석과 빈 줄 제외
+      line = line.trim()
+      if (!line || line.startsWith('#')) return
+
+      const [key, ...valueParts] = line.split('=')
+      if (key && valueParts.length > 0) {
+        envVars[key.trim()] = valueParts.join('=').trim()
+      }
+    })
+  }
+  return envVars
+}
+
+const frontendEnv = loadEnvFile(path.join(__dirname, 'frontend', '.env.local'))
+
 module.exports = {
   apps: [
     {
@@ -40,8 +65,9 @@ module.exports = {
       env: {
         NODE_ENV: 'development',
         PORT: 3000,
+        // .env.local 파일에서 자동 로드
+        ...frontendEnv,
       },
-      env_file: './.env.local', // .env.local 파일 자동 로드
       instances: 1,
       exec_mode: 'fork',
       watch: false, // Next.js가 이미 Hot Reload 처리

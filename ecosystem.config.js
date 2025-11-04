@@ -27,11 +27,12 @@ module.exports = {
       script: 'npm',
       args: 'run start',
       cwd: './frontend',
-      env_file: './frontend/.env.production', // 프로덕션 환경 변수
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
-        // NEXT_PUBLIC_* 환경 변수는 .env.production에서 로드됨
+        // ⚠️ NEXT_PUBLIC_* 환경 변수는 빌드 시점에 번들에 포함됨
+        // npm run build 전에 frontend/.env.production 파일 설정 필수
+        // 런타임에서는 변경 불가능 (재빌드 필요)
       },
       instances: 1,
       exec_mode: 'fork',

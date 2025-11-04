@@ -7,7 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ShareModal } from '@/components/share-modal'
 import { AppDeepLink } from '@/components/app-deep-link'
-import { getPublicMeal, trackView, getOrCreateSessionId, type PublicMealResponse } from '@/lib/api/share'
+import { getPublicMeal, trackShareView, type PublicMealResponse } from '@/lib/api/share'
 import { Button } from '@/components/ui/button'
 import Spinner from '@/components/ui/spinner'
 
@@ -17,7 +17,7 @@ interface SharedMealPageProps {
 
 export default async function SharedMealPage({ params }: SharedMealPageProps) {
   const { shareId } = await params
-  
+
   return <SharedMealContent shareId={shareId} />
 }
 
@@ -28,7 +28,7 @@ function SharedMealContent({ shareId }: { shareId: string }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [showShareModal, setShowShareModal] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  
+
   const searchParams = useSearchParams()
   const ref = searchParams.get('ref')
 
@@ -49,22 +49,17 @@ function SharedMealContent({ shareId }: { shareId: string }) {
     try {
       setLoading(true)
       setError(null)
-      
+
       const currentShareId = shareId
-      
+
       // 공개 Meal 조회
       const data = await getPublicMeal(currentShareId)
       setMeal(data)
 
-      // 조회 추적 (ref가 있을 때만)
-      if (ref) {
-        const sessionId = getOrCreateSessionId()
-        trackView({
-          shareId: currentShareId,
-          ref,
-          sessionId,
-        }).catch(err => console.error('Failed to track view:', err))
-      }
+      // 조회 추적
+      trackShareView(currentShareId).catch((err: Error) =>
+        console.error('Failed to track view:', err)
+      )
     } catch (err) {
       console.error('Failed to fetch shared meal:', err)
       setError('공유된 식사 기록을 찾을 수 없습니다.')
@@ -75,12 +70,12 @@ function SharedMealContent({ shareId }: { shareId: string }) {
 
   const handlePrevPhoto = () => {
     if (!meal?.photos) return
-    setCurrentPhotoIndex(prev => prev === 0 ? meal.photos!.length - 1 : prev - 1)
+    setCurrentPhotoIndex((prev) => (prev === 0 ? meal.photos!.length - 1 : prev - 1))
   }
 
   const handleNextPhoto = () => {
     if (!meal?.photos) return
-    setCurrentPhotoIndex(prev => prev === meal.photos!.length - 1 ? 0 : prev + 1)
+    setCurrentPhotoIndex((prev) => (prev === meal.photos!.length - 1 ? 0 : prev + 1))
   }
 
   if (loading) {
@@ -106,7 +101,7 @@ function SharedMealContent({ shareId }: { shareId: string }) {
     title: `${meal.name} - DailyMeal`,
     description: meal.memo || `${meal.sharerName}님이 공유한 ${meal.name}`,
     url: typeof window !== 'undefined' ? window.location.href : '',
-    imageUrl: photos.length > 0 ? photos[0] : undefined
+    imageUrl: photos.length > 0 ? photos[0] : undefined,
   }
 
   return (
@@ -142,7 +137,8 @@ function SharedMealContent({ shareId }: { shareId: string }) {
               )}
               <div>
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold text-gray-900">{meal.sharerName}</span>님의 식사 기록
+                  <span className="font-semibold text-gray-900">{meal.sharerName}</span>님의 식사
+                  기록
                 </p>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <Eye size={14} />
@@ -174,7 +170,11 @@ function SharedMealContent({ shareId }: { shareId: string }) {
               <div
                 key={index}
                 className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
-                  index === currentPhotoIndex ? 'translate-x-0' : index < currentPhotoIndex ? '-translate-x-full' : 'translate-x-full'
+                  index === currentPhotoIndex
+                    ? 'translate-x-0'
+                    : index < currentPhotoIndex
+                      ? '-translate-x-full'
+                      : 'translate-x-full'
                 }`}
               >
                 <Image
@@ -196,7 +196,17 @@ function SharedMealContent({ shareId }: { shareId: string }) {
                   onClick={handlePrevPhoto}
                   className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70 transition-colors z-10"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <polyline points="15 18 9 12 15 6"></polyline>
                   </svg>
                 </button>
@@ -204,7 +214,17 @@ function SharedMealContent({ shareId }: { shareId: string }) {
                   onClick={handleNextPhoto}
                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70 transition-colors z-10"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
                 </button>
@@ -262,23 +282,17 @@ function SharedMealContent({ shareId }: { shareId: string }) {
               <Star
                 key={i}
                 size={24}
-                className={`${
-                  i < meal.rating! ? 'text-yellow-500 fill-current' : 'text-gray-300'
-                }`}
+                className={`${i < meal.rating! ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
               />
             ))}
-            <span className="ml-2 text-lg font-semibold text-gray-700">
-              {meal.rating}/5
-            </span>
+            <span className="ml-2 text-lg font-semibold text-gray-700">{meal.rating}/5</span>
           </div>
         )}
 
         {/* 메모 */}
         {meal.memo && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-              {meal.memo}
-            </p>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{meal.memo}</p>
           </div>
         )}
 
@@ -286,7 +300,8 @@ function SharedMealContent({ shareId }: { shareId: string }) {
         {!isLoggedIn && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
             <p className="text-sm text-blue-800 mb-3">
-              🎉 이 맛집이 마음에 드시나요?<br />
+              🎉 이 맛집이 마음에 드시나요?
+              <br />
               데일리밀에 가입하고 나만의 맛집 기록을 만들어보세요!
             </p>
             <Link href="/signup">
