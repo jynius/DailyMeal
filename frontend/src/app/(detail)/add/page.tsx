@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useAlert } from '@/components/ui/alert'
 import { useToast } from '@/components/ui/toast'
 import { createLogger } from '@/lib/logger'
-import { useLocation } from '@/contexts/location-context'
+import { useLocationPermission } from '@/hooks/use-location-permission'
 import AuthGuard from '@/components/auth/AuthGuard'
 import { mealRecordsApi } from '@/lib/api'
 import Spinner from '@/components/ui/spinner'
@@ -39,7 +39,7 @@ function AddMealPage() {
     const month = now.getMonth() + 1
     const day = now.getDate()
     const hour = now.getHours()
-    
+
     let mealType = ''
     if (hour >= 5 && hour < 11) {
       mealType = '아침'
@@ -50,7 +50,7 @@ function AddMealPage() {
     } else {
       mealType = '저녁'
     }
-    
+
     return `${month}월 ${day}일 ${mealType}`
   }
 
@@ -68,22 +68,29 @@ function AddMealPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const { showAlert } = useAlert()
-  const toast = useToast();
-  const location = useLocation()
+  const toast = useToast()
+
+  // 위치 권한 관리 (자동 프롬프트 표시)
+  const location = useLocationPermission({
+    autoPrompt: true,
+    promptTitle: '📍 위치 권한 필요',
+    promptMessage:
+      '식사 위치를 자동으로 기록하려면 위치 권한이 필요합니다.\n\n권한을 허용하시겠습니까?',
+  })
 
   // 모바일 앱 환경 감지
   useEffect(() => {
     const isApp = /DailyMeal/.test(navigator.userAgent) || window.ReactNativeWebView !== undefined
     setIsMobileApp(isApp)
     log.info('🔍 Environment check:', { isApp, userAgent: navigator.userAgent })
-    
+
     if (isApp && typeof window !== 'undefined') {
       const handleMessage = (event: MessageEvent) => {
         log.info('📨 Message event received:', event.data)
         try {
           const message = JSON.parse(event.data)
           log.info('📨 Parsed message:', message.type)
-          
+
           if (message.type === 'imagesSelected' && message.images) {
             log.info('✅ Images received from app:', message.images.length)
             handleNativeImages(message.images)
@@ -92,11 +99,11 @@ function AddMealPage() {
           log.error('❌ Message parse error:', e)
         }
       }
-      
+
       log.info('👂 Adding message listeners')
       window.addEventListener('message', handleMessage)
       document.addEventListener('message', handleMessage as any)
-      
+
       return () => {
         log.info('🔇 Removing message listeners')
         window.removeEventListener('message', handleMessage)
@@ -109,13 +116,13 @@ function AddMealPage() {
   useEffect(() => {
     if (location.latitude && location.longitude && location.address) {
       const shortAddress = location.address.split(',').slice(0, 2).join(',')
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         latitude: location.latitude ?? undefined,
         longitude: location.longitude ?? undefined,
         address: location.address ?? undefined,
         location: shortAddress,
-      }));
+      }))
       if (!location.isLoading) {
         toast.success(`현재 위치: ${shortAddress}`, '위치 정보')
       }
@@ -123,11 +130,11 @@ function AddMealPage() {
   }, [location.latitude, location.longitude, location.address, location.isLoading, toast])
 
   // 네이티브 앱에서 선택한 이미지 처리
-  const handleNativeImages = (images: Array<{ base64: string, uri: string }>) => {
+  const handleNativeImages = (images: Array<{ base64: string; uri: string }>) => {
     log.info(`🖼️ handleNativeImages called with ${images.length} images`)
     const newFiles: File[] = []
     const newPreviews: string[] = []
-    
+
     images.forEach((img, index) => {
       log.info(`🖼️ Processing image ${index + 1}/${images.length}`)
       const base64Data = img.base64.includes(',') ? img.base64.split(',')[1] : img.base64
@@ -139,23 +146,23 @@ function AddMealPage() {
       const byteArray = new Uint8Array(byteNumbers)
       const blob = new Blob([byteArray], { type: 'image/jpeg' })
       const file = new File([blob], `photo_${Date.now()}_${index}.jpg`, { type: 'image/jpeg' })
-      
+
       newFiles.push(file)
       newPreviews.push(`data:image/jpeg;base64,${base64Data}`)
     })
-    
+
     log.info(`✅ Created ${newFiles.length} files and ${newPreviews.length} previews`)
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      photos: [...prev.photos, ...newFiles]
+      photos: [...prev.photos, ...newFiles],
     }))
-    setPhotoPreviews(prev => [...prev, ...newPreviews])
+    setPhotoPreviews((prev) => [...prev, ...newPreviews])
     setCurrentPhotoIndex(formData.photos.length + newFiles.length - 1)
-    
+
     log.info('✅ State updated')
   }
-  
+
   // 이미지 선택 요청 (앱에서는 네이티브 피커 실행)
   const requestImagePicker = () => {
     if (isMobileApp && window.ReactNativeWebView) {
@@ -169,32 +176,32 @@ function AddMealPage() {
 
   const handlePhotosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    
+
     if (formData.photos.length + files.length > 5) {
       showAlert({
         title: '사진 개수 제한',
         message: '최대 5장까지만 업로드할 수 있습니다.',
-        type: 'warning'
+        type: 'warning',
       })
       return
     }
 
-    const newPreviews = files.map(file => URL.createObjectURL(file))
-    setFormData(prev => ({
+    const newPreviews = files.map((file) => URL.createObjectURL(file))
+    setFormData((prev) => ({
       ...prev,
-      photos: [...prev.photos, ...files]
+      photos: [...prev.photos, ...files],
     }))
-    setPhotoPreviews(prev => [...prev, ...newPreviews])
+    setPhotoPreviews((prev) => [...prev, ...newPreviews])
     setCurrentPhotoIndex(formData.photos.length + files.length - 1)
   }
 
   const removePhoto = (index: number) => {
     const newPhotos = formData.photos.filter((_, i) => i !== index)
     const newPreviews = photoPreviews.filter((_, i) => i !== index)
-    
-    setFormData(prev => ({ ...prev, photos: newPhotos }))
+
+    setFormData((prev) => ({ ...prev, photos: newPhotos }))
     setPhotoPreviews(newPreviews)
-    
+
     if (currentPhotoIndex >= newPhotos.length) {
       setCurrentPhotoIndex(Math.max(0, newPhotos.length - 1))
     }
@@ -202,21 +209,21 @@ function AddMealPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+
     if (formData.photos.length === 0) {
       showAlert({
         title: '사진 필수',
         message: '최소 한 장의 사진을 등록해야 합니다.',
-        type: 'warning'
+        type: 'warning',
       })
       return
     }
 
     setIsSubmitting(true)
-    
+
     const data = new FormData()
     data.append('name', formData.name)
-    formData.photos.forEach(photo => data.append('photos', photo))
+    formData.photos.forEach((photo) => data.append('photos', photo))
     if (formData.latitude) data.append('latitude', formData.latitude.toString())
     if (formData.longitude) data.append('longitude', formData.longitude.toString())
     if (formData.address) data.append('address', formData.address)
@@ -232,7 +239,7 @@ function AddMealPage() {
       showAlert({
         title: '등록 실패',
         message: error?.message || '식사 기록 등록에 실패했습니다.',
-        type: 'error'
+        type: 'error',
       })
     } finally {
       setIsSubmitting(false)
@@ -249,7 +256,7 @@ function AddMealPage() {
             <span className="text-sm text-blue-700">현재 위치 가져오는 중...</span>
           </div>
         )}
-        
+
         {formData.location && (
           <div className="bg-gray-100 rounded-lg p-3 flex items-center gap-2">
             <MapPin className="w-5 h-5 text-gray-500" />
@@ -280,9 +287,7 @@ function AddMealPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            사진 (최대 5장)
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">사진 (최대 5장)</label>
           <input
             type="file"
             id="photo-upload"
@@ -291,7 +296,7 @@ function AddMealPage() {
             onChange={handlePhotosChange}
             className="hidden"
           />
-          
+
           <div className="space-y-2">
             {photoPreviews.length > 0 ? (
               /* 사진이 있을 때: 캐러셀 뷰 */
@@ -302,8 +307,11 @@ function AddMealPage() {
                     <div
                       key={index}
                       className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
-                        index === currentPhotoIndex ? 'translate-x-0' : 
-                        index < currentPhotoIndex ? '-translate-x-full' : 'translate-x-full'
+                        index === currentPhotoIndex
+                          ? 'translate-x-0'
+                          : index < currentPhotoIndex
+                            ? '-translate-x-full'
+                            : 'translate-x-full'
                       }`}
                     >
                       <img
@@ -313,7 +321,7 @@ function AddMealPage() {
                       />
                     </div>
                   ))}
-                  
+
                   {/* 삭제 버튼 */}
                   <button
                     type="button"
@@ -326,7 +334,7 @@ function AddMealPage() {
                   >
                     <X size={20} />
                   </button>
-                  
+
                   {/* 좌우 네비게이션 버튼 (2장 이상일 때만) */}
                   {photoPreviews.length > 1 && (
                     <>
@@ -335,13 +343,23 @@ function AddMealPage() {
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
-                          setCurrentPhotoIndex(prev => 
+                          setCurrentPhotoIndex((prev) =>
                             prev === 0 ? photoPreviews.length - 1 : prev - 1
                           )
                         }}
                         className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors z-10"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <polyline points="15 18 9 12 15 6"></polyline>
                         </svg>
                       </button>
@@ -350,24 +368,34 @@ function AddMealPage() {
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
-                          setCurrentPhotoIndex(prev => 
+                          setCurrentPhotoIndex((prev) =>
                             prev === photoPreviews.length - 1 ? 0 : prev + 1
                           )
                         }}
                         className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors z-10"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <polyline points="9 18 15 12 9 6"></polyline>
                         </svg>
                       </button>
                     </>
                   )}
-                  
+
                   {/* 페이지 인디케이터 */}
                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm z-10">
                     {currentPhotoIndex + 1} / {photoPreviews.length}
                   </div>
-                  
+
                   {/* 썸네일 미리보기 (하단) */}
                   {photoPreviews.length > 1 && (
                     <div className="absolute bottom-10 left-0 right-0 px-2">
@@ -382,7 +410,9 @@ function AddMealPage() {
                               setCurrentPhotoIndex(index)
                             }}
                             className={`flex-shrink-0 w-12 h-12 rounded overflow-hidden border-2 transition-all ${
-                              index === currentPhotoIndex ? 'border-white scale-110' : 'border-transparent opacity-60'
+                              index === currentPhotoIndex
+                                ? 'border-white scale-110'
+                                : 'border-transparent opacity-60'
                             }`}
                           >
                             <img
@@ -408,7 +438,7 @@ function AddMealPage() {
                 <p className="text-xs text-gray-400">최소 1장 필수</p>
               </div>
             )}
-            
+
             {formData.photos.length > 0 && (
               <Button
                 type="button"
@@ -421,11 +451,7 @@ function AddMealPage() {
           </div>
         </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isSubmitting}
-        >
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? '등록 중...' : '식사 기록하기'}
         </Button>
       </form>

@@ -17,7 +17,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
-    log.debug('State', { isAuthenticated, isLoading })
+    log.info('useEffect triggered', { isAuthenticated, isLoading })
     if (!isLoading && !isAuthenticated) {
       log.warn('Not authenticated, redirecting to /login')
       router.push('/login')
@@ -25,16 +25,16 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   }, [isAuthenticated, isLoading, router])
 
   if (isLoading) {
-    log.debug('Loading authentication...')
+    log.info('Loading authentication, showing spinner')
     return <Spinner fullScreen />
   }
 
   if (!isAuthenticated) {
-    log.debug('Not authenticated, showing spinner while redirecting')
+    log.info('Not authenticated, showing spinner while redirecting')
     // useEffect에서 리디렉션을 처리하므로, 여기서는 null을 렌더링하여 깜빡임을 방지합니다.
     return <Spinner fullScreen />
   }
 
-  log.debug('Authenticated, rendering children')
+  log.info('Authenticated, rendering children')
   return <>{children}</>
 }

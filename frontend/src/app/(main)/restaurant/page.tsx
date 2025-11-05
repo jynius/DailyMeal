@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { MapPin, Star, Map as MapIcon, List } from 'lucide-react'
 import { KakaoMap } from '@/components/kakao-map'
-import { useLocation } from '@/contexts/location-context'
+import { useLocationPermission } from '@/hooks/use-location-permission'
 import { useAlert } from '@/components/ui/alert'
 import Link from 'next/link'
 import Spinner from '@/components/ui/spinner'
@@ -30,39 +30,21 @@ export default function RestaurantsPage() {
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
   const [sortOption, setSortOption] = useState<SortOption>('recent')
-  const [hasShownLocationPrompt, setHasShownLocationPrompt] = useState(false)
-  const location = useLocation()
-  const { latitude, longitude, error: locationError } = location
+
+  // 위치 권한 관리를 커스텀 훅으로 통합 (자동 프롬프트 표시)
+  const location = useLocationPermission({
+    autoPrompt: true,
+    promptTitle: '📍 위치 권한 필요',
+    promptMessage:
+      '주변 맛집을 지도에 표시하려면 위치 권한이 필요합니다.\n\n권한을 허용하시겠습니까?',
+  })
+
+  const { latitude, longitude } = location
   const alert = useAlert()
 
   useEffect(() => {
     fetchRestaurants()
   }, [latitude, longitude])
-
-  // 위치 권한 프롬프트 표시
-  useEffect(() => {
-    if (!hasShownLocationPrompt && !location.isLoading && !location.latitude && !location.error) {
-      setHasShownLocationPrompt(true)
-      alert.showConfirm({
-        title: '📍 위치 권한 필요',
-        message:
-          '주변 맛집을 지도에 표시하려면 위치 권한이 필요합니다.\n\n권한을 허용하시겠습니까?',
-        type: 'info',
-        confirmText: '허용하기',
-        cancelText: '나중에',
-        onConfirm: () => {
-          location.fetchLocation()
-        },
-      })
-    }
-  }, [
-    hasShownLocationPrompt,
-    location.isLoading,
-    location.latitude,
-    location.error,
-    alert,
-    location,
-  ])
 
   const fetchRestaurants = async () => {
     try {
