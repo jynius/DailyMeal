@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { Header } from '@/components/header'
 import { BottomNavigation } from '@/components/bottom-navigation'
 import { RealTimeNotifications } from '@/components/realtime-notifications'
+import AuthGuard from '@/components/auth/AuthGuard'
 
 const getHeaderTitle = (pathname: string) => {
   if (pathname === '/') return 'DailyMeal'
@@ -30,16 +31,27 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   // 서브 페이지는 뒤로가기 버튼 표시
   const showBackButton = !mainNavPaths.includes(pathname)
 
+  // 홈 페이지는 인증 불필요 (랜딩 페이지)
+  if (isHomePage) {
+    return (
+      <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex flex-col">
+        <Header title={title} variant="home" showBackButton={showBackButton} />
+        <main className="flex-1 w-full">{children}</main>
+        <BottomNavigation />
+        <RealTimeNotifications />
+      </div>
+    )
+  }
+
+  // 나머지 페이지는 AuthGuard로 보호
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex flex-col">
-      <Header
-        title={title}
-        variant={isHomePage ? 'home' : 'default'}
-        showBackButton={showBackButton}
-      />
-      <main className="flex-1 w-full">{children}</main>
-      <BottomNavigation />
-      <RealTimeNotifications />
-    </div>
+    <AuthGuard>
+      <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex flex-col">
+        <Header title={title} variant="default" showBackButton={showBackButton} />
+        <main className="flex-1 w-full">{children}</main>
+        <BottomNavigation />
+        <RealTimeNotifications />
+      </div>
+    </AuthGuard>
   )
 }

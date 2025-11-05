@@ -1,62 +1,57 @@
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { Providers } from "@/components/providers"
-import { PWAInstaller } from "@/components/pwa-installer"
-import { AppInstallBanner } from "@/components/app-install-banner"
-import { LocationProvider } from "@/contexts/location-context"
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import { Providers } from '@/components/providers'
+import { PWAInstaller } from '@/components/pwa-installer'
+import { AppInstallBanner } from '@/components/app-install-banner'
+import './globals.css'
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+  subsets: ['latin'],
+  variable: '--font-inter',
+})
 
 export const metadata: Metadata = {
-  title: "DailyMeal - 식단 기록 앱",
-  description: "매일의 맛있는 순간을 기록하고 공유하는 소셜 식단 플랫폼",
-  keywords: ["식단", "음식", "기록", "맛집", "리뷰", "소셜", "공유"],
-  manifest: "/manifest.json",
+  title: 'DailyMeal - 식단 기록 앱',
+  description: '매일의 맛있는 순간을 기록하고 공유하는 소셜 식단 플랫폼',
+  keywords: ['식단', '음식', '기록', '맛집', '리뷰', '소셜', '공유'],
+  manifest: '/manifest.json',
   appleWebApp: {
-    statusBarStyle: "default",
-    title: "DailyMeal",
+    statusBarStyle: 'default',
+    title: 'DailyMeal',
   },
   other: {
     'mobile-web-app-capable': 'yes',
   },
   openGraph: {
-    title: "DailyMeal - 식단 기록 앱",
-    description: "매일의 맛있는 순간을 기록하고 공유하는 소셜 식단 플랫폼",
-    type: "website",
-    locale: "ko_KR",
+    title: 'DailyMeal - 식단 기록 앱',
+    description: '매일의 맛있는 순간을 기록하고 공유하는 소셜 식단 플랫폼',
+    type: 'website',
+    locale: 'ko_KR',
   },
-};
+}
 
 export const viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: "#3B82F6",
-};
+  themeColor: '#3B82F6',
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="ko" data-scroll-behavior="smooth">
       <body className={`${inter.variable} font-sans antialiased overflow-x-hidden`}>
         <Providers>
-          <LocationProvider>
-            <PWAInstaller />
-            <AppInstallBanner />
-            <div className="min-h-screen bg-gray-50 pb-safe-bottom">
-              <main className="max-w-md mx-auto min-h-screen bg-white shadow-lg">
-                {children}
-              </main>
-            </div>
-          </LocationProvider>
+          <PWAInstaller />
+          <AppInstallBanner />
+          <div className="min-h-screen bg-gray-50 pb-safe-bottom">
+            <main className="max-w-md mx-auto min-h-screen bg-white shadow-lg">{children}</main>
+          </div>
         </Providers>
       </body>
     </html>

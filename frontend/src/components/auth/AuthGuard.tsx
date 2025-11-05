@@ -3,7 +3,10 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
+import { createLogger } from '@/lib/logger'
 import Spinner from '@/components/ui/spinner'
+
+const log = createLogger('AuthGuard')
 
 interface AuthGuardProps {
   children: React.ReactNode
@@ -14,22 +17,24 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
+    log.debug('State', { isAuthenticated, isLoading })
     if (!isLoading && !isAuthenticated) {
-      console.log('[AuthGuard] Not authenticated, redirecting to /login');
+      log.warn('Not authenticated, redirecting to /login')
       router.push('/login')
     }
   }, [isAuthenticated, isLoading, router])
 
   if (isLoading) {
-    console.log('[AuthGuard] Checking authentication...');
+    log.debug('Loading authentication...')
     return <Spinner fullScreen />
   }
 
   if (!isAuthenticated) {
+    log.debug('Not authenticated, showing spinner while redirecting')
     // useEffect에서 리디렉션을 처리하므로, 여기서는 null을 렌더링하여 깜빡임을 방지합니다.
-    return null;
+    return <Spinner fullScreen />
   }
 
-  console.log('[AuthGuard] Authenticated, rendering children');
+  log.debug('Authenticated, rendering children')
   return <>{children}</>
 }

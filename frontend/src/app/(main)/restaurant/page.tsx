@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { MapPin, Star, Map as MapIcon, List } from 'lucide-react'
 import { KakaoMap } from '@/components/kakao-map'
-import AuthGuard from '@/components/auth/AuthGuard'
-import Link from 'next/link'
 import { useLocation } from '@/contexts/location-context'
+import { useAlert } from '@/components/ui/alert'
+import Link from 'next/link'
 import Spinner from '@/components/ui/spinner'
 
 interface Restaurant {
@@ -30,18 +30,45 @@ export default function RestaurantsPage() {
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
   const [sortOption, setSortOption] = useState<SortOption>('recent')
+  const [hasShownLocationPrompt, setHasShownLocationPrompt] = useState(false)
   const location = useLocation()
   const { latitude, longitude, error: locationError } = location
+  const alert = useAlert()
 
   useEffect(() => {
     fetchRestaurants()
   }, [latitude, longitude])
 
+  // 위치 권한 프롬프트 표시
+  useEffect(() => {
+    if (!hasShownLocationPrompt && !location.isLoading && !location.latitude && !location.error) {
+      setHasShownLocationPrompt(true)
+      alert.showConfirm({
+        title: '📍 위치 권한 필요',
+        message:
+          '주변 맛집을 지도에 표시하려면 위치 권한이 필요합니다.\n\n권한을 허용하시겠습니까?',
+        type: 'info',
+        confirmText: '허용하기',
+        cancelText: '나중에',
+        onConfirm: () => {
+          location.fetchLocation()
+        },
+      })
+    }
+  }, [
+    hasShownLocationPrompt,
+    location.isLoading,
+    location.latitude,
+    location.error,
+    alert,
+    location,
+  ])
+
   const fetchRestaurants = async () => {
     try {
       setLoading(true)
       const { restaurantsApi } = await import('@/lib/api')
-      
+
       const params: { lat?: number; lon?: number; radius?: number } = {}
       if (latitude && longitude) {
         params.lat = latitude
@@ -50,7 +77,7 @@ export default function RestaurantsPage() {
       }
 
       const response = await restaurantsApi.getRestaurants(params)
-      
+
       const restaurantData = response.map((r: any) => ({
         id: r.id,
         name: r.name,
@@ -65,9 +92,7 @@ export default function RestaurantsPage() {
 
       setRestaurants(restaurantData)
       setPopularRestaurants(
-        [...restaurantData]
-          .sort((a, b) => b.mealCount - a.mealCount)
-          .slice(0, 4),
+        [...restaurantData].sort((a, b) => b.mealCount - a.mealCount).slice(0, 4)
       )
     } catch (error) {
       console.error('Failed to fetch restaurants:', error)
@@ -78,10 +103,12 @@ export default function RestaurantsPage() {
 
   const sortedRestaurants = (() => {
     const list = [...restaurants]
-    
+
     switch (sortOption) {
       case 'recent':
-        return list.sort((a, b) => new Date(b.lastVisited).getTime() - new Date(a.lastVisited).getTime())
+        return list.sort(
+          (a, b) => new Date(b.lastVisited).getTime() - new Date(a.lastVisited).getTime()
+        )
       case 'count':
         return list.sort((a, b) => b.mealCount - a.mealCount)
       case 'rating':
@@ -92,7 +119,6 @@ export default function RestaurantsPage() {
   })()
 
   return (
-    <AuthGuard>
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
       <div className="p-4 bg-white border-b">
         <h4 className="text-sm font-medium text-gray-600 mb-2">인기 맛집</h4>
@@ -113,9 +139,7 @@ export default function RestaurantsPage() {
               </div>
               <div className="flex items-center gap-0.5 ml-1">
                 <Star size={12} className="text-yellow-400 fill-current" />
-                <span className="text-xs text-gray-600">
-                  {restaurant.avgRating.toFixed(1)}
-                </span>
+                <span className="text-xs text-gray-600">{restaurant.avgRating.toFixed(1)}</span>
               </div>
             </Link>
           ))}
@@ -127,9 +151,7 @@ export default function RestaurantsPage() {
           <button
             onClick={() => setViewMode('map')}
             className={`flex-1 py-2 rounded-lg transition-colors text-sm font-medium ${
-              viewMode === 'map'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-600'
+              viewMode === 'map' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
             }`}
           >
             <MapIcon size={18} className="inline mr-1" />
@@ -138,9 +160,7 @@ export default function RestaurantsPage() {
           <button
             onClick={() => setViewMode('list')}
             className={`flex-1 py-2 rounded-lg transition-colors text-sm font-medium ${
-              viewMode === 'list'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-600'
+              viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
             }`}
           >
             <List size={18} className="inline mr-1" />
@@ -158,8 +178,8 @@ export default function RestaurantsPage() {
                 longitude={location.longitude}
                 level={5}
                 markers={sortedRestaurants
-                  .filter(r => r.latitude && r.longitude)
-                  .map(r => ({
+                  .filter((r) => r.latitude && r.longitude)
+                  .map((r) => ({
                     lat: r.latitude!,
                     lng: r.longitude!,
                     title: r.name,
@@ -171,19 +191,68 @@ export default function RestaurantsPage() {
                           방문 ${r.mealCount}회 · ⭐ ${r.avgRating.toFixed(1)}
                         </div>
                       </div>
-                    `
+                    `,
                   }))}
                 className="w-full h-full"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                <div className="text-center text-gray-500">
+                <div className="text-center text-gray-500 px-4">
                   <MapPin size={48} className="mx-auto mb-2 text-gray-400 animate-pulse" />
-                  <p className="text-sm">{location.isLoading ? '현재 위치를 가져오는 중...' : (location.error ? location.error.message : '위치 정보를 가져올 수 없습니다.')}</p>
+                  {location.isLoading ? (
+                    <p className="text-sm">현재 위치를 가져오는 중...</p>
+                  ) : location.error ? (
+                    <div>
+                      <p className="text-sm font-medium text-red-600 mb-2">
+                        위치 정보를 가져올 수 없습니다
+                      </p>
+                      <p className="text-xs text-gray-600 mb-3">{location.error.message}</p>
+                      <button
+                        onClick={() => {
+                          alert.showConfirm({
+                            title: '📍 위치 권한 재요청',
+                            message:
+                              '위치 권한을 다시 요청하시겠습니까?\n\n브라우저 설정에서 위치 권한이 차단된 경우,\n설정에서 직접 허용해주셔야 합니다.',
+                            type: 'warning',
+                            confirmText: '다시 시도',
+                            cancelText: '취소',
+                            onConfirm: () => {
+                              location.fetchLocation()
+                            },
+                          })
+                        }}
+                        className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm mb-3">위치 권한을 허용해주세요</p>
+                      <button
+                        onClick={() => {
+                          alert.showConfirm({
+                            title: '📍 위치 권한 필요',
+                            message:
+                              '주변 맛집을 지도에 표시하려면 위치 권한이 필요합니다.\n\n권한을 허용하시겠습니까?',
+                            type: 'info',
+                            confirmText: '허용하기',
+                            cancelText: '취소',
+                            onConfirm: () => {
+                              location.fetchLocation()
+                            },
+                          })
+                        }}
+                        className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
+                      >
+                        위치 권한 요청
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
-            
+
             {sortedRestaurants.length > 0 && location.latitude && location.longitude && (
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -208,9 +277,7 @@ export default function RestaurantsPage() {
                         <MapPin size={12} className="mr-1" />
                         <span className="line-clamp-1">{restaurant.address}</span>
                       </div>
-                      <div className="text-xs text-blue-600">
-                        {restaurant.mealCount}번 방문
-                      </div>
+                      <div className="text-xs text-blue-600">{restaurant.mealCount}번 방문</div>
                     </Link>
                   ))}
                 </div>
@@ -225,7 +292,7 @@ export default function RestaurantsPage() {
               <h3 className="text-lg font-semibold text-gray-900">
                 내 맛집 ({sortedRestaurants.length})
               </h3>
-              <select 
+              <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as SortOption)}
                 className="text-sm text-gray-600 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -236,68 +303,68 @@ export default function RestaurantsPage() {
               </select>
             </div>
 
-        {loading ? (
-          <Spinner container="page" text="맛집 불러오는 중..." />
-        ) : sortedRestaurants.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg">
-            <p className="text-gray-500 mb-2">
-              아직 등록된 맛집이 없습니다
-            </p>
-            <p className="text-sm text-gray-400">
-              식사를 기록하고 평가하면 자동으로 맛집이 생성됩니다!
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {sortedRestaurants.map((restaurant) => (
-              <Link
-                key={restaurant.id}
-                href={`/restaurant/${restaurant.id}`}
-                className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <h4 className="text-base font-semibold text-gray-900">
-                      {restaurant.name}
-                    </h4>
-                    {restaurant.isFriendVisit && (
-                      <span className="inline-block mt-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                        👤 {restaurant.friendName}님의 맛집
+            {loading ? (
+              <Spinner container="page" text="맛집 불러오는 중..." />
+            ) : sortedRestaurants.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg">
+                <p className="text-gray-500 mb-2">아직 등록된 맛집이 없습니다</p>
+                <p className="text-sm text-gray-400">
+                  식사를 기록하고 평가하면 자동으로 맛집이 생성됩니다!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {sortedRestaurants.map((restaurant) => (
+                  <Link
+                    key={restaurant.id}
+                    href={`/restaurant/${restaurant.id}`}
+                    className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h4 className="text-base font-semibold text-gray-900">{restaurant.name}</h4>
+                        {restaurant.isFriendVisit && (
+                          <span className="inline-block mt-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                            👤 {restaurant.friendName}님의 맛집
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center ml-2">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            size={14}
+                            className={`${
+                              i < Math.round(restaurant.avgRating)
+                                ? 'text-yellow-400 fill-current'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                        <span className="text-sm text-gray-600 ml-1">
+                          {restaurant.avgRating.toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                      <MapPin size={14} className="mr-1" />
+                      <span>{restaurant.address}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-blue-600 font-medium">
+                        {restaurant.mealCount}번 방문
                       </span>
-                    )}
-                  </div>
-                  <div className="flex items-center ml-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        size={14} 
-                        className={`${
-                          i < Math.round(restaurant.avgRating)
-                            ? "text-yellow-400 fill-current" 
-                            : "text-gray-300"
-                        }`} 
-                      />
-                    ))}
-                    <span className="text-sm text-gray-600 ml-1">
-                      {restaurant.avgRating.toFixed(1)}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center text-sm text-gray-500 mb-2">
-                  <MapPin size={14} className="mr-1" />
-                  <span>{restaurant.address}</span>
-                </div>
-                
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-blue-600 font-medium">
-                    {restaurant.mealCount}번 방문
-                  </span>
-                  <span className="text-gray-400">
-                    최근 방문: {new Date(restaurant.lastVisited).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                  </span>
-                </div>
-                            </Link>
+                      <span className="text-gray-400">
+                        최근 방문:{' '}
+                        {new Date(restaurant.lastVisited).toLocaleDateString('ko-KR', {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                  </Link>
                 ))}
               </div>
             )}
@@ -305,6 +372,5 @@ export default function RestaurantsPage() {
         </>
       )}
     </div>
-    </AuthGuard>
   )
 }

@@ -133,8 +133,11 @@ export function LocationProvider({ children }: { children: ReactNode }) {
           setPermissionState(permission.state as 'prompt' | 'granted' | 'denied')
           if (permission.state === 'granted') {
             fetchLocation()
+          } else if (permission.state === 'prompt') {
+            // prompt 상태에서도 자동으로 위치 요청
+            fetchLocation()
           } else {
-            setIsLoading(false) // 권한이 없으면 로딩 종료
+            setIsLoading(false) // denied 상태일 때만 로딩 종료
           }
           permission.onchange = () => {
             setPermissionState(permission.state as 'prompt' | 'granted' | 'denied')

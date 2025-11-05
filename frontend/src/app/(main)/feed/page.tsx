@@ -3,14 +3,9 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { MealCard } from '@/components/meal-card'
-import { Button } from '@/components/ui/button'
 import { mealRecordsApi } from '@/lib/api'
-import { useSocket } from '@/contexts/socket-context'
-import AuthGuard from '@/components/auth/AuthGuard'
 import { createLogger } from '@/lib/logger'
-import { Users, Filter, Zap } from 'lucide-react'
 import type { MealRecord } from '@/types'
-import { Header } from '@/components/header'
 import Spinner from '@/components/ui/spinner'
 
 const log = createLogger('FeedPage')
@@ -24,7 +19,6 @@ function FeedContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'rated' | 'unrated'>('all')
-  const { notifications, connectedUsers, isConnected } = useSocket()
 
   // URL 파라미터에서 초기 필터 설정
   useEffect(() => {
@@ -90,61 +84,59 @@ function FeedContent() {
   }
 
   return (
-    <AuthGuard>
-      <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
-        {/* Content */}
-        <div className="p-4 space-y-4">
-          {error ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-              <p className="text-red-600">{error}</p>
-              <button onClick={() => fetchMeals()} className="mt-2 text-red-500 underline">
-                다시 시도
-              </button>
-            </div>
-          ) : (
-            (() => {
-              // 필터링 로직 - rating만으로 평가 여부 판단
-              let filteredMeals = meals
+    <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
+      {/* Content */}
+      <div className="p-4 space-y-4">
+        {error ? (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+            <p className="text-red-600">{error}</p>
+            <button onClick={() => fetchMeals()} className="mt-2 text-red-500 underline">
+              다시 시도
+            </button>
+          </div>
+        ) : (
+          (() => {
+            // 필터링 로직 - rating만으로 평가 여부 판단
+            let filteredMeals = meals
 
-              if (filter === 'rated') {
-                filteredMeals = meals.filter((meal) => meal.rating)
-              } else if (filter === 'unrated') {
-                filteredMeals = meals.filter((meal) => !meal.rating)
-              }
+            if (filter === 'rated') {
+              filteredMeals = meals.filter((meal) => meal.rating)
+            } else if (filter === 'unrated') {
+              filteredMeals = meals.filter((meal) => !meal.rating)
+            }
 
-              return filteredMeals.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">
-                    {filter === 'unrated'
-                      ? '미평가 식사가 없습니다. 모두 평가를 완료하셨네요! 🎉'
-                      : filter === 'rated'
-                        ? '평가 완료된 식사가 없습니다.'
-                        : '아직 기록된 식사가 없습니다.'}
-                  </p>
-                  {filter === 'all' && (
-                    <a
-                      href="/add"
-                      className="inline-block bg-blue-500 text-white px-4 py-2 rounded-lg"
-                    >
-                      첫 번째 식사 기록하기
-                    </a>
-                  )}
-                </div>
-              ) : (
-                filteredMeals.map((meal) => (
-                  <MealCard
-                    key={meal.id}
-                    {...meal}
-                    createdAt={formatDate(meal.createdAt)}
-                    onEvaluated={fetchMeals} // 평가 완료 시 목록 새로고침
-                  />
-                ))
-              )
-            })()
-          )}
-        </div>
+            return filteredMeals.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">
+                  {filter === 'unrated'
+                    ? '미평가 식사가 없습니다. 모두 평가를 완료하셨네요! 🎉'
+                    : filter === 'rated'
+                      ? '평가 완료된 식사가 없습니다.'
+                      : '아직 기록된 식사가 없습니다.'}
+                </p>
+                {filter === 'all' && (
+                  <a
+                    href="/add"
+                    className="inline-block bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  >
+                    첫 번째 식사 기록하기
+                  </a>
+                )}
+              </div>
+            ) : (
+              filteredMeals.map((meal) => (
+                <MealCard
+                  key={meal.id}
+                  {...meal}
+                  createdAt={formatDate(meal.createdAt)}
+                  onEvaluated={fetchMeals} // 평가 완료 시 목록 새로고침
+                />
+              ))
+            )
+          })()
+        )}
       </div>
-    </AuthGuard>
+    </div>
   )
 }
 

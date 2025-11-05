@@ -10,6 +10,9 @@ import {
 } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import { tokenManager } from '@/lib/api'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('AuthContext')
 
 interface JwtPayload {
   exp: number
@@ -35,64 +38,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     try {
       const decoded = jwtDecode<JwtPayload>(token)
-      return decoded.exp * 1000 > Date.now()
+      const isValid = decoded.exp * 1000 > Date.now()
+      log.info('Initial auth check', { isValid })
+      return isValid
     } catch {
+      log.warn('Initial token invalid')
       return false
     }
   })
   
-  const [isLoading, setIsLoading] = useState(false) // 초기값을 false로 변경
-  const [isInitialized, setIsInitialized] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(true) // 초기값을 true로 변경 (이미 초기화됨)
 
   const checkAuth = useCallback(() => {
-    console.log('[AuthContext] Checking auth...')
+    log.debug('Checking auth...')
     const token = tokenManager.get()
-    console.log('[AuthContext] Token exists:', !!token)
+    log.debug('Token exists', { hasToken: !!token })
     if (token) {
       try {
         const decoded = jwtDecode<JwtPayload>(token)
         const isValid = decoded.exp * 1000 > Date.now()
-        console.log('[AuthContext] Token valid:', isValid, 'exp:', new Date(decoded.exp * 1000))
+        log.debug('Token validation', { isValid, exp: new Date(decoded.exp * 1000) })
         if (isValid) {
           setIsAuthenticated(true)
         } else {
+          log.warn('Token expired, removing')
           setIsAuthenticated(false)
           tokenManager.remove()
         }
       } catch (error) {
-        console.log('[AuthContext] Token decode error:', error)
+        log.error('Token decode error', error)
         setIsAuthenticated(false)
         tokenManager.remove()
       }
     } else {
+      log.debug('No token found')
       setIsAuthenticated(false)
     }
-    
-    // 초기 로딩은 한 번만 false로 설정
-    if (!isInitialized) {
-      setIsLoading(false)
-      setIsInitialized(true)
-    }
-    console.log('[AuthContext] Auth check complete')
-  }, [isInitialized])
+    log.debug('Auth check complete')
+  }, [])
 
   const login = useCallback((token: string) => {
-    console.log('[AuthContext] Login with token')
+    log.info('Login with token')
     tokenManager.set(token)
     setIsAuthenticated(true)
   }, [])
 
   const logout = useCallback(() => {
-    console.log('[AuthContext] Logout')
+    log.info('Logout')
     tokenManager.remove()
     setIsAuthenticated(false)
   }, [])
 
   useEffect(() => {
+    // 마운트 시 한 번만 실행
+    log.debug('Initial mount, checking auth')
     checkAuth()
 
+    // Storage 이벤트 리스너 (다른 탭에서의 변경 감지)
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'token') {
+        log.info('Storage changed, rechecking auth')
         checkAuth()
       }
     }
@@ -102,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener('storage', handleStorageChange)
     }
-  }, [checkAuth])
+  }, []) // checkAuth 의존성 제거로 무한 루프 방지
 
   const value = {
     isAuthenticated,
