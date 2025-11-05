@@ -5,6 +5,9 @@ import { Share, Copy, Download, MessageCircle, Facebook, Twitter, Instagram } fr
 import { shareUtils, type ShareData } from '@/lib/share-utils'
 import { kakaoShare } from '@/lib/kakao-share'
 import { useToast } from '@/components/ui/toast'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('ShareModal')
 
 interface ShareModalProps {
   isOpen: boolean
@@ -16,21 +19,27 @@ interface ShareModalProps {
 export function ShareModal({ isOpen, onClose, shareData, imageUrl }: ShareModalProps) {
   const [loading, setLoading] = useState<string | null>(null)
   const [kakaoReady, setKakaoReady] = useState(false)
+  const [kakaoInitError, setKakaoInitError] = useState<string | null>(null)
   const toast = useToast()
 
   useEffect(() => {
     if (!isOpen) return
-    
+
     // 카카오 SDK 초기화 (Promise 방식)
-    console.log('🔄 Initializing Kakao SDK...')
-    kakaoShare.init()
+    log.info('🔄 Initializing Kakao SDK...')
+    setKakaoInitError(null)
+
+    kakaoShare
+      .init()
       .then(() => {
-        console.log('✅ Kakao SDK ready!')
+        log.info('✅ Kakao SDK ready!')
         setKakaoReady(true)
       })
       .catch((error) => {
-        console.warn('⚠️ Kakao SDK 초기화 실패:', error.message)
+        const errorMsg = error.message || '알 수 없는 오류'
+        log.error('❌ Kakao SDK 초기화 실패:', errorMsg)
         setKakaoReady(false)
+        setKakaoInitError(errorMsg)
       })
   }, [isOpen])
 
@@ -62,25 +71,50 @@ export function ShareModal({ isOpen, onClose, shareData, imageUrl }: ShareModalP
   const handleSocialShare = async (platform: 'kakao' | 'facebook' | 'twitter') => {
     if (platform === 'kakao') {
       setLoading('kakao')
-      
+
+      console.log('🔄 Attempting Kakao share...', {
+        kakaoReady,
+        hasImage: !!shareData.imageUrl,
+        kakaoInitError,
+      })
+
+      // 이미지가 없으면 경고
+      if (!shareData.imageUrl) {
+        console.warn('⚠️ No image URL provided for Kakao share')
+        toast.warning('공유할 이미지가 없습니다.\n텍스트만 공유됩니다.')
+      }
+
       // SDK 사용 가능하면 SDK로 공유
       if (kakaoReady) {
+        console.log('✅ Using Kakao SDK for sharing')
         const success = await shareUtils.shareKakao(shareData)
         if (success) {
           toast.success('카카오톡으로 공유했습니다!')
+          onClose()
         } else {
-          toast.error('카카오톡 공유에 실패했습니다')
+          console.error('❌ Kakao SDK share failed')
+          toast.error('카카오톡 공유에 실패했습니다.\n다시 시도해주세요.')
         }
       } else {
-        // SDK 없으면 링크 복사 후 안내
+        // SDK 없으면 에러 메시지와 함께 링크 복사 폴백
+        console.warn('⚠️ Kakao SDK not ready, falling back to clipboard', {
+          error: kakaoInitError,
+        })
+
+        toast.warning(
+          kakaoInitError
+            ? `카카오 SDK 오류: ${kakaoInitError}\n링크를 복사합니다.`
+            : '카카오 SDK를 불러올 수 없습니다.\n링크를 복사합니다.'
+        )
+
         const success = await shareUtils.copyToClipboard(shareData.url)
         if (success) {
-          toast.success('링크가 복사되었습니다!\n카카오톡에 붙여넣기 해주세요 📋')
+          toast.info('링크가 복사되었습니다.\n카카오톡에 직접 붙여넣기 해주세요 📋')
         } else {
           toast.error('링크 복사에 실패했습니다')
         }
       }
-      
+
       setLoading(null)
     } else {
       // facebook, twitter만 URL 방식 사용
@@ -93,7 +127,7 @@ export function ShareModal({ isOpen, onClose, shareData, imageUrl }: ShareModalP
 
   const handleDownloadImage = async () => {
     if (!imageUrl) return
-    
+
     setLoading('download')
     const filename = `dailymeal-${shareData.title}-${Date.now()}.jpg`
     const success = await shareUtils.downloadImage(imageUrl, filename)
@@ -111,10 +145,7 @@ export function ShareModal({ isOpen, onClose, shareData, imageUrl }: ShareModalP
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900">공유하기</h3>
-          <button 
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             ✕
           </button>
         </div>
@@ -154,15 +185,30 @@ export function ShareModal({ isOpen, onClose, shareData, imageUrl }: ShareModalP
             <button
               onClick={() => handleSocialShare('kakao')}
               disabled={loading === 'kakao'}
-              className="flex flex-col items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors disabled:opacity-50"
-              title={!kakaoReady ? '링크를 복사하여 카카오톡에 붙여넣기' : '카카오톡으로 공유'}
+              className={`flex flex-col items-center p-4 rounded-lg transition-colors disabled:opacity-50 ${
+                kakaoReady ? 'bg-yellow-50 hover:bg-yellow-100' : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+              title={
+                kakaoReady
+                  ? '카카오톡으로 공유'
+                  : kakaoInitError
+                    ? `SDK 오류: ${kakaoInitError}`
+                    : 'SDK 로딩 중...'
+              }
             >
               {loading === 'kakao' ? (
                 <div className="w-6 h-6 mb-2 border-2 border-yellow-300 border-t-yellow-600 rounded-full animate-spin" />
               ) : (
-                <MessageCircle className="w-6 h-6 text-yellow-600 mb-2" />
+                <MessageCircle
+                  className={`w-6 h-6 mb-2 ${kakaoReady ? 'text-yellow-600' : 'text-gray-400'}`}
+                />
               )}
-              <span className="text-sm font-medium text-gray-900">카카오톡</span>
+              <span
+                className={`text-sm font-medium ${kakaoReady ? 'text-gray-900' : 'text-gray-500'}`}
+              >
+                카카오톡
+                {!kakaoReady && <span className="text-xs block">SDK 오류</span>}
+              </span>
             </button>
 
             <button
