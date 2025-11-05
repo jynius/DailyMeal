@@ -12,7 +12,7 @@ export function BottomNavigation() {
     { href: '/', icon: Home, label: '홈' },
     { href: '/feed', icon: Utensils, label: '피드' },
     { href: '/restaurant', icon: MapPin, label: '맛집' },
-    { href: '/users', icon: Users, label: '친구' },
+    { href: '/friends', icon: Users, label: '친구' },
     { href: '/profile', icon: User, label: '프로필' },
   ]
 
@@ -24,48 +24,52 @@ export function BottomNavigation() {
   return (
     <>
       {/* 중앙 플로팅 버튼 */}
-      <Link 
+      <Link
         href="/add"
         className="fixed right-4 sm:right-6 z-50 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 touch-target"
-        style={{ 
-          bottom: `calc(5rem + env(safe-area-inset-bottom, 0px))` 
+        style={{
+          bottom: `calc(5rem + env(safe-area-inset-bottom, 0px))`,
         }}
         onClick={() => {
-          logClick('add-button');
-          console.log('[Nav Click] Add');
+          logClick('add-button')
+          console.log('[Nav Click] Add')
         }}
       >
         <Plus size={20} className="drop-shadow-sm sm:w-6 sm:h-6" />
       </Link>
 
       {/* 하단 네비게이션 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 px-2 py-2 shadow-lg z-40 pb-safe-bottom"
-           style={{ paddingBottom: `max(0.5rem, env(safe-area-inset-bottom, 0px))` }}>
+      <nav
+        className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 px-2 py-2 shadow-lg z-40 pb-safe-bottom"
+        style={{ paddingBottom: `max(0.5rem, env(safe-area-inset-bottom, 0px))` }}
+      >
         <div className="flex justify-around items-center">
           {navItems.map(({ href, icon: Icon, label }) => {
             const active = isActive(href)
             return (
-              <Link 
+              <Link
                 key={href}
-                href={href} 
+                href={href}
                 className={`flex flex-col items-center py-2 px-2 sm:px-3 transition-all duration-200 touch-target relative ${
-                  active 
-                    ? 'text-blue-600' 
-                    : 'text-gray-500 hover:text-blue-500'
+                  active ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'
                 }`}
                 onClick={() => {
-                  logClick(`nav-${label}`, { href, active });
-                  console.log('[Nav Click]', label, href);
+                  logClick(`nav-${label}`, { href, active })
+                  console.log('[Nav Click]', label, href)
                 }}
               >
-                <div className={`transition-all duration-200 ${active ? 'transform -translate-y-1' : ''}`}>
-                  <Icon 
-                    size={18} 
-                    className={`${active ? 'drop-shadow-sm' : ''} sm:w-5 sm:h-5`} 
+                <div
+                  className={`transition-all duration-200 ${active ? 'transform -translate-y-1' : ''}`}
+                >
+                  <Icon
+                    size={18}
+                    className={`${active ? 'drop-shadow-sm' : ''} sm:w-5 sm:h-5`}
                     strokeWidth={active ? 2.5 : 2}
                   />
                 </div>
-                <span className={`text-xs mt-1 font-medium ${active ? 'text-blue-600' : ''} leading-tight`}>
+                <span
+                  className={`text-xs mt-1 font-medium ${active ? 'text-blue-600' : ''} leading-tight`}
+                >
                   {label}
                 </span>
                 {active && (

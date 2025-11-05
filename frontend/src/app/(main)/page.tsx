@@ -1,19 +1,17 @@
 'use client'
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Camera, TrendingUp, MapPin, Users, Sparkles, ArrowRight, Zap, Star } from 'lucide-react'
-import { BottomNavigation } from "@/components/bottom-navigation";
-import { tokenManager, mealRecordsApi } from "@/lib/api";
-import type { MealRecord } from "@/types";
-import { MealCard } from "@/components/meal-card";
-import { useSocket } from "@/contexts/socket-context";
-import { AIMenuRecommendation } from "@/components/ai-menu-recommendation";
-import Link from "next/link";
-import { isWebView, setupWebViewDebug, logClick } from "@/lib/webview-utils";
-import { Header } from '@/components/header';
-import Spinner from "@/components/ui/spinner";
-
+import { tokenManager, mealRecordsApi } from '@/lib/api'
+import type { MealRecord } from '@/types'
+import { MealCard } from '@/components/meal-card'
+import { useSocket } from '@/contexts/socket-context'
+import { AIMenuRecommendation } from '@/components/ai-menu-recommendation'
+import Link from 'next/link'
+import { isWebView, setupWebViewDebug, logClick } from '@/lib/webview-utils'
+import { Header } from '@/components/header'
+import Spinner from '@/components/ui/spinner'
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -26,10 +24,10 @@ export default function Home() {
   // WebView 디버깅 설정
   useEffect(() => {
     if (isWebView()) {
-      console.log('[WebView] Detected! Setting up debug mode...');
-      setupWebViewDebug();
+      console.log('[WebView] Detected! Setting up debug mode...')
+      setupWebViewDebug()
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     const token = tokenManager.get()
@@ -49,7 +47,7 @@ export default function Home() {
     try {
       setMealsLoading(true)
       const result = await mealRecordsApi.getAll()
-      
+
       if (Array.isArray(result)) {
         setMeals(result) // 전체 데이터 가져오기
       } else if (result.data) {
@@ -78,7 +76,9 @@ export default function Home() {
             </div>
             <h1 className="text-4xl font-bold mb-4">DailyMeal</h1>
             <p className="text-xl text-blue-100">
-              매일의 맛있는 순간을<br />기록하고 공유하세요
+              매일의 맛있는 순간을
+              <br />
+              기록하고 공유하세요
             </p>
           </div>
 
@@ -121,13 +121,13 @@ export default function Home() {
           </div>
 
           <div className="space-y-3">
-            <Link 
+            <Link
               href="/signup"
               className="block w-full bg-white text-blue-600 text-center py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-colors"
             >
               시작하기
             </Link>
-            <Link 
+            <Link
               href="/login"
               className="block w-full bg-white/10 backdrop-blur-sm text-white text-center py-4 rounded-xl font-semibold text-lg hover:bg-white/20 transition-colors border border-white/30"
             >
@@ -144,12 +144,12 @@ export default function Home() {
       {/* 빠른 액션 카드들 */}
       <div className="px-6 py-4">
         <div className="grid grid-cols-2 gap-4">
-          <Link 
-            href="/statistics" 
+          <Link
+            href="/statistics"
             className="group"
             onClick={() => {
-              logClick('statistics-link');
-              console.log('[Link Click] Statistics');
+              logClick('statistics-link')
+              console.log('[Link Click] Statistics')
             }}
           >
             <div className="bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
@@ -163,12 +163,12 @@ export default function Home() {
             </div>
           </Link>
 
-          <Link 
-            href="/restaurant" 
+          <Link
+            href="/restaurant"
             className="group"
             onClick={() => {
-              logClick('restaurant-link');
-              console.log('[Link Click] Restaurant');
+              logClick('restaurant-link')
+              console.log('[Link Click] Restaurant')
             }}
           >
             <div className="bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
@@ -201,15 +201,15 @@ export default function Home() {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">시작해보세요!</h3>
             <p className="text-gray-600 mb-4">
-              첫 번째 식사를 기록하고<br />
+              첫 번째 식사를 기록하고
+              <br />
               맛있는 여정을 시작해보세요
             </p>
-            <Link 
-              href="/add" 
+            <Link
+              href="/add"
               className="inline-flex items-center bg-blue-500 text-white py-2.5 px-5 rounded-xl font-medium hover:bg-blue-600 transition-colors"
             >
-              <Camera size={18} className="mr-2" />
-              첫 기록 만들기
+              <Camera size={18} className="mr-2" />첫 기록 만들기
             </Link>
           </div>
         </div>
@@ -218,11 +218,11 @@ export default function Home() {
           {/* 미평가 식사 섹션 */}
           {(() => {
             // rating이 없는 항목만 미평가로 간주
-            const unratedMeals = meals.filter(meal => !meal.rating);
-            const unratedMeal = unratedMeals[0];
-            
-            if (!unratedMeal) return null;
-            
+            const unratedMeals = meals.filter((meal) => !meal.rating)
+            const unratedMeal = unratedMeals[0]
+
+            if (!unratedMeal) return null
+
             return (
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
@@ -240,41 +240,39 @@ export default function Home() {
                     </Link>
                   </div>
                 </div>
-                
+
                 <div className="bg-white rounded-2xl shadow-sm border border-orange-200 overflow-hidden">
                   <MealCard {...unratedMeal} onEvaluated={fetchMeals} />
                 </div>
               </div>
-            );
+            )
           })()}
-          
+
           {/* 최근 평가 완료된 식사 섹션 */}
           {(() => {
             // rating이 있는 항목만 평가 완료로 간주
-            const ratedMeals = meals
-              .filter(meal => meal.rating)
-              .slice(0, 3);
-            
-            if (ratedMeals.length === 0) return null;
-            
+            const ratedMeals = meals.filter((meal) => meal.rating).slice(0, 3)
+
+            if (ratedMeals.length === 0) return null
+
             return (
               <>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-gray-900">최근 식사</h2>
-                  <Link 
-                    href="/feed?filter=rated" 
+                  <Link
+                    href="/feed?filter=rated"
                     className="flex items-center text-blue-500 text-sm font-medium hover:text-blue-600"
                   >
                     전체보기
                     <ArrowRight size={16} className="ml-1" />
                   </Link>
                 </div>
-                
+
                 {/* 식사 기록 리스트 (텍스트만) */}
                 <div className="space-y-2">
                   {ratedMeals.map((meal) => (
-                    <Link 
-                      key={meal.id} 
+                    <Link
+                      key={meal.id}
                       href={`/feed`}
                       className="block bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all"
                     >
@@ -282,22 +280,20 @@ export default function Home() {
                         <div className="flex-1 min-w-0">
                           {/* 동행자 (맨 위) */}
                           <div className="flex items-center text-xs text-gray-700 mb-2 pb-2 border-b border-gray-100">
-                            <span className="mr-1.5">
-                              {meal.companionNames ? '👥' : '🙋'}
-                            </span>
+                            <span className="mr-1.5">{meal.companionNames ? '👥' : '🙋'}</span>
                             <span className="truncate">{meal.companionNames || '혼밥'}</span>
                           </div>
 
                           {/* 식사 이름 */}
                           <h3 className="font-bold text-gray-900 mb-1 truncate">{meal.name}</h3>
-                          
+
                           {/* 가격 */}
                           {meal.price && (
                             <div className="text-base font-semibold text-blue-600 mb-2">
                               ₩{meal.price.toLocaleString()}
                             </div>
                           )}
-                          
+
                           {/* 식당 이름 & 날짜 */}
                           <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
                             {meal.location && (
@@ -314,11 +310,11 @@ export default function Home() {
                                 month: 'short',
                                 day: 'numeric',
                                 hour: '2-digit',
-                                minute: '2-digit'
+                                minute: '2-digit',
                               })}
                             </span>
                           </div>
-                          
+
                           {/* 별점 */}
                           {meal.rating && (
                             <div className="flex items-center gap-1">
@@ -328,8 +324,8 @@ export default function Home() {
                                   size={16}
                                   className={`${
                                     i < meal.rating!
-                                      ? "text-yellow-500 fill-current"
-                                      : "text-gray-300"
+                                      ? 'text-yellow-500 fill-current'
+                                      : 'text-gray-300'
                                   }`}
                                 />
                               ))}
@@ -339,14 +335,14 @@ export default function Home() {
                             </div>
                           )}
                         </div>
-                        
+
                         <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mt-1" />
                       </div>
                     </Link>
                   ))}
                 </div>
               </>
-            );
+            )
           })()}
         </div>
       )}
@@ -358,5 +354,5 @@ export default function Home() {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,15 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowLeft, TrendingUp, Star, MapPin, Calendar } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { BottomNavigation } from '@/components/bottom-navigation'
+import { TrendingUp, Star, MapPin, Calendar } from 'lucide-react'
 import { profileApi, UserStatistics } from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
 import Spinner from '@/components/ui/spinner'
 
 export default function StatisticsPage() {
-  const router = useRouter()
   const toast = useToast()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<UserStatistics | null>(null)
@@ -20,11 +17,11 @@ export default function StatisticsPage() {
         const data = await profileApi.getStatistics()
         setStats(data)
       } catch (error) {
-        console.error('통계 로딩 실패:', error);
+        console.error('통계 로딩 실패:', error)
         // 에러를 다시 던져서 Error Boundary가 처리하도록 함
-        throw error;
+        throw error
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
 
@@ -37,7 +34,7 @@ export default function StatisticsPage() {
 
   if (!stats) {
     return (
-      <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">통계를 불러올 수 없습니다</p>
         </div>
@@ -46,14 +43,14 @@ export default function StatisticsPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
+    <div className="pb-20">
       <div className="p-4 space-y-4">
         <section className="bg-white rounded-lg border p-4">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp size={20} className="text-blue-500" />
             <h2 className="font-semibold text-gray-900">전체 통계</h2>
           </div>
-          
+
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-900">{stats.totalReviews}</div>
@@ -76,18 +73,19 @@ export default function StatisticsPage() {
               <Calendar size={20} className="text-purple-500" />
               <h2 className="font-semibold text-gray-900">월별 활동</h2>
             </div>
-            
+
             <div className="space-y-3">
               {stats.monthlyStats.map((stat, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                <div
+                  key={index}
+                  className="flex items-center justify-between py-2 border-b last:border-b-0"
+                >
                   <span className="text-sm text-gray-600">{stat.month}</span>
                   <div className="flex gap-4 text-sm">
                     <span className="text-gray-900">
                       <strong>{stat.reviewCount}</strong>개
                     </span>
-                    <span className="text-blue-500">
-                      ⭐ {stat.averageRating}
-                    </span>
+                    <span className="text-blue-500">⭐ {stat.averageRating}</span>
                   </div>
                 </div>
               ))}
@@ -101,7 +99,7 @@ export default function StatisticsPage() {
               <MapPin size={20} className="text-green-500" />
               <h2 className="font-semibold text-gray-900">자주 간 맛집 TOP 5</h2>
             </div>
-            
+
             <div className="space-y-3">
               {stats.topRatedRestaurants.map((restaurant, index) => (
                 <div key={index} className="flex items-center justify-between">

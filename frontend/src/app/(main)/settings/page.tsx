@@ -1,24 +1,14 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import {
-  ArrowLeft,
-  Bell,
-  Lock,
-  MapPin,
-  Home,
-  Briefcase,
-  Save,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/toast";
-import { profileApi } from "@/lib/api";
-import { APP_CONFIG } from "@/lib/constants";
+import { useState, useEffect } from 'react'
+import { Bell, Lock, MapPin, Home, Briefcase, Save } from 'lucide-react'
+import { useToast } from '@/components/ui/toast'
+import { profileApi } from '@/lib/api'
+import { APP_CONFIG } from '@/lib/constants'
 
 export default function SettingsPage() {
-  const router = useRouter();
-  const toast = useToast();
-  const [loading, setLoading] = useState(true);
+  const toast = useToast()
+  const [loading, setLoading] = useState(true)
 
   const [settings, setSettings] = useState({
     // 알림 설정
@@ -35,61 +25,61 @@ export default function SettingsPage() {
     },
     // 장소 설정
     locations: {
-      home: "",
-      office: "",
+      home: '',
+      office: '',
       homeCoords: { lat: 0, lng: 0 },
       officeCoords: { lat: 0, lng: 0 },
     },
-  });
+  })
 
   // 설정 데이터 가져오기
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const data = await profileApi.getSettings();
-        setSettings(data);
+        const data = await profileApi.getSettings()
+        setSettings(data)
       } catch (error) {
-        console.error("설정 로딩 실패:", error);
-        toast.error("설정을 불러올 수 없습니다", "오류");
+        console.error('설정 로딩 실패:', error)
+        toast.error('설정을 불러올 수 없습니다', '오류')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchSettings();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchSettings()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = async () => {
     try {
-      await profileApi.updateSettings(settings);
-      toast.success("설정이 저장되었습니다", "저장 완료");
+      await profileApi.updateSettings(settings)
+      toast.success('설정이 저장되었습니다', '저장 완료')
     } catch (error) {
-      console.error("설정 저장 실패:", error);
-      toast.error("설정 저장에 실패했습니다", "오류");
+      console.error('설정 저장 실패:', error)
+      toast.error('설정 저장에 실패했습니다', '오류')
     }
-  };
+  }
 
-  const handleLocationSet = async (type: "home" | "office") => {
+  const handleLocationSet = async (type: 'home' | 'office') => {
     if (!navigator.geolocation) {
-      toast.error("위치 서비스를 사용할 수 없습니다", "오류");
-      return;
+      toast.error('위치 서비스를 사용할 수 없습니다', '오류')
+      return
     }
 
-    toast.info("현재 위치를 가져오는 중...", "위치 확인");
+    toast.info('현재 위치를 가져오는 중...', '위치 확인')
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords;
+        const { latitude, longitude } = position.coords
 
         try {
           // 역지오코딩 - API_BASE_URL 사용
           const response = await fetch(
             `${APP_CONFIG.API_BASE_URL}/geocode/reverse?lat=${latitude}&lon=${longitude}`
-          );
-          const data = await response.json();
+          )
+          const data = await response.json()
 
           if (data.success && data.address) {
-            const shortAddress = data.address.split(",").slice(0, 3).join(", ");
+            const shortAddress = data.address.split(',').slice(0, 3).join(', ')
             setSettings((prev) => ({
               ...prev,
               locations: {
@@ -97,35 +87,24 @@ export default function SettingsPage() {
                 [type]: shortAddress,
                 [`${type}Coords`]: { lat: latitude, lng: longitude },
               },
-            }));
-            toast.success(
-              `${type === "home" ? "집" : "회사"} 위치가 설정되었습니다`,
-              "위치 저장"
-            );
+            }))
+            toast.success(`${type === 'home' ? '집' : '회사'} 위치가 설정되었습니다`, '위치 저장')
           }
         } catch (error) {
-          console.error("역지오코딩 실패:", error);
-          toast.error("주소를 가져오는데 실패했습니다", "오류");
+          console.error('역지오코딩 실패:', error)
+          toast.error('주소를 가져오는데 실패했습니다', '오류')
         }
       },
       (error) => {
-        console.error("위치 가져오기 실패:", error);
-        toast.error("위치 정보를 가져올 수 없습니다", "오류");
+        console.error('위치 가져오기 실패:', error)
+        toast.error('위치 정보를 가져올 수 없습니다', '오류')
       }
-    );
-  };
+    )
+  }
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-6">
-      {/* Header */}
-      <header className="bg-white border-b px-4 py-3 sticky top-0 z-10 flex items-center gap-3 pt-safe">
-        <button onClick={() => router.back()} className="mt-2">
-          <ArrowLeft size={24} className="text-gray-600" />
-        </button>
-        <h1 className="text-xl font-bold text-gray-900 mt-2">설정</h1>
-      </header>
-
-      <div className="p-4 space-y-4">
+    <div className="pb-20">
+      <div className="p-4 space-y-4 pt-safe">
         {/* 알림 설정 */}
         <section className="bg-white rounded-lg border p-4">
           <div className="flex items-center gap-2 mb-4">
@@ -201,9 +180,7 @@ export default function SettingsPage() {
             <label className="flex items-center justify-between">
               <div>
                 <div className="text-gray-700">프로필 공개</div>
-                <div className="text-xs text-gray-500">
-                  모든 사용자에게 공개
-                </div>
+                <div className="text-xs text-gray-500">모든 사용자에게 공개</div>
               </div>
               <input
                 type="checkbox"
@@ -245,9 +222,7 @@ export default function SettingsPage() {
             <label className="flex items-center justify-between">
               <div>
                 <div className="text-gray-700">식사 상세 공유</div>
-                <div className="text-xs text-gray-500">
-                  친구에게 사진/메모 공개
-                </div>
+                <div className="text-xs text-gray-500">친구에게 사진/메모 공개</div>
               </div>
               <input
                 type="checkbox"
@@ -296,7 +271,7 @@ export default function SettingsPage() {
                   className="flex-1 px-3 py-2 border rounded-lg text-sm"
                 />
                 <button
-                  onClick={() => handleLocationSet("home")}
+                  onClick={() => handleLocationSet('home')}
                   className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"
                 >
                   현재 위치
@@ -323,7 +298,7 @@ export default function SettingsPage() {
                   className="flex-1 px-3 py-2 border rounded-lg text-sm"
                 />
                 <button
-                  onClick={() => handleLocationSet("office")}
+                  onClick={() => handleLocationSet('office')}
                   className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"
                 >
                   현재 위치
@@ -343,5 +318,5 @@ export default function SettingsPage() {
         </button>
       </div>
     </div>
-  );
+  )
 }
