@@ -11,10 +11,10 @@ async function bootstrap() {
 
   // ConfigService 가져오기
   const configService = app.get(ConfigService)
-  
+
   // 필수 환경 변수 검증
   configService.validateRequiredConfig()
-  
+
   // Secrets Manager에서 설정 로드 (필요시 자동)
   await configService.initializeSecretsManager()
 
@@ -24,7 +24,7 @@ async function bootstrap() {
     origin: corsOrigins,
     credentials: true,
   })
-  
+
   logger.log(`🔒 CORS enabled for: ${corsOrigins.join(', ')}`)
 
   // 글로벌 API 접두사 설정
@@ -36,7 +36,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   )
 
   // Swagger 설정 (환경 변수로 제어)

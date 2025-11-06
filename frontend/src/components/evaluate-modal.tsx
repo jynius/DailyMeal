@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Star, MapPin, Home, Bike, UtensilsCrossed, Users, Plus } from 'lucide-react'
+import { X, Star, MapPin, Home, Bike, UtensilsCrossed, Users, Plus, Navigation } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAlert } from '@/components/ui/alert'
 import { useToast } from '@/components/ui/toast'
 import { mealRecordsApi, friendsApi, locationsApi } from '@/lib/api'
 import { formatPrice, parsePrice } from '@/lib/utils/format'
+import { kakaoLocal, type RestaurantPlace } from '@/lib/kakao-local'
 import type { MealRecord, Friend } from '@/types'
 
 interface EvaluateModalProps {
@@ -18,7 +19,14 @@ interface EvaluateModalProps {
   onSuccess?: () => void
 }
 
-export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal, onSuccess }: EvaluateModalProps) {
+export function EvaluateModal({
+  isOpen,
+  onClose,
+  mealId,
+  mealName,
+  existingMeal,
+  onSuccess,
+}: EvaluateModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     rating: 0,
@@ -32,16 +40,33 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [friends, setFriends] = useState<Friend[]>([])
   const [locations, setLocations] = useState<Array<{ location: string; count: number }>>([])
+  const [nearbyPlaces, setNearbyPlaces] = useState<RestaurantPlace[]>([])
+  const [isLoadingPlaces, setIsLoadingPlaces] = useState(false)
   const [showLocationDropdown, setShowLocationDropdown] = useState(false)
   const [showFriendDropdown, setShowFriendDropdown] = useState(false)
   const [companionInput, setCompanionInput] = useState('')
   const [filteredFriends, setFilteredFriends] = useState<Friend[]>([])
+  const [userLat, setUserLat] = useState<number | null>(null)
+  const [userLng, setUserLng] = useState<number | null>(null)
   const { showAlert } = useAlert()
   const { success: showSuccess } = useToast()
 
   // Modal이 열릴 때마다 초기화 또는 기존 데이터 로드
   useEffect(() => {
     if (isOpen) {
+      // 사용자 위치 가져오기 (클라이언트에서만)
+      if (typeof window !== 'undefined' && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setUserLat(position.coords.latitude)
+            setUserLng(position.coords.longitude)
+          },
+          (error) => {
+            console.warn('위치 정보를 가져올 수 없습니다:', error)
+          }
+        )
+      }
+
       if (existingMeal) {
         // 수정 모드: 기존 데이터 불러오기
         setFormData({
@@ -70,6 +95,11 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
       // 친구 목록과 자주 가는 장소 불러오기
       loadFriends()
       loadLocations()
+
+      // 식당 카테고리인 경우 근처 식당도 불러오기
+      if (!existingMeal || existingMeal.category === 'restaurant') {
+        loadNearbyPlaces()
+      }
     }
   }, [isOpen, existingMeal, mealName])
 
@@ -77,11 +107,11 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
     try {
       const data = await friendsApi.getFriends()
       // friendsApi.User 타입을 Friend 타입으로 변환
-      const friendData: Friend[] = data.map(user => ({
+      const friendData: Friend[] = data.map((user) => ({
         id: user.id,
         email: user.email,
         name: user.username, // username을 name으로 매핑
-        profileImage: user.avatar || undefined // avatar를 profileImage로 매핑
+        profileImage: user.avatar || undefined, // avatar를 profileImage로 매핑
       }))
       setFriends(friendData)
     } catch (error) {
@@ -95,6 +125,25 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
       setLocations(data)
     } catch (error) {
       console.error('장소 목록 불러오기 실패:', error)
+    }
+  }
+
+  const loadNearbyPlaces = async () => {
+    if (!userLat || !userLng) {
+      console.log('사용자 위치 정보 없음')
+      return
+    }
+
+    setIsLoadingPlaces(true)
+    try {
+      // 현재 위치 기준 1km 반경 내 음식점 검색
+      const places = await kakaoLocal.searchByCategory(userLat, userLng, 1000, 'FD6')
+      setNearbyPlaces(places.slice(0, 10)) // 최대 10개만 표시
+      console.log(`✅ 근처 식당 ${places.length}개 로드 완료`)
+    } catch (error) {
+      console.error('근처 식당 불러오기 실패:', error)
+    } finally {
+      setIsLoadingPlaces(false)
     }
   }
 
@@ -124,38 +173,38 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
   if (!isOpen) return null
 
   const handleRatingClick = (value: number) => {
-    setFormData(prev => ({ ...prev, rating: value }))
+    setFormData((prev) => ({ ...prev, rating: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (formData.rating === 0) {
       showAlert({
         title: '평점 필수',
         message: '평점을 선택해주세요.',
-        type: 'warning'
+        type: 'warning',
       })
       return
     }
-    
+
     if (!formData.name.trim()) {
       showAlert({
         title: '이름 필수',
         message: '식사 이름을 입력해주세요.',
-        type: 'warning'
+        type: 'warning',
       })
       return
     }
-    
+
     setIsSubmitting(true)
-    
+
     const updateData: any = {
       name: formData.name.trim(),
       rating: formData.rating,
-      category: formData.category
+      category: formData.category,
     }
-      
+
     try {
       if (formData.location.trim()) {
         updateData.location = formData.location.trim()
@@ -177,26 +226,26 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
       }
 
       await mealRecordsApi.update(mealId, updateData)
-      
+
       console.log('✅ 평가 저장 완료')
       showSuccess('평가가 저장되었습니다! ⭐', '완료')
-      
+
       // 성공 콜백 실행 (데이터 새로고침)
       if (onSuccess) {
         onSuccess()
       }
-      
+
       // Modal 닫기
       onClose()
     } catch (error: unknown) {
       const err = error as Error
       console.error('❌ 평가 저장 실패:', err)
       console.error('📦 전송 데이터:', updateData)
-      
+
       showAlert({
         title: '저장 실패',
         message: err.message || '평가 저장에 실패했습니다.',
-        type: 'error'
+        type: 'error',
       })
     } finally {
       setIsSubmitting(false)
@@ -207,30 +256,31 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
     // 숫자와 쉼표만 허용
     const cleaned = value.replace(/[^\d]/g, '')
     if (cleaned === '') {
-      setFormData(prev => ({ ...prev, price: '' }))
+      setFormData((prev) => ({ ...prev, price: '' }))
       return
     }
     const formatted = formatPrice(cleaned)
-    setFormData(prev => ({ ...prev, price: formatted }))
+    setFormData((prev) => ({ ...prev, price: formatted }))
   }
 
   const toggleFriend = (friendId: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       companionIds: prev.companionIds.includes(friendId)
-        ? prev.companionIds.filter(id => id !== friendId)
-        : [...prev.companionIds, friendId]
+        ? prev.companionIds.filter((id) => id !== friendId)
+        : [...prev.companionIds, friendId],
     }))
   }
 
   const handleCompanionInputChange = (value: string) => {
     setCompanionInput(value)
-    
+
     // 친구 목록에서 필터링
     if (value.trim()) {
-      const filtered = friends.filter(f => 
-        f.name.toLowerCase().includes(value.toLowerCase()) &&
-        !formData.companionIds.includes(f.id)
+      const filtered = friends.filter(
+        (f) =>
+          f.name.toLowerCase().includes(value.toLowerCase()) &&
+          !formData.companionIds.includes(f.id)
       )
       setFilteredFriends(filtered)
       setShowFriendDropdown(filtered.length > 0)
@@ -253,26 +303,21 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
       if (companionInput.trim() && filteredFriends.length === 0) {
         const currentNames = formData.companionNames.trim()
         const newName = companionInput.trim()
-        const updatedNames = currentNames 
-          ? `${currentNames}, ${newName}`
-          : newName
-        setFormData(prev => ({ ...prev, companionNames: updatedNames }))
+        const updatedNames = currentNames ? `${currentNames}, ${newName}` : newName
+        setFormData((prev) => ({ ...prev, companionNames: updatedNames }))
         setCompanionInput('')
       }
       setShowFriendDropdown(false)
     }, 200)
   }
 
-  const selectedFriends = friends.filter(f => formData.companionIds.includes(f.id))
+  const selectedFriends = friends.filter((f) => formData.companionIds.includes(f.id))
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+
       {/* Modal */}
       <div className="relative bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
         {/* Header */}
@@ -300,7 +345,7 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
               id="name"
               name="name"
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="예: 마르게리따 피자"
               required
@@ -323,31 +368,25 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
                   <Star
                     size={40}
                     className={`${
-                      value <= formData.rating
-                        ? 'text-yellow-400 fill-current'
-                        : 'text-gray-300'
+                      value <= formData.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
                     }`}
                   />
                 </button>
               ))}
             </div>
             {formData.rating > 0 && (
-              <p className="text-center text-sm text-gray-600">
-                {formData.rating}점 선택됨
-              </p>
+              <p className="text-center text-sm text-gray-600">{formData.rating}점 선택됨</p>
             )}
           </div>
 
           {/* 카테고리 */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              식사 유형
-            </label>
+            <label className="block text-sm font-medium text-gray-700">식사 유형</label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => {
-                  setFormData(prev => ({ ...prev, category: 'home', location: '집' }))
+                  setFormData((prev) => ({ ...prev, category: 'home', location: '집' }))
                 }}
                 className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
                   formData.category === 'home'
@@ -361,7 +400,7 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
               <button
                 type="button"
                 onClick={() => {
-                  setFormData(prev => ({ ...prev, category: 'delivery', location: '집' }))
+                  setFormData((prev) => ({ ...prev, category: 'delivery', location: '집' }))
                 }}
                 className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
                   formData.category === 'delivery'
@@ -374,7 +413,11 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
               </button>
               <button
                 type="button"
-                onClick={() => setFormData(prev => ({ ...prev, category: 'restaurant' }))}
+                onClick={() => {
+                  setFormData((prev) => ({ ...prev, category: 'restaurant' }))
+                  // 식당으로 변경 시 근처 식당 로드
+                  loadNearbyPlaces()
+                }}
                 className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
                   formData.category === 'restaurant'
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
@@ -393,32 +436,35 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
               장소
             </label>
             <div className="relative">
-              <MapPin size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+              <MapPin
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10"
+              />
               <input
                 type="text"
                 id="location"
                 name="location"
                 autoComplete="off"
                 value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))}
                 onFocus={() => setShowLocationDropdown(true)}
                 onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder={
-                  formData.category === 'restaurant' 
-                    ? "식당 이름 또는 위치" 
-                    : "집, 회사, 또는 직접 입력"
+                  formData.category === 'restaurant'
+                    ? '식당 이름 또는 위치'
+                    : '집, 회사, 또는 직접 입력'
                 }
               />
               {showLocationDropdown && (
-                <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                  {(formData.category === 'home' || formData.category === 'delivery') ? (
+                <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                  {formData.category === 'home' || formData.category === 'delivery' ? (
                     // 집밥/배달: 집, 회사 옵션
                     <>
                       <button
                         type="button"
                         onClick={() => {
-                          setFormData(prev => ({ ...prev, location: '집' }))
+                          setFormData((prev) => ({ ...prev, location: '집' }))
                           setShowLocationDropdown(false)
                         }}
                         className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
@@ -429,7 +475,7 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
                       <button
                         type="button"
                         onClick={() => {
-                          setFormData(prev => ({ ...prev, location: '회사' }))
+                          setFormData((prev) => ({ ...prev, location: '회사' }))
                           setShowLocationDropdown(false)
                         }}
                         className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
@@ -439,16 +485,64 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
                       </button>
                     </>
                   ) : (
-                    // 식당: 자주 가는 장소 목록
+                    // 식당: 근처 식당 + 자주 가는 장소 목록
                     <>
-                      {locations.length > 0 ? (
+                      {/* 근처 식당 섹션 */}
+                      {nearbyPlaces.length > 0 && (
                         <>
+                          <div className="px-3 py-2 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
+                            <Navigation size={14} className="text-blue-600" />
+                            <span className="text-xs font-semibold text-blue-700">근처 식당</span>
+                            {isLoadingPlaces && (
+                              <span className="text-xs text-blue-500">로딩 중...</span>
+                            )}
+                          </div>
+                          {nearbyPlaces.map((place) => (
+                            <button
+                              key={place.id}
+                              type="button"
+                              onClick={() => {
+                                setFormData((prev) => ({ ...prev, location: place.place_name }))
+                                setShowLocationDropdown(false)
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-100"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-medium text-gray-900 truncate">
+                                    {place.place_name}
+                                  </div>
+                                  <div className="text-xs text-gray-500 truncate">
+                                    {place.road_address_name || place.address_name}
+                                  </div>
+                                  <div className="text-xs text-gray-400 mt-0.5">
+                                    {place.category_name.split(' > ').slice(-2).join(' > ')}
+                                  </div>
+                                </div>
+                                <span className="text-xs text-blue-600 font-medium whitespace-nowrap">
+                                  {kakaoLocal.formatDistance(place.distance)}
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                        </>
+                      )}
+
+                      {/* 자주 가는 장소 섹션 */}
+                      {locations.length > 0 && (
+                        <>
+                          <div className="px-3 py-2 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+                            <MapPin size={14} className="text-gray-600" />
+                            <span className="text-xs font-semibold text-gray-700">
+                              자주 가는 곳
+                            </span>
+                          </div>
                           {locations.map((loc, idx) => (
                             <button
                               key={idx}
                               type="button"
                               onClick={() => {
-                                setFormData(prev => ({ ...prev, location: loc.location }))
+                                setFormData((prev) => ({ ...prev, location: loc.location }))
                                 setShowLocationDropdown(false)
                               }}
                               className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center justify-between"
@@ -457,11 +551,21 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
                               <span className="text-xs text-gray-500">{loc.count}회</span>
                             </button>
                           ))}
-                          <div className="border-t border-gray-200 px-3 py-2 text-xs text-gray-500 bg-gray-50">
-                            💡 또는 위 입력창에 직접 새 식당 이름을 입력하세요
-                          </div>
                         </>
-                      ) : (
+                      )}
+
+                      {/* 안내 메시지 */}
+                      <div className="border-t border-gray-200 px-3 py-2 text-xs text-gray-500 bg-gray-50">
+                        💡 또는 위 입력창에 직접 새 식당 이름을 입력하세요
+                      </div>
+
+                      {/* 로딩 중이거나 결과가 없을 때 */}
+                      {isLoadingPlaces && nearbyPlaces.length === 0 && (
+                        <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                          근처 식당을 찾는 중...
+                        </div>
+                      )}
+                      {!isLoadingPlaces && nearbyPlaces.length === 0 && locations.length === 0 && (
                         <div className="px-3 py-2 text-sm text-gray-500">
                           💡 위 입력창에 직접 식당 이름을 입력하세요
                         </div>
@@ -472,8 +576,9 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
               )}
             </div>
             <p className="text-xs text-gray-500">
-              💡 {formData.category === 'restaurant' 
-                ? '자주 가는 장소를 선택하거나 새 식당 이름을 직접 입력하세요' 
+              💡{' '}
+              {formData.category === 'restaurant'
+                ? '근처 식당 또는 자주 가는 장소를 선택하거나 새 식당 이름을 직접 입력하세요'
                 : '집이나 회사를 선택하거나 직접 입력하세요'}
             </p>
           </div>
@@ -494,20 +599,20 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
                 className="w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="15,000"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">원</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                원
+              </span>
             </div>
           </div>
 
           {/* 같이 먹은 사람 */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              같이 먹은 사람
-            </label>
-            
+            <label className="block text-sm font-medium text-gray-700">같이 먹은 사람</label>
+
             {/* 선택된 친구들 */}
             {selectedFriends.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
-                {selectedFriends.map(friend => (
+                {selectedFriends.map((friend) => (
                   <span
                     key={friend.id}
                     className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
@@ -537,11 +642,12 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
                     <button
                       type="button"
                       onClick={() => {
-                        const names = formData.companionNames.split(',')
+                        const names = formData.companionNames
+                          .split(',')
                           .filter((_, i) => i !== idx)
-                          .map(n => n.trim())
+                          .map((n) => n.trim())
                           .join(', ')
-                        setFormData(prev => ({ ...prev, companionNames: names }))
+                        setFormData((prev) => ({ ...prev, companionNames: names }))
                       }}
                       className="hover:bg-gray-200 rounded-full p-0.5"
                     >
@@ -572,7 +678,7 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
               />
               {showFriendDropdown && filteredFriends.length > 0 && (
                 <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                  {filteredFriends.map(friend => (
+                  {filteredFriends.map((friend) => (
                     <button
                       key={friend.id}
                       type="button"
@@ -605,7 +711,7 @@ export function EvaluateModal({ isOpen, onClose, mealId, mealName, existingMeal,
               name="memo"
               autoComplete="off"
               value={formData.memo}
-              onChange={(e) => setFormData(prev => ({ ...prev, memo: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, memo: e.target.value }))}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               placeholder="어땠나요? 맛, 분위기, 서비스 등을 자유롭게 기록해보세요!"
