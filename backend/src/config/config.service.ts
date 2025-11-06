@@ -112,8 +112,8 @@ export class ConfigService {
 
   /**
    * 이미지 URL 변환 (환경에 따라 절대/상대 경로)
-   * - 개발: 절대 URL (http://localhost:8000/uploads/...)
-   * - 프로덕션: 상대 경로 (/api/uploads/...) - Nginx가 프록시
+   * - 개발: API_BASE_URL=http://localhost:8000 → http://localhost:8000/uploads/...
+   * - 프로덕션: API_BASE_URL=(빈값) → /uploads/... (Nginx가 서빙)
    * 
    * @param photo 이미지 경로 (null 허용)
    * @returns 변환된 URL 또는 null
@@ -126,15 +126,9 @@ export class ConfigService {
       return photo;
     }
 
-    // API_BASE_URL이 설정된 경우: 절대 URL 반환
-    const baseUrl = this.get('API_BASE_URL');
-    if (baseUrl) {
-      return `${baseUrl}${photo}`;
-    }
-
-    // API_BASE_URL이 없는 경우: 상대 경로 반환
-    // /uploads/... -> /api/uploads/...
-    return photo.startsWith('/uploads') ? `/api${photo}` : photo;
+    // API_BASE_URL이 있으면 붙이고, 없으면 그대로 반환
+    const baseUrl = this.get('API_BASE_URL') || '';
+    return `${baseUrl}${photo}`;
   }
 
   /**
