@@ -1,108 +1,176 @@
-<!-- Use this file to provide works- [x] Create and Run Task ✅ Both servers running with npm scripts
+# DailyMeal - AI Coding Assistant Instructions
 
-- [x] Launch the Project ✅ Frontend (3000) + Backend (8000) + API connectedcific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
-- [x] Verify that the copilot-instructions.md file in the .github directory is created. ✅ Created
+DailyMeal은 식사 기록, 맛집 공유, 실시간 소셜 기능을 제공하는 풀스택 플랫폼입니다.
 
-- [x] Clarify Project Requirements ✅ DailyMeal MVP: Next.js + NestJS fullstack food logging app
-	<!-- Ask for project type, language, and frameworks if not specified. Skip if already provided. -->
+## 🏗️ Architecture Overview
 
-- [x] Scaffold the Project ✅ Created Next.js frontend + NestJS backend structure
-	<!--
-	Ensure that the previous step has been marked as completed.
-	Call project setup tool with projectType parameter.
-	Run scaffolding command to create project files and folders.
-	Use '.' as the working directory.
-	If no appropriate projectType is available, search documentation using available tools.
-	Otherwise, create the project structure manually using available file creation tools.
-	-->
+**3-Tier Fullstack**: Frontend (Next.js) + Backend (NestJS) + Mobile (Expo React Native)
 
-- [x] Customize the Project ✅ Created DailyMeal UI components and basic pages
-	<!--
-	Verify that all previous steps have been completed successfully and you have marked the step as completed.
-	Develop a plan to modify codebase according to user requirements.
-	Apply modifications using appropriate tools and user-provided references.
-	Skip this step for "Hello World" projects.
-	-->
+- **Frontend**: Next.js 15 App Router, TypeScript, TanStack Query, Socket.IO Client
+- **Backend**: NestJS 11, PostgreSQL 16 + TypeORM, JWT auth, Socket.IO server
+- **Mobile**: Expo SDK 54, WebView 중심 (웹 콘텐츠 래핑 + 네이티브 기능)
+- **Process Manager**: PM2 (개발/운영 모두)
+- **Infra**: Nginx/Caddy reverse proxy, Let's Encrypt SSL
 
-- [x] Install Required Extensions ✅ No additional extensions needed
-	<!-- ONLY install extensions provided mentioned in the get_project_setup_info. Skip this step otherwise and mark as completed. -->
+### Core Data Flow
 
-- [x] Compile the Project ✅ Frontend & Backend both running successfully
-	<!--
-	Verify that all previous steps have been completed.
-	Install any missing dependencies.
-	Run diagnostics and resolve any issues.
-	Check for markdown files in project folder for relevant instructions on how to do this.
-	-->
+```
+User → Frontend (3000) → Backend API (8000/api) → PostgreSQL
+              ↕                    ↕
+         Socket.IO Client ←→ Socket.IO Server (realtime module)
+```
 
-- [x] Create and Run Task ✅ Both servers running with npm scripts
-	<!--
-	Verify that all previous steps have been completed.
-	Check https://code.visualstudio.com/docs/debugtest/tasks to determine if the project needs a task. If so, use the create_and_run_task to create and launch a task based on package.json, README.md, and project structure.
-	Skip this step otherwise.
-	 -->
+## 🚀 Development Workflow
 
-- [x] Launch the Project ✅ Frontend (3000) + Backend (8000) + API connected
-	<!--
-	Verify that all previous steps have been completed.
-	Prompt user for debug mode, launch only if confirmed.
-	 -->
+### Quick Start
 
-- [x] Ensure Documentation is Complete ✅ README.md updated with complete project info
-	<!--
-	Verify that all previous steps have been completed.
-	Verify that README.md and the copilot-instructions.md file in the .github directory exists and contains current project information.
-	Clean up the copilot-instructions.md file in the .github directory by removing all HTML comments.
-	 -->
+```bash
+npm run dev              # 동시 실행: frontend + backend (concurrently)
+npm run dev:pm2          # PM2로 실행 (권장, 로그 관리 용이)
+./bin/start-pm2.sh       # PM2 스크립트 직접 실행
+```
 
-<!--
-## Execution Guidelines
-PROGRESS TRACKING:
-- If any tools are available to manage the above todo list, use it to track progress through this checklist.
-- After completing each step, mark it complete and add a summary.
-- Read current todo list status before starting each new step.
+**포트**: Frontend `3000`, Backend `8000`, Swagger `8000/api-docs`
 
-COMMUNICATION RULES:
-- Avoid verbose explanations or printing full command outputs.
-- If a step is skipped, state that briefly (e.g. "No extensions needed").
-- Do not explain project structure unless asked.
-- Keep explanations concise and focused.
+### PM2 Commands (개발 환경)
 
-DEVELOPMENT RULES:
-- Use '.' as the working directory unless user specifies otherwise.
-- Avoid adding media or external links unless explicitly requested.
-- Use placeholders only with a note that they should be replaced.
-- Use VS Code API tool only for VS Code extension projects.
-- Once the project is created, it is already opened in Visual Studio Code—do not suggest commands to open this project in Visual Studio again.
-- If the project setup information has additional rules, follow them strictly.
+```bash
+pm2 logs                           # 실시간 로그
+pm2 logs dailymeal-backend         # 백엔드 로그만
+pm2 restart all                    # 재시작
+pm2 stop all && pm2 delete all     # 완전 종료
+```
 
-FOLDER CREATION RULES:
-- Always use the current directory as the project root.
-- If you are running any terminal commands, use the '.' argument to ensure that the current working directory is used ALWAYS.
-- Do not create a new folder unless the user explicitly requests it besides a .vscode folder for a tasks.json file.
-- If any of the scaffolding commands mention that the folder name is not correct, let the user know to create a new folder with the correct name and then reopen it again in vscode.
+**주의**: `npm run start`는 빌드 없이 실행 시도 → 에러. 프로덕션 배포 시 반드시 `npm run build` 선행 필요.
 
-EXTENSION INSTALLATION RULES:
-- Only install extension specified by the get_project_setup_info tool. DO NOT INSTALL any other extensions.
+## 📂 Key Directories
 
-PROJECT CONTENT RULES:
-- If the user has not specified project details, assume they want a "Hello World" project as a starting point.
-- Avoid adding links of any type (URLs, files, folders, etc.) or integrations that are not explicitly required.
-- Avoid generating images, videos, or any other media files unless explicitly requested.
-- If you need to use any media assets as placeholders, let the user know that these are placeholders and should be replaced with the actual assets later.
-- Ensure all generated components serve a clear purpose within the user's requested workflow.
-- If a feature is assumed but not confirmed, prompt the user for clarification before including it.
-- If you are working on a VS Code extension, use the VS Code API tool with a query to find relevant VS Code API references and samples related to that query.
+```
+frontend/src/
+├── app/              # Next.js App Router (라우트별 페이지)
+├── components/ui/    # Radix UI 기반 재사용 컴포넌트
+├── lib/api/          # API 클라이언트 (TanStack Query 래퍼)
+├── contexts/         # React Context (실시간 알림, 전역 상태)
+└── types/            # TypeScript 공통 타입
 
-TASK COMPLETION RULES:
-- Your task is complete when:
-  - Project is successfully scaffolded and compiled without errors
-  - copilot-instructions.md file in the .github directory exists in the project
-  - README.md file exists and is up to date
-  - User is provided with clear instructions to debug/launch the project
+backend/src/
+├── entities/         # TypeORM 엔티티 (User, MealRecord, Friendship 등)
+├── meal-records/     # 식사 기록 CRUD + 이미지 업로드 (Multer)
+├── realtime/         # Socket.IO Gateway (실시간 알림/피드)
+├── auth/             # JWT + Passport 인증
+└── config/           # ConfigService (환경변수 + AWS Secrets Manager)
 
-Before starting a new task in the above plan, update progress in the plan.
--->
+docs/                 # ⚠️ 프로젝트 모든 기술 문서 (배포, 기능, 픽스)
+```
+
+## 🔑 Critical Conventions
+
+### API Client Pattern (Frontend)
+
+**절대 직접 fetch 사용 금지**. 반드시 `frontend/src/lib/api/` 모듈 사용:
+
+```typescript
+// ✅ 올바른 방법
+import { getMeals } from '@/lib/api'
+const meals = await getMeals()
+
+// ❌ 금지
+fetch('/api/meals', { headers: {...} })
+```
+
+**이유**: `lib/api/client.ts`에서 토큰 관리, 에러 처리, 성능 모니터링 자동 처리.
+
+### Environment Variables
+
+**Frontend**: `NEXT_PUBLIC_*` 접두사 필수 (클라이언트 노출)
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000/api  # 개발
+NEXT_PUBLIC_API_URL=/api                       # 운영 (상대 경로)
+```
+
+**Backend**: `.env` 직접 사용, `ConfigService`로 접근
+
+```typescript
+// backend/src/config/config.service.ts
+this.configService.get('DB_HOST')  # ✅
+process.env.DB_HOST                # ❌ 금지 (검증 우회)
+```
+
+### Database Schema
+
+**핵심 엔티티**: `User` ↔ `MealRecord` (1:N), `Friendship` (자기참조 M:N), `MealShare` (공유 링크)
+
+**마이그레이션**: `synchronize: true` (개발), `false` (운영) - TypeORM 자동 스키마 동기화 사용 중.
+
+### Authentication Flow
+
+1. Login → Backend JWT 발급
+2. Frontend `tokenManager.set(token)` (localStorage)
+3. 이후 모든 API 요청에 `Authorization: Bearer ${token}` 자동 첨부 (`lib/api/client.ts`)
+4. Backend `@UseGuards(JwtAuthGuard)` 데코레이터로 보호
+
+### Socket.IO Integration
+
+**연결**: Frontend `contexts/SocketProvider.tsx` → Backend `realtime/realtime.gateway.ts`
+
+**이벤트**:
+
+- `userAuth` → 사용자 인증 (JWT 검증)
+- `joinRoom` / `leaveRoom` → 방 입장/퇴장
+- `newMeal` / `newComment` → 실시간 브로드캐스트
+
+**주의**: Socket 연결은 인증 완료 후 자동 시작 (SocketProvider 컴포넌트 확인).
+
+## 🐛 Common Pitfalls
+
+1. **"Could not find production build"**: `npm run build` 먼저 실행 필수 (Next.js)
+2. **CORS 에러**: `backend/.env`의 `CORS_ORIGINS` 확인 (개발: `http://localhost:3000`)
+3. **이미지 404**: 업로드 경로는 `backend/uploads/`, Nginx에서 `/uploads/` 정적 서빙 필요
+4. **Socket 끊김**: Backend 재시작 시 Frontend 소켓 재연결 로직 확인 (자동 재연결 구현됨)
+5. **TypeORM 동기화 충돌**: 여러 인스턴스 동시 실행 시 `synchronize: false` 권장
+
+## 📚 Key Documentation
+
+**필수 읽기 전**:
+
+- `docs/deployment/BUILD_DEPLOY_GUIDE.md` - Next.js 빌드/배포 라이프사이클
+- `docs/deployment/PM2_NAMING_STRATEGY.md` - PM2 프로세스 이름 규칙
+- `frontend/src/lib/api/README.md` - API 모듈 아키텍처
+- `docs/features/SCENARIOS.md` - 사용자 시나리오 (기능 이해)
+
+**디버깅**: `docs/fixes/` 디렉토리에 과거 이슈 해결 기록 다수 보관.
+
+## 🛠️ When Working On...
+
+### Adding API Endpoint
+
+1. Backend: `src/{module}/{module}.controller.ts`에 라우트 추가
+2. Frontend: `src/lib/api/{module}.ts`에 함수 추가 (apiRequest 래핑)
+3. TanStack Query 훅 생성 시 `useMutation` / `useQuery` 패턴 준수
+
+### UI Components
+
+Radix UI + Tailwind 조합 사용. `components/ui/` 기본 컴포넌트 재사용. 새 컴포넌트는 Radix Primitives 우선 고려.
+
+### Mobile App
+
+`app/` 디렉토리는 독립 앱이지만 WebView 중심. Native 기능 (카메라, 위치) 추가 시 Expo API 사용 후 postMessage로 웹과 통신.
+
+## 🚨 Production Deployment
+
+1. **빌드**: `npm run build:all` (frontend + backend 동시)
+2. **PM2 시작**: `pm2 start ecosystem.config.js` (운영용)
+3. **환경변수**: `.env.production` 파일 준비 (Secrets Manager 사용 권장)
+4. **Nginx 설정**: Frontend 정적 파일 + Backend API 프록시 + `/uploads/` 정적 서빙
+
+**포트**: Frontend `3000`, Backend `8000` (Nginx가 80/443으로 프록시)
+
+---
+
+**Last Updated**: 2025-11-06  
+**Project Version**: 1.0.0  
+**Node**: >=20.0.0, **npm**: >=10.0.0
 - Work through each checklist item systematically.
 - Keep communication concise and focused.
 - Follow development best practices.
