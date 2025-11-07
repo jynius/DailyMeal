@@ -72,32 +72,41 @@ export function ShareModal({ isOpen, onClose, shareData, imageUrl }: ShareModalP
     if (platform === 'kakao') {
       setLoading('kakao')
 
-      console.log('🔄 Attempting Kakao share...', {
+      log.info('🔄 Attempting Kakao share...', {
         kakaoReady,
         hasImage: !!shareData.imageUrl,
+        hasUrl: !!shareData.url,
         kakaoInitError,
       })
 
+      // URL이 없으면 에러
+      if (!shareData.url) {
+        log.error('❌ No URL provided for Kakao share')
+        toast.error('공유 링크가 생성되지 않았습니다.\n잠시 후 다시 시도해주세요.')
+        setLoading(null)
+        return
+      }
+
       // 이미지가 없으면 경고
       if (!shareData.imageUrl) {
-        console.warn('⚠️ No image URL provided for Kakao share')
+        log.warn('⚠️ No image URL provided for Kakao share')
         toast.warning('공유할 이미지가 없습니다.\n텍스트만 공유됩니다.')
       }
 
       // SDK 사용 가능하면 SDK로 공유
       if (kakaoReady) {
-        console.log('✅ Using Kakao SDK for sharing')
+        log.info('✅ Using Kakao SDK for sharing', { url: shareData.url })
         const success = await shareUtils.shareKakao(shareData)
         if (success) {
           toast.success('카카오톡으로 공유했습니다!')
           onClose()
         } else {
-          console.error('❌ Kakao SDK share failed')
+          log.error('❌ Kakao SDK share failed')
           toast.error('카카오톡 공유에 실패했습니다.\n다시 시도해주세요.')
         }
       } else {
         // SDK 없으면 에러 메시지와 함께 링크 복사 폴백
-        console.warn('⚠️ Kakao SDK not ready, falling back to clipboard', {
+        log.warn('⚠️ Kakao SDK not ready, falling back to clipboard', {
           error: kakaoInitError,
         })
 

@@ -88,11 +88,17 @@ function MealDetailContent({ id }: { id: string }) {
   const handleShare = async () => {
     try {
       setIsCreatingShare(true)
-      const result = await createShare(meal.id)
-      setShareUrl(result.url)
+      
+      // 이미 공유 URL이 있으면 재사용, 없으면 생성
+      let url = shareUrl
+      if (!url) {
+        const result = await createShare(meal.id)
+        url = result.url
+        setShareUrl(url)
+      }
       
       // 클립보드에 복사
-      await navigator.clipboard.writeText(result.url)
+      await navigator.clipboard.writeText(url)
       toast.success('공유 링크가 복사되었습니다!')
       
       setShowShareModal(true)
@@ -104,10 +110,12 @@ function MealDetailContent({ id }: { id: string }) {
     }
   }
 
+  // shareData는 항상 공유 URL이 생성된 후에만 사용되도록 보장
+  // ShareModal이 열릴 때는 반드시 handleShare()를 통해 shareUrl이 설정된 상태
   const shareData = {
     title: `${meal.name} - DailyMeal`,
     description: meal.memo || `${meal.name} 식사 기록`,
-    url: shareUrl || (typeof window !== 'undefined' ? `${window.location.origin}/meal/${meal.id}` : ''),
+    url: shareUrl || `${window.location.origin}/meal/${meal.id}`,
     imageUrl: getAbsoluteImageUrl(photos.length > 0 ? photos[0] : undefined)
   }
 

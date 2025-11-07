@@ -85,6 +85,7 @@ class KakaoShareService {
     try {
       log.info('Sharing to Kakao', {
         title: data.title,
+        url: data.url, // 🔍 전체 URL 로그
         hasImage: !!data.imageUrl,
         imageUrl: data.imageUrl?.substring(0, 50) + '...',
       })
@@ -113,7 +114,7 @@ class KakaoShareService {
         ],
       }
 
-      log.debug('Kakao share payload', sharePayload)
+      log.info('🔍 Kakao share payload:', sharePayload) // debug → info로 변경
 
       // Kakao.Share.sendDefault 또는 Kakao.Link.sendDefault 사용
       const result = await shareMethod.sendDefault(sharePayload)
