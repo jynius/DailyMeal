@@ -269,6 +269,102 @@ export default function App() {
   // Deep Link로 시작한 경우 해당 URL로, 아니면 기본 URL
   const WEB_URL = initialUrl ? parseWebUrl(initialUrl) : getBaseWebUrl()
 
+  // 메시지 핸들러 함수들
+  const handleIntentUrl = (url) => {
+    console.log('🔗 Intent URL from WebView:', url)
+    const packageMatch = url.match(/package=([^;]+)/)
+    if (packageMatch && packageMatch[1] === 'com.kakao.talk') {
+      const kakaoUrl = url.replace('intent://', 'kakaotalk://')
+      console.log('📱 Opening Kakao via intent:', kakaoUrl)
+
+      Linking.canOpenURL(kakaoUrl).then((supported) => {
+        if (supported) {
+          Linking.openURL(kakaoUrl)
+        } else {
+          Linking.openURL('market://details?id=com.kakao.talk').catch(() => {
+            Alert.alert('오류', '카카오톡을 설치해주세요.')
+          })
+        }
+      })
+    }
+  }
+
+  const handleKakaoUrl = (url) => {
+    console.log('📱 Kakao URL from WebView:', url)
+    Linking.openURL(url).catch((err) => {
+      console.error('❌ Failed to open Kakao app:', err)
+      Alert.alert('오류', '카카오톡 앱을 열 수 없습니다.')
+    })
+  }
+
+  const handleShareKakao = async (data) => {
+    console.log('📤 Kakao share request from WebView:', data)
+    try {
+      const Share = require('react-native').Share
+      const shareResult = await Share.share({
+        title: data.title,
+        message: `${data.title}\n${data.description}\n${data.url}`,
+        url: data.url,
+      })
+
+      if (shareResult.action === Share.sharedAction) {
+        console.log('✅ Share successful')
+      } else if (shareResult.action === Share.dismissedAction) {
+        console.log('ℹ️ Share dismissed')
+      }
+    } catch (error) {
+      console.error('❌ Share failed:', error)
+      Alert.alert('공유 실패', '공유 중 오류가 발생했습니다.')
+    }
+  }
+
+  const handlePickImage = async () => {
+    console.log('📸 pickImage request received')
+    const images = await showImageSourceDialog()
+    console.log('📸 Images returned:', images ? images.length : 'null')
+
+    if (images) {
+      const imageData = images.map((img) => ({
+        uri: img.uri,
+        base64: img.base64,
+        width: img.width,
+        height: img.height,
+      }))
+
+      console.log('📤 Sending images to WebView:', imageData.length)
+      const messageToSend = JSON.stringify({
+        type: 'imagesSelected',
+        images: imageData,
+      })
+      console.log('📤 Message length:', messageToSend.length)
+
+      webViewRef.current?.postMessage(messageToSend)
+      console.log('✅ postMessage called')
+    } else {
+      console.log('⚠️ No images selected or canceled')
+    }
+  }
+
+  const handleTakePhoto = async () => {
+    console.log('📷 takePhoto request received (직접 카메라)')
+    const photos = await handleCamera()
+    if (photos) {
+      const photoData = photos.map((photo) => ({
+        uri: photo.uri,
+        base64: photo.base64,
+        width: photo.width,
+        height: photo.height,
+      }))
+
+      webViewRef.current?.postMessage(
+        JSON.stringify({
+          type: 'imagesSelected',
+          images: photoData,
+        })
+      )
+    }
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" translucent backgroundColor="transparent" />
@@ -403,54 +499,17 @@ export default function App() {
             const message = JSON.parse(event.nativeEvent.data)
             console.log('📨 Message from WebView:', message)
 
-            // 이미지 선택 요청 처리 (갤러리/카메라 선택 다이얼로그)
-            if (message.type === 'pickImage') {
-              console.log('📸 pickImage request received')
-              const images = await showImageSourceDialog()
-              console.log('📸 Images returned:', images ? images.length : 'null')
-
-              if (images) {
-                // 선택된 이미지를 WebView로 전달
-                const imageData = images.map((img) => ({
-                  uri: img.uri,
-                  base64: img.base64,
-                  width: img.width,
-                  height: img.height,
-                }))
-
-                console.log('📤 Sending images to WebView:', imageData.length)
-                const messageToSend = JSON.stringify({
-                  type: 'imagesSelected',
-                  images: imageData,
-                })
-                console.log('📤 Message length:', messageToSend.length)
-
-                webViewRef.current?.postMessage(messageToSend)
-                console.log('✅ postMessage called')
-              } else {
-                console.log('⚠️ No images selected or canceled')
-              }
-            }
-
-            // 카메라 촬영 직접 요청 (deprecated - 위의 pickImage로 통합됨)
-            if (message.type === 'takePhoto') {
-              console.log('📷 takePhoto request received (직접 카메라)')
-              const photos = await handleCamera()
-              if (photos) {
-                const photoData = photos.map((photo) => ({
-                  uri: photo.uri,
-                  base64: photo.base64,
-                  width: photo.width,
-                  height: photo.height,
-                }))
-
-                webViewRef.current?.postMessage(
-                  JSON.stringify({
-                    type: 'imagesSelected',
-                    images: photoData,
-                  })
-                )
-              }
+            // 메시지 타입별 처리
+            if (message.type === 'INTENT_URL') {
+              handleIntentUrl(message.url)
+            } else if (message.type === 'KAKAO_URL') {
+              handleKakaoUrl(message.url)
+            } else if (message.type === 'SHARE_KAKAO') {
+              await handleShareKakao(message.data)
+            } else if (message.type === 'pickImage') {
+              await handlePickImage()
+            } else if (message.type === 'takePhoto') {
+              await handleTakePhoto()
             }
           } catch (e) {
             console.error('❌ Message parse error:', e)

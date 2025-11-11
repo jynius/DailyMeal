@@ -7,6 +7,9 @@ const log = createLogger('KakaoShare')
 declare global {
   interface Window {
     Kakao: any
+    ReactNativeWebView?: {
+      postMessage: (message: string) => void
+    }
   }
 }
 
@@ -21,9 +24,16 @@ class KakaoShareService {
   private initialized = false
   private initPromise: Promise<void> | null = null
 
+  /**
+   * WebView 환경인지 감지
+   */
+  private isWebView(): boolean {
+    return globalThis.window?.ReactNativeWebView !== undefined
+  }
+
   async init() {
-    if (this.initialized) return this.initPromise || Promise.resolve()
-    if (typeof window === 'undefined') return Promise.resolve()
+    if (this.initialized) return this.initPromise
+    if (globalThis.window === undefined) return
     if (this.initPromise) return this.initPromise
 
     this.initPromise = (async () => {
@@ -56,31 +66,57 @@ class KakaoShareService {
   }
 
   async share(data: KakaoShareData): Promise<boolean> {
-    if (typeof window === 'undefined') {
+    if (globalThis.window === undefined) {
       log.warn('Cannot share on server-side')
       return false
     }
 
-    if (!window.Kakao) {
+    // 🔥 WebView 환경이면 앱에 메시지 전송
+    if (this.isWebView()) {
+      log.info('📱 WebView detected - sending share request to mobile app')
+      try {
+        globalThis.window.ReactNativeWebView?.postMessage(
+          JSON.stringify({
+            type: 'SHARE_KAKAO',
+            data: {
+              title: data.title,
+              description: data.description,
+              imageUrl: data.imageUrl,
+              url: data.url,
+            },
+          })
+        )
+        log.info('✅ Share request sent to mobile app')
+        return true
+      } catch (error) {
+        log.error('❌ Failed to send message to mobile app', error)
+        // 실패 시 일반 웹 공유로 폴백
+      }
+    }
+
+    if (!globalThis.window?.Kakao) {
       log.error('❌ Kakao SDK not loaded - window.Kakao is undefined')
       return false
     }
 
-    if (!window.Kakao.isInitialized()) {
+    if (!globalThis.window.Kakao.isInitialized()) {
       log.error('❌ Kakao SDK not initialized')
       return false
     }
 
     // Kakao.Share 또는 Kakao.Link 확인
-    const shareMethod = window.Kakao.Share || window.Kakao.Link
+    const shareMethod = globalThis.window?.Kakao.Share || globalThis.window?.Kakao.Link
 
     if (!shareMethod) {
       log.error('❌ No share method available. Kakao.Share and Kakao.Link are both undefined.')
-      log.error('Available Kakao properties:', Object.keys(window.Kakao))
+      log.error('Available Kakao properties:', Object.keys(globalThis.window?.Kakao))
       return false
     }
 
-    log.info('Using Kakao share method:', shareMethod === window.Kakao.Share ? 'Share' : 'Link')
+    log.info(
+      'Using Kakao share method:',
+      shareMethod === globalThis.window?.Kakao.Share ? 'Share' : 'Link'
+    )
 
     // 🔍 카카오톡 설치 여부 확인 (모바일만)
     // 참고: 설치 여부와 관계없이 공유는 시도합니다.
@@ -139,13 +175,16 @@ class KakaoShareService {
   }
 
   async shareStory(data: KakaoShareData): Promise<boolean> {
-    if (typeof window === 'undefined') return false
-    if (!window.Kakao || !window.Kakao.isInitialized()) {
+    if (globalThis.window === undefined) return false
+    if (!globalThis.window?.Kakao.isInitialized()) {
       log.error('Kakao SDK not initialized')
       return false
     }
     try {
-      await window.Kakao.Story.share({ url: data.url, text: `${data.title}\n${data.description}` })
+      await globalThis.window.Kakao.Story.share({
+        url: data.url,
+        text: `${data.title}\n${data.description}`,
+      })
       log.info('Shared to Kakao Story successfully')
       return true
     } catch (error) {
@@ -155,7 +194,7 @@ class KakaoShareService {
   }
 
   isReady(): boolean {
-    return typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized()
+    return globalThis.window?.Kakao.isInitialized()
   }
 
   /**
@@ -163,12 +202,11 @@ class KakaoShareService {
    * @returns true: 설치됨, false: 미설치 또는 확인 불가
    */
   isKakaoTalkInstalled(): boolean {
-    if (typeof window === 'undefined' || !window.Kakao?.isInitialized()) {
+    if (!globalThis.window?.Kakao?.isInitialized()) {
       return false
     }
 
-    const shareMethod = window.Kakao.Share || window.Kakao.Link
-
+    const shareMethod = globalThis.window.Kakao.Share || globalThis.window.Kakao.Link
     // 데스크탑이거나 API 없으면 true 반환 (비활성화 안 함)
     if (!shareMethod?.isAvailableInAppShare) {
       return true
