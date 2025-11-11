@@ -8,8 +8,6 @@ import { APP_CONFIG } from '@/lib/constants'
 
 export default function SettingsPage() {
   const toast = useToast()
-  const [loading, setLoading] = useState(true)
-
   const [settings, setSettings] = useState({
     // 알림 설정
     notifications: {
@@ -41,8 +39,6 @@ export default function SettingsPage() {
       } catch (error) {
         console.error('설정 로딩 실패:', error)
         toast.error('설정을 불러올 수 없습니다', '오류')
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -88,7 +84,7 @@ export default function SettingsPage() {
                 [`${type}Coords`]: { lat: latitude, lng: longitude },
               },
             }))
-            toast.success(`${type === 'home' ? '집' : '회사'} 위치가 설정되었습니다', '위치 저장')
+            toast.success(`${type === 'home' ? '집' : '회사'} 위치가 설정되었습니다`, '위치 저장')
           }
         } catch (error) {
           console.error('역지오코딩 실패:', error)
@@ -177,7 +173,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-3">
-            <label className="flex items-center justify-between">
+            <label className="flex items-center justify-between" aria-label="프로필 공개 설정">
               <div>
                 <div className="text-gray-700">프로필 공개</div>
                 <div className="text-xs text-gray-500">모든 사용자에게 공개</div>
@@ -198,7 +194,7 @@ export default function SettingsPage() {
               />
             </label>
 
-            <label className="flex items-center justify-between">
+            <label className="flex items-center justify-between" aria-label="위치 정보 공유 설정">
               <div>
                 <div className="text-gray-700">위치 정보 공유</div>
                 <div className="text-xs text-gray-500">친구에게만 공개</div>
@@ -219,7 +215,7 @@ export default function SettingsPage() {
               />
             </label>
 
-            <label className="flex items-center justify-between">
+            <label className="flex items-center justify-between" aria-label="식사 상세 공유 설정">
               <div>
                 <div className="text-gray-700">식사 상세 공유</div>
                 <div className="text-xs text-gray-500">친구에게 사진/메모 공개</div>
