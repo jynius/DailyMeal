@@ -1,22 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Star, MapPin, Home, Bike, UtensilsCrossed, Users, Plus, Navigation } from 'lucide-react'
+import { X, Star, MapPin, Home, Bike, UtensilsCrossed, Users, Navigation } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAlert } from '@/components/ui/alert'
 import { useToast } from '@/components/ui/toast'
+import { useLocation } from '@/contexts/location-context'
 import { mealRecordsApi, friendsApi, locationsApi } from '@/lib/api'
 import { formatPrice, parsePrice } from '@/lib/utils/format'
 import { kakaoLocal, type RestaurantPlace } from '@/lib/kakao-local'
 import type { MealRecord, Friend } from '@/types'
 
 interface EvaluateModalProps {
-  isOpen: boolean
-  onClose: () => void
-  mealId: string
-  mealName: string
-  existingMeal?: MealRecord | null
-  onSuccess?: () => void
+  readonly isOpen: boolean
+  readonly onClose: () => void
+  readonly mealId: string
+  readonly mealName: string
+  readonly existingMeal?: MealRecord | null
+  readonly onSuccess?: () => void
 }
 
 export function EvaluateModal({
@@ -26,7 +27,7 @@ export function EvaluateModal({
   mealName,
   existingMeal,
   onSuccess,
-}: EvaluateModalProps) {
+}: Readonly<EvaluateModalProps>) {
   const [formData, setFormData] = useState({
     name: '',
     rating: 0,
@@ -52,19 +53,26 @@ export function EvaluateModal({
   const { success: showSuccess } = useToast()
 
   // Modal이 열릴 때마다 초기화 또는 기존 데이터 로드
+  const {
+    permissionState,
+    fetchLocation,
+    latitude: contextLat,
+    longitude: contextLng,
+  } = useLocation()
+
+  // Context에서 위치 받아오기
+  useEffect(() => {
+    if (contextLat && contextLng) {
+      setUserLat(contextLat)
+      setUserLng(contextLng)
+    }
+  }, [contextLat, contextLng])
+
   useEffect(() => {
     if (isOpen) {
-      // 사용자 위치 가져오기 (클라이언트에서만)
-      if (typeof window !== 'undefined' && navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setUserLat(position.coords.latitude)
-            setUserLng(position.coords.longitude)
-          },
-          (error) => {
-            console.warn('위치 정보를 가져올 수 없습니다:', error)
-          }
-        )
+      // ✅ Context를 통한 위치 가져오기 (권한 관리 자동)
+      if (globalThis.window !== undefined && permissionState !== 'denied') {
+        fetchLocation() // granted면 팝업 없이, prompt면 팝업 1회
       }
 
       if (existingMeal) {
@@ -76,7 +84,7 @@ export function EvaluateModal({
           price: existingMeal.price ? formatPrice(existingMeal.price) : '',
           memo: existingMeal.memo || '',
           category: existingMeal.category || 'restaurant',
-          companionIds: [], // TODO: 백엔드에서 companionIds 반환 시 설정
+          companionIds: existingMeal.companionIds || [],
           companionNames: existingMeal.companionNames || '',
         })
       } else {
@@ -154,8 +162,8 @@ export function EvaluateModal({
         onClose()
       }
     }
-    window.addEventListener('keydown', handleEsc)
-    return () => window.removeEventListener('keydown', handleEsc)
+    globalThis.window.addEventListener('keydown', handleEsc)
+    return () => globalThis.window.removeEventListener('keydown', handleEsc)
   }, [isOpen, onClose])
 
   // Body 스크롤 방지
@@ -254,7 +262,7 @@ export function EvaluateModal({
 
   const handlePriceChange = (value: string) => {
     // 숫자와 쉼표만 허용
-    const cleaned = value.replace(/[^\d]/g, '')
+    const cleaned = value.replaceAll(/[^\d]/g, '')
     if (cleaned === '') {
       setFormData((prev) => ({ ...prev, price: '' }))
       return
@@ -316,7 +324,12 @@ export function EvaluateModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-default"
+        onClick={onClose}
+        aria-label="모달 닫기"
+      />
 
       {/* Modal */}
       <div className="relative bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
@@ -354,9 +367,9 @@ export function EvaluateModal({
 
           {/* 평점 */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <div className="block text-sm font-medium text-gray-700">
               평점 <span className="text-red-500">*</span>
-            </label>
+            </div>
             <div className="flex gap-2 justify-center py-1.5">
               {[1, 2, 3, 4, 5].map((value) => (
                 <button
@@ -381,7 +394,7 @@ export function EvaluateModal({
 
           {/* 카테고리 */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">식사 유형</label>
+            <div className="block text-sm font-medium text-gray-700">식사 유형</div>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
@@ -537,9 +550,9 @@ export function EvaluateModal({
                               자주 가는 곳
                             </span>
                           </div>
-                          {locations.map((loc, idx) => (
+                          {locations.map((loc) => (
                             <button
-                              key={idx}
+                              key={`${loc.location}-${loc.count}`}
                               type="button"
                               onClick={() => {
                                 setFormData((prev) => ({ ...prev, location: loc.location }))
@@ -607,7 +620,7 @@ export function EvaluateModal({
 
           {/* 같이 먹은 사람 */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">같이 먹은 사람</label>
+            <div className="block text-sm font-medium text-gray-700">같이 먹은 사람</div>
 
             {/* 선택된 친구들 */}
             {selectedFriends.length > 0 && (
@@ -633,28 +646,31 @@ export function EvaluateModal({
             {/* 텍스트로 입력된 사람들 */}
             {formData.companionNames && (
               <div className="flex flex-wrap gap-2 mb-2">
-                {formData.companionNames.split(',').map((name, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                  >
-                    {name.trim()}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const names = formData.companionNames
-                          .split(',')
-                          .filter((_, i) => i !== idx)
-                          .map((n) => n.trim())
-                          .join(', ')
-                        setFormData((prev) => ({ ...prev, companionNames: names }))
-                      }}
-                      className="hover:bg-gray-200 rounded-full p-0.5"
+                {formData.companionNames.split(',').map((name) => {
+                  const trimmedName = name.trim()
+                  return (
+                    <span
+                      key={`companion-${trimmedName}`}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
                     >
-                      <X size={14} />
-                    </button>
-                  </span>
-                ))}
+                      {trimmedName}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const names = formData.companionNames
+                            .split(',')
+                            .map((n) => n.trim())
+                            .filter((n) => n !== trimmedName)
+                            .join(', ')
+                          setFormData((prev) => ({ ...prev, companionNames: names }))
+                        }}
+                        className="hover:bg-gray-200 rounded-full p-0.5"
+                      >
+                        <X size={14} />
+                      </button>
+                    </span>
+                  )
+                })}
               </div>
             )}
 

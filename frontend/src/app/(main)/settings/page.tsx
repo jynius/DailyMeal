@@ -88,7 +88,7 @@ export default function SettingsPage() {
                 [`${type}Coords`]: { lat: latitude, lng: longitude },
               },
             }))
-            toast.success(`${type === 'home' ? '집' : '회사'} 위치가 설정되었습니다`, '위치 저장')
+            toast.success(`${type === 'home' ? '집' : '회사'} 위치가 설정되었습니다', '위치 저장')
           }
         } catch (error) {
           console.error('역지오코딩 실패:', error)

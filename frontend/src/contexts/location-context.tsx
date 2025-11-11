@@ -1,30 +1,41 @@
 'use client'
 
-import { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react'
+import {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  ReactNode,
+  useCallback,
+  useMemo,
+} from 'react'
 import { createLogger } from '@/lib/logger'
 import { useKakaoMap } from '@/hooks/use-kakao-map'
 
 const log = createLogger('LocationContext')
 
+type LocationError = GeolocationPositionError | Error | null
+type PermissionState = 'prompt' | 'granted' | 'denied'
+
 interface LocationState {
   latitude: number | null
   longitude: number | null
   address: string | null
-  error: GeolocationPositionError | Error | null
+  error: LocationError
   isLoading: boolean
-  permissionState: 'prompt' | 'granted' | 'denied'
+  permissionState: PermissionState
   fetchLocation: () => void
 }
 
 const LocationContext = createContext<LocationState | undefined>(undefined)
 
-export function LocationProvider({ children }: { children: ReactNode }) {
+export function LocationProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [latitude, setLatitude] = useState<number | null>(null)
   const [longitude, setLongitude] = useState<number | null>(null)
   const [address, setAddress] = useState<string | null>(null)
-  const [error, setError] = useState<GeolocationPositionError | Error | null>(null)
+  const [error, setError] = useState<LocationError>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [permissionState, setPermissionState] = useState<'prompt' | 'granted' | 'denied'>('prompt')
+  const [permissionState, setPermissionState] = useState<PermissionState>('prompt')
   const { isLoaded: isKakaoMapLoaded, error: kakaoMapError } = useKakaoMap()
 
   const reverseGeocode = useCallback(
@@ -42,9 +53,9 @@ export function LocationProvider({ children }: { children: ReactNode }) {
           return reject(notLoadedError)
         }
 
-        const geocoder = new (window.kakao.maps as any).services.Geocoder()
+        const geocoder = new (globalThis.window.kakao.maps as any).services.Geocoder()
         geocoder.coord2Address(lon, lat, (result: any, status: any) => {
-          if (status === (window.kakao.maps as any).services.Status.OK) {
+          if (status === (globalThis.window.kakao.maps as any).services.Status.OK) {
             const newAddress =
               result[0]?.road_address?.address_name || result[0]?.address?.address_name
             if (newAddress) {
@@ -122,33 +133,43 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     performGeocoding()
   }, [latitude, longitude, isKakaoMapLoaded, reverseGeocode])
 
+  // 권한 상태 확인 및 모니터링
   useEffect(() => {
     const checkPermission = async () => {
-      if (navigator.permissions) {
+      if ('permissions' in navigator) {
         try {
           const permission = await navigator.permissions.query({ name: 'geolocation' })
-          setPermissionState(permission.state as 'prompt' | 'granted' | 'denied')
+          setPermissionState(permission.state as PermissionState)
+          log.info('Geolocation permission state:', permission.state)
 
-          // ✅ granted 상태일 때만 자동으로 위치 가져오기
+          // ✅ granted 상태일 때만 자동으로 위치 가져오기 (팝업 없음)
           if (permission.state === 'granted') {
             fetchLocation()
           } else {
-            // prompt 또는 denied 상태에서는 로딩 종료
+            // prompt 또는 denied 상태에서는 로딩 종료 (사용자 액션 대기)
             setIsLoading(false)
           }
 
+          // 권한 상태 변경 감지 (사용자가 설정에서 변경 시)
           permission.onchange = () => {
-            setPermissionState(permission.state as 'prompt' | 'granted' | 'denied')
-            if (permission.state === 'granted') {
+            const newState = permission.state as PermissionState
+            log.info('Geolocation permission changed:', newState)
+            setPermissionState(newState)
+
+            if (newState === 'granted') {
               fetchLocation()
+            } else if (newState === 'denied') {
+              setError(new Error('위치 권한이 거부되었습니다'))
+              setIsLoading(false)
             }
           }
         } catch (error) {
-          log.debug('Failed to check geolocation permission, will wait for manual request.', error)
+          log.debug('Permissions API not supported, will request on manual action', error)
           setIsLoading(false)
         }
       } else {
-        // permissions API 미지원 브라우저는 로딩 종료
+        // Permissions API 미지원 브라우저 (수동 요청 대기)
+        log.debug('Permissions API not supported in this browser')
         setIsLoading(false)
       }
     }
@@ -156,15 +177,18 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     checkPermission()
   }, [fetchLocation])
 
-  const value = {
-    latitude,
-    longitude,
-    address,
-    error,
-    isLoading,
-    permissionState,
-    fetchLocation,
-  }
+  const value = useMemo(
+    () => ({
+      latitude,
+      longitude,
+      address,
+      error,
+      isLoading,
+      permissionState,
+      fetchLocation,
+    }),
+    [latitude, longitude, address, error, isLoading, permissionState, fetchLocation]
+  )
 
   return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>
 }
