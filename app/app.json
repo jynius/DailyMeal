@@ -16,10 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dailymeal.app",
-      "associatedDomains": [
-        "applinks:dailymeal.app",
-        "applinks:www.dailymeal.app"
-      ]
+      "associatedDomains": ["applinks:dailymeal.app", "applinks:www.dailymeal.app"]
     },
     "android": {
       "adaptiveIcon": {
@@ -63,10 +60,19 @@
               "host": "share"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "kakaotalk"
+            },
+            {
+              "scheme": "kakaokompassauth"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
@@ -74,7 +80,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "webUrl": "http://localhost:3000",
+      "webUrl": "http://192.168.1.100:3000",
       "productionWebUrl": "https://www.dailymeal.life",
       "eas": {
         "projectId": "4f64dc67-c866-4a69-89b5-c0453d63899b"

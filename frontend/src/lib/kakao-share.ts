@@ -82,6 +82,16 @@ class KakaoShareService {
 
     log.info('Using Kakao share method:', shareMethod === window.Kakao.Share ? 'Share' : 'Link')
 
+    // 🔍 카카오톡 설치 여부 확인 (모바일만)
+    // 참고: 설치 여부와 관계없이 공유는 시도합니다.
+    // - 모바일 + 설치됨: 카카오톡 앱으로 공유
+    // - 모바일 + 미설치: 브라우저의 intent:// 처리 (Play Store 이동)
+    // - 데스크탑: 카카오톡 for Windows/Mac 또는 QR 코드
+    if (shareMethod.isAvailableInAppShare) {
+      const isInstalled = shareMethod.isAvailableInAppShare()
+      log.info('📱 Kakao Talk installed:', isInstalled)
+    }
+
     try {
       log.info('Sharing to Kakao', {
         title: data.title,
@@ -146,6 +156,32 @@ class KakaoShareService {
 
   isReady(): boolean {
     return typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized()
+  }
+
+  /**
+   * 카카오톡 앱 설치 여부 확인 (모바일만)
+   * @returns true: 설치됨, false: 미설치 또는 확인 불가
+   */
+  isKakaoTalkInstalled(): boolean {
+    if (typeof window === 'undefined' || !window.Kakao?.isInitialized()) {
+      return false
+    }
+
+    const shareMethod = window.Kakao.Share || window.Kakao.Link
+
+    // 데스크탑이거나 API 없으면 true 반환 (비활성화 안 함)
+    if (!shareMethod?.isAvailableInAppShare) {
+      return true
+    }
+
+    try {
+      const isInstalled = shareMethod.isAvailableInAppShare()
+      log.info('📱 KakaoTalk installation check:', isInstalled)
+      return isInstalled
+    } catch (error) {
+      log.warn('Failed to check KakaoTalk installation:', error)
+      return true // 확인 실패 시 비활성화 안 함
+    }
   }
 }
 
