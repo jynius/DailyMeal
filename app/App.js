@@ -297,27 +297,6 @@ export default function App() {
     })
   }
 
-  const handleShareKakao = async (data) => {
-    console.log('📤 Kakao share request from WebView:', data)
-    try {
-      const Share = require('react-native').Share
-      const shareResult = await Share.share({
-        title: data.title,
-        message: `${data.title}\n${data.description}\n${data.url}`,
-        url: data.url,
-      })
-
-      if (shareResult.action === Share.sharedAction) {
-        console.log('✅ Share successful')
-      } else if (shareResult.action === Share.dismissedAction) {
-        console.log('ℹ️ Share dismissed')
-      }
-    } catch (error) {
-      console.error('❌ Share failed:', error)
-      Alert.alert('공유 실패', '공유 중 오류가 발생했습니다.')
-    }
-  }
-
   const handlePickImage = async () => {
     console.log('📸 pickImage request received')
     const images = await showImageSourceDialog()
@@ -505,7 +484,10 @@ export default function App() {
             } else if (message.type === 'KAKAO_URL') {
               handleKakaoUrl(message.url)
             } else if (message.type === 'SHARE_KAKAO') {
-              await handleShareKakao(message.data)
+              // ⚠️ DEPRECATED: 웹뷰에서 카카오 SDK를 직접 사용하도록 변경됨
+              // 앱의 Share.share()는 이미지를 지원하지 않으므로 사용하지 않음
+              console.log('⚠️ WebView handles Kakao sharing directly')
+              // await handleShareKakao(message.data)
             } else if (message.type === 'pickImage') {
               await handlePickImage()
             } else if (message.type === 'takePhoto') {

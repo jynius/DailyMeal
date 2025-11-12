@@ -71,27 +71,9 @@ class KakaoShareService {
       return false
     }
 
-    // 🔥 WebView 환경이면 앱에 메시지 전송
+    // 🔥 WebView 환경 감지 (로그만 출력, 웹뷰에서도 카카오 SDK 사용)
     if (this.isWebView()) {
-      log.info('📱 WebView detected - sending share request to mobile app')
-      try {
-        globalThis.window.ReactNativeWebView?.postMessage(
-          JSON.stringify({
-            type: 'SHARE_KAKAO',
-            data: {
-              title: data.title,
-              description: data.description,
-              imageUrl: data.imageUrl,
-              url: data.url,
-            },
-          })
-        )
-        log.info('✅ Share request sent to mobile app')
-        return true
-      } catch (error) {
-        log.error('❌ Failed to send message to mobile app', error)
-        // 실패 시 일반 웹 공유로 폴백
-      }
+      log.info('📱 WebView detected - using Kakao SDK in WebView')
     }
 
     if (!globalThis.window?.Kakao) {
