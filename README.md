@@ -21,7 +21,7 @@
 - **Frontend**: Next.js 14.2.13 (App Router), TypeScript, Tailwind CSS, Zustand, TanStack Query, Socket.IO Client
 - **Backend**: NestJS 11.x, TypeScript, PostgreSQL 16, TypeORM, JWT + Passport, Socket.IO, Multer
 - **Mobile**: Expo SDK 54, React Native WebView
-- **Infrastructure**: Nginx/Caddy, PM2, Let's Encrypt, Ubuntu (Production: AWS EC2)
+- **Infrastructure**: Nginx, PM2, Let's Encrypt, Ubuntu (Production: AWS EC2)
 
 ## 🚀 빠른 시작
 
@@ -105,7 +105,7 @@ This project is licensed under the MIT License.
   | **Frontend** | Next.js 15, TypeScript, Tailwind CSS, Zustand, Socket.IO |- 📱 **PWA 지원**: 모바일 브라우저에서 앱처럼 사용
   | **Backend** | NestJS, TypeScript, PostgreSQL, TypeORM, Socket.IO, JWT |
   | **Mobile** | React Native (Expo), WebView, expo-image-picker |### 💬 **공유 시스템**
-  | **Infrastructure** | Nginx/Caddy, PM2, Let's Encrypt, Ubuntu |- 🔗 **식사 공유**: 고유 링크로 식사 기록 공유
+  | **Infrastructure** | Nginx, PM2, Let's Encrypt, Ubuntu |- 🔗 **식사 공유**: 고유 링크로 식사 기록 공유
 
 - 📊 **조회 추적**: 공유 링크 조회 수 및 통계
 
@@ -156,7 +156,7 @@ DailyMeal은 매일의 식사를 사진으로 기록하고 평가를 공유하�
 - Frontend: Next.js (TypeScript), Tailwind CSS, Zustand, TanStack Query, Socket.IO Client
 - Backend: NestJS (TypeScript), PostgreSQL 16, TypeORM, JWT + Passport, Socket.IO, Multer
 - Mobile: Expo React Native (WebView, expo-image-picker)
-- Infra: Nginx/Caddy, PM2, Let's Encrypt, Ubuntu (Production: AWS EC2)
+- Infra: Nginx, PM2, Let's Encrypt, Ubuntu (Production: AWS EC2)
 
 ## 빠른 시작
 
@@ -233,7 +233,7 @@ DailyMeal/
 
 ## 운영/엔터프라이즈 참고
 
-- PM2, Nginx/Caddy 설정 문서 및 ECOSYSTEM 관련 가이드가 `docs/deployment/`에 포함되어 있습니다.
+- PM2, Nginx 설정 문서 및 ECOSYSTEM 관련 가이드가 `docs/deployment/`에 포함되어 있습니다.
 
 ## 연락처
 

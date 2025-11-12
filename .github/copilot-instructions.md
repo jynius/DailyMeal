@@ -10,7 +10,7 @@ DailyMeal은 식사 기록, 맛집 공유, 실시간 소셜 기능을 제공하�
 - **Backend**: NestJS 11, PostgreSQL 16 + TypeORM, JWT auth, Socket.IO server
 - **Mobile**: Expo SDK 54, WebView 중심 (웹 콘텐츠 래핑 + 네이티브 기능)
 - **Process Manager**: PM2 (개발/운영 모두)
-- **Infra**: Nginx/Caddy reverse proxy, Let's Encrypt SSL
+- **Infra**: Nginx reverse proxy, Let's Encrypt SSL
 
 ### Core Data Flow
 
@@ -171,6 +171,7 @@ Radix UI + Tailwind 조합 사용. `components/ui/` 기본 컴포넌트 재사�
 **Last Updated**: 2025-11-06  
 **Project Version**: 1.0.0  
 **Node**: >=20.0.0, **npm**: >=10.0.0
+
 - Work through each checklist item systematically.
 - Keep communication concise and focused.
 - Follow development best practices.
