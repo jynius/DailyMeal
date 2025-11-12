@@ -4,12 +4,10 @@ module.exports = {
       name: 'dailymeal-backend',
       script: 'dist/src/main.js',
       cwd: './backend',
+      env_file: '.env', // .env 파일 자동 로드
       env: {
         NODE_ENV: 'production',
         PORT: 8000,
-        USE_SECRETS_MANAGER: 'true', // AWS Secrets Manager 사용 여부
-        SECRETS_MANAGER_SECRET_NAME: 'dailymeal/product', // AWS에 생성한 Secret 이름
-        AWS_REGION: 'ap-northeast-2', // AWS 리전
       },
       instances: 1,
       exec_mode: 'fork',

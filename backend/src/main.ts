@@ -15,9 +15,6 @@ async function bootstrap() {
   // 필수 환경 변수 검증
   configService.validateRequiredConfig()
 
-  // Secrets Manager에서 설정 로드 (필요시 자동)
-  await configService.initializeSecretsManager()
-
   // CORS 설정 (환경 변수 기반)
   const corsOrigins = configService.getCorsOrigins()
   app.enableCors({
