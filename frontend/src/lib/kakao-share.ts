@@ -144,9 +144,22 @@ class KakaoShareService {
 
       log.info('🔍 Kakao share payload:', sharePayload) // debug → info로 변경
 
+      // 🔍 [DEBUG] window.open 호출 감지를 위한 로그
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      console.log('🚀 [KAKAO-DEBUG] About to call Kakao.sendDefault()')
+      console.log('🚀 [KAKAO-DEBUG] WebView?', this.isWebView())
+      console.log('🚀 [KAKAO-DEBUG] ReactNativeWebView?', !!globalThis.window?.ReactNativeWebView)
+      console.log('🚀 [KAKAO-DEBUG] Share method:', shareMethod.sendDefault ? 'exists' : 'missing')
+      console.log('🚀 [KAKAO-DEBUG] Payload:', JSON.stringify(sharePayload, null, 2))
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+
       // Kakao.Share.sendDefault 또는 Kakao.Link.sendDefault 사용
+      console.log('⏳ [KAKAO-DEBUG] Calling sendDefault()...')
       const result = await shareMethod.sendDefault(sharePayload)
 
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      console.log('✅ [KAKAO-DEBUG] sendDefault() returned:', result)
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       log.info('✅ Kakao Share API 호출 완료', { result })
 
       return true

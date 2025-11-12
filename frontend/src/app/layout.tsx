@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import { Providers } from '@/components/providers'
 import { PWAInstaller } from '@/components/pwa-installer'
 import { AppInstallBanner } from '@/components/app-install-banner'
+import { DebugWindowMonitor } from '@/components/debug-window-monitor'
 import './globals.css'
 
 const inter = Inter({
@@ -47,6 +48,7 @@ export default function RootLayout({
     <html lang="ko" data-scroll-behavior="smooth">
       <body className={`${inter.variable} font-sans antialiased overflow-x-hidden`}>
         <Providers>
+          <DebugWindowMonitor />
           <PWAInstaller />
           <AppInstallBanner />
           <div className="min-h-screen bg-gray-50 pb-safe-bottom">
