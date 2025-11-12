@@ -1,6 +1,5 @@
 // 공유 기능을 위한 유틸리티 함수들
 import { kakaoShare, type KakaoShareData } from './kakao-share'
-import { transformImageUrl } from './constants'
 import { createLogger } from './logger'
 
 const log = createLogger('ShareUtils')
@@ -34,24 +33,38 @@ export const shareUtils = {
   // URL 복사
   async copyToClipboard(url: string) {
     try {
+      // 모던 Clipboard API 사용
       await navigator.clipboard.writeText(url)
       return true
-    } catch {
-      // 폴백: 구식 방법
-      const textArea = document.createElement('textarea')
-      textArea.value = url
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-      const successful = document.execCommand('copy')
-      document.body.removeChild(textArea)
-      return successful
+    } catch (clipboardError) {
+      // 폴백: Clipboard API가 지원되지 않는 경우
+      // (예: HTTPS가 아닌 환경, 구형 브라우저)
+      log.warn('Clipboard API failed, using fallback method', clipboardError)
+
+      try {
+        const textArea = document.createElement('textarea')
+        textArea.value = url
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+
+        // deprecated API이지만 폴백으로만 사용
+        // eslint-disable-next-line deprecation/deprecation
+        const successful = document.execCommand('copy')
+        textArea.remove()
+        return successful
+      } catch (fallbackError) {
+        log.error('Fallback copy method also failed', fallbackError)
+        return false
+      }
     }
   },
 
   // 카카오톡 공유 (SDK 사용)
   async shareKakao(data: ShareData) {
-    // 백엔드에서 이미 절대 경로로 변환되어 있음 (ConfigService.transformImageUrl)
+    // ShareData는 meal-card.tsx에서 이미 절대 경로로 변환된 imageUrl을 받음
     // 따라서 추가 변환 없이 그대로 사용
     const kakaoData: KakaoShareData = {
       title: data.title,
@@ -90,15 +103,15 @@ export const shareUtils = {
     try {
       const response = await fetch(imageUrl)
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      const url = globalThis.window.URL.createObjectURL(blob)
 
       const a = document.createElement('a')
       a.href = url
       a.download = filename
       document.body.appendChild(a)
       a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
+      a.remove()
+      globalThis.window.URL.revokeObjectURL(url)
 
       return true
     } catch (err) {

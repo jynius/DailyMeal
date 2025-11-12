@@ -1,5 +1,5 @@
+// frontend/src/lib/constants.ts
 // 애플리케이션 상수 정의
-
 /**
  * 필수 환경 변수 검증 헬퍼
  */
@@ -39,6 +39,9 @@ export const APP_CONFIG = {
     'NEXT_PUBLIC_LOG_LEVEL',
     'Log level (ERROR, WARN, INFO, DEBUG, TRACE)'
   ),
+
+  // 프로덕션 사이트 URL (공유 링크용)
+  SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.dailymeal.life',
 
   // 모듈별 로그 레벨 설정
   // 예: { 'AuthService': 'TRACE', 'API': 'DEBUG', 'Socket': 'INFO' }

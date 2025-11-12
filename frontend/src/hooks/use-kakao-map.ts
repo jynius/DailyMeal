@@ -25,12 +25,12 @@ export function useKakaoMap() {
 
   useEffect(() => {
     // 이미 로드되어 있으면 바로 사용 가능
-    if (window.kakao && window.kakao.maps) {
+    if (globalThis.window.kakao?.maps) {
       setIsLoaded(true)
       return
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_KAKAO_API_KEY 
+    const apiKey = process.env.NEXT_PUBLIC_KAKAO_API_KEY
 
     if (!apiKey || apiKey === 'your_kakao_map_api_key_here') {
       // 개발 환경에서는 더미 지도 사용
@@ -44,8 +44,8 @@ export function useKakaoMap() {
     script.async = true
 
     script.onload = () => {
-      if (window.kakao && window.kakao.maps) {
-        window.kakao.maps.load(() => {
+      if (globalThis.window.kakao?.maps) {
+        globalThis.window.kakao.maps.load(() => {
           setIsLoaded(true)
         })
       }
@@ -61,7 +61,7 @@ export function useKakaoMap() {
     return () => {
       // 컴포넌트 언마운트시 스크립트 정리
       if (script && document.head.contains(script)) {
-        document.head.removeChild(script)
+        script.remove()
       }
     }
   }, [])

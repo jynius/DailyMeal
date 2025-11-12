@@ -4,35 +4,35 @@ import {
   ForbiddenException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull, Not } from 'typeorm';
-import { MealShare } from '../entities/meal-share.entity';
-import { ShareTracking } from '../entities/share-tracking.entity';
-import { MealRecord } from '../entities/meal-record.entity';
-import { User } from '../entities/user.entity';
-import { Friendship } from '../entities/friendship.entity';
-import { CryptoService } from '../common/crypto.service';
-import { ConfigService } from '../config/config.service';
-import { PublicMealResponseDto } from '../dto/share.dto';
+} from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository, IsNull, Not } from 'typeorm'
+import { MealShare } from '../entities/meal-share.entity'
+import { ShareTracking } from '../entities/share-tracking.entity'
+import { MealRecord } from '../entities/meal-record.entity'
+import { User } from '../entities/user.entity'
+import { Friendship } from '../entities/friendship.entity'
+import { CryptoService } from '../common/crypto.service'
+import { ConfigService } from '../config/config.service'
+import { PublicMealResponseDto } from '../dto/share.dto'
 
 @Injectable()
 export class ShareService {
-  private readonly logger = new Logger(ShareService.name);
+  private readonly logger = new Logger(ShareService.name)
 
   constructor(
     @InjectRepository(MealShare)
-    private mealShareRepository: Repository<MealShare>,
+    private readonly mealShareRepository: Repository<MealShare>,
     @InjectRepository(ShareTracking)
-    private shareTrackingRepository: Repository<ShareTracking>,
+    private readonly shareTrackingRepository: Repository<ShareTracking>,
     @InjectRepository(MealRecord)
-    private mealRecordRepository: Repository<MealRecord>,
+    private readonly mealRecordRepository: Repository<MealRecord>,
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>,
     @InjectRepository(Friendship)
-    private friendshipRepository: Repository<Friendship>,
-    private cryptoService: CryptoService,
-    private configService: ConfigService,
+    private readonly friendshipRepository: Repository<Friendship>,
+    private readonly cryptoService: CryptoService,
+    private readonly configService: ConfigService
   ) {}
 
   /**
@@ -40,44 +40,44 @@ export class ShareService {
    */
   async createShareLink(
     mealId: string,
-    userId: string,
+    userId: string
   ): Promise<{ shareId: string; url: string; ref: string }> {
     // Meal 존재 및 권한 확인
     const meal = await this.mealRecordRepository.findOne({
       where: { id: mealId },
       relations: ['user'],
-    });
+    })
 
     if (!meal) {
-      throw new NotFoundException('Meal not found');
+      throw new NotFoundException('Meal not found')
     }
 
     if (meal.userId !== userId) {
-      throw new ForbiddenException('You can only share your own meals');
+      throw new ForbiddenException('You can only share your own meals')
     }
 
     // 기존 공유 링크가 있는지 확인
     let mealShare = await this.mealShareRepository.findOne({
       where: { mealId, sharerId: userId, isActive: true },
-    });
+    })
 
     if (mealShare) {
       // 기존 링크 재사용
-      const ref = this.cryptoService.encrypt(userId);
-      const baseUrl = this.configService.getFrontendUrl();
-      const url = `${baseUrl}/share/meal/${mealShare.shareId}?ref=${ref}`;
+      const ref = this.cryptoService.encrypt(userId)
+      const baseUrl = this.configService.getFrontendUrl()
+      const url = `${baseUrl}/share/meal/${mealShare.shareId}?ref=${ref}`
 
       return {
         shareId: mealShare.shareId,
         url,
         ref,
-      };
+      }
     }
 
     // 새 공유 링크 생성
-    const shareId = this.cryptoService.generateShareId();
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 30); // 30일 후 만료
+    const shareId = this.cryptoService.generateShareId()
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 30) // 30일 후 만료
 
     mealShare = this.mealShareRepository.create({
       shareId,
@@ -85,19 +85,19 @@ export class ShareService {
       sharerId: userId,
       expiresAt,
       isActive: true,
-    });
+    })
 
-    await this.mealShareRepository.save(mealShare);
+    await this.mealShareRepository.save(mealShare)
 
-    const ref = this.cryptoService.encrypt(userId);
-    const baseUrl = this.configService.getFrontendUrl();
-    const url = `${baseUrl}/share/meal/${shareId}?ref=${ref}`;
+    const ref = this.cryptoService.encrypt(userId)
+    const baseUrl = this.configService.getFrontendUrl()
+    const url = `${baseUrl}/share/meal/${shareId}?ref=${ref}`
 
     return {
       shareId,
       url,
       ref,
-    };
+    }
   }
 
   /**
@@ -107,32 +107,32 @@ export class ShareService {
     const mealShare = await this.mealShareRepository.findOne({
       where: { shareId, isActive: true },
       relations: ['meal', 'meal.user', 'sharer'],
-    });
+    })
 
     if (!mealShare) {
-      throw new NotFoundException('Share link not found or expired');
+      throw new NotFoundException('Share link not found or expired')
     }
 
     // 만료 확인
     if (mealShare.expiresAt && new Date() > mealShare.expiresAt) {
-      throw new NotFoundException('Share link has expired');
+      throw new NotFoundException('Share link has expired')
     }
 
-    const meal = mealShare.meal;
-    const sharer = mealShare.sharer;
+    const meal = mealShare.meal
+    const sharer = mealShare.sharer
 
     // 조회수 증가
-    mealShare.viewCount += 1;
-    await this.mealShareRepository.save(mealShare);
+    mealShare.viewCount += 1
+    await this.mealShareRepository.save(mealShare)
 
     // 날짜 포맷 변경 (개인정보 보호)
-    const createdDate = new Date(meal.createdAt);
-    const formattedDate = `${createdDate.getFullYear()}년 ${createdDate.getMonth() + 1}월`;
+    const createdDate = new Date(meal.createdAt)
+    const formattedDate = `${createdDate.getFullYear()}년 ${createdDate.getMonth() + 1}월`
 
     // 다중 사진 URL 변환 (null 제거)
     const photos = (meal.photos || [])
       .map((photo) => this.configService.transformImageUrl(photo))
-      .filter((photo): photo is string => photo !== null);
+      .filter((photo): photo is string => photo !== null)
 
     return {
       id: meal.id,
@@ -147,7 +147,7 @@ export class ShareService {
       sharerName: sharer.name,
       sharerProfileImage: sharer.profileImage ?? undefined,
       viewCount: mealShare.viewCount,
-    };
+    }
   }
 
   /**
@@ -158,22 +158,22 @@ export class ShareService {
     ref: string,
     sessionId: string,
     ipAddress: string,
-    userAgent: string,
+    userAgent: string
   ): Promise<void> {
     try {
       // ref 복호화하여 sharerId 추출
-      const sharerId = this.cryptoService.decrypt(ref);
+      const sharerId = this.cryptoService.decrypt(ref)
 
       // 이미 이 세션으로 조회한 기록이 있는지 확인
       const existing = await this.shareTrackingRepository.findOne({
         where: { shareId, sessionId },
-      });
+      })
 
       if (existing) {
         // 이미 추적 중이면 업데이트만
-        existing.viewedAt = new Date();
-        await this.shareTrackingRepository.save(existing);
-        return;
+        existing.viewedAt = new Date()
+        await this.shareTrackingRepository.save(existing)
+        return
       }
 
       // 새 추적 레코드 생성
@@ -183,11 +183,11 @@ export class ShareService {
         sessionId,
         ipAddress,
         userAgent,
-      });
+      })
 
-      await this.shareTrackingRepository.save(tracking);
+      await this.shareTrackingRepository.save(tracking)
     } catch (error) {
-      this.logger.error('Failed to track view:', error);
+      this.logger.error('Failed to track view:', error)
       // 추적 실패해도 메인 기능에 영향 없도록
     }
   }
@@ -197,28 +197,28 @@ export class ShareService {
    */
   async connectFriend(
     ref: string,
-    recipientId: string,
+    recipientId: string
   ): Promise<{ success: boolean; message: string }> {
     try {
       // ref 복호화하여 sharerId 추출
-      const sharerId = this.cryptoService.decrypt(ref);
+      const sharerId = this.cryptoService.decrypt(ref)
 
       // 자기 자신과는 친구가 될 수 없음
       if (sharerId === recipientId) {
-        return { success: false, message: 'Cannot befriend yourself' };
+        return { success: false, message: 'Cannot befriend yourself' }
       }
 
       // ShareTracking 업데이트 (세션 ID로 찾아서)
       const trackings = await this.shareTrackingRepository.find({
         where: { sharerId, recipientId: IsNull() },
         order: { createdAt: 'DESC' },
-      });
+      })
 
       if (trackings.length > 0) {
-        const tracking = trackings[0];
-        tracking.recipientId = recipientId;
-        tracking.convertedAt = new Date();
-        await this.shareTrackingRepository.save(tracking);
+        const tracking = trackings[0]
+        tracking.recipientId = recipientId
+        tracking.convertedAt = new Date()
+        await this.shareTrackingRepository.save(tracking)
       }
 
       // 이미 친구인지 확인
@@ -227,13 +227,13 @@ export class ShareService {
           { userId: sharerId, friendId: recipientId },
           { userId: recipientId, friendId: sharerId },
         ],
-      });
+      })
 
       if (existingFriendship) {
         if (existingFriendship.status === 'accepted') {
-          return { success: false, message: 'Already friends' };
+          return { success: false, message: 'Already friends' }
         } else if (existingFriendship.status === 'pending') {
-          return { success: false, message: 'Friend request already sent' };
+          return { success: false, message: 'Friend request already sent' }
         }
       }
 
@@ -251,18 +251,18 @@ export class ShareService {
           status: 'accepted',
           notificationEnabled: true,
         },
-      ]);
+      ])
 
       // ShareTracking에 친구 요청 완료 표시
       if (trackings.length > 0) {
-        trackings[0].friendRequestSent = true;
-        await this.shareTrackingRepository.save(trackings[0]);
+        trackings[0].friendRequestSent = true
+        await this.shareTrackingRepository.save(trackings[0])
       }
 
-      return { success: true, message: 'Friend added successfully' };
+      return { success: true, message: 'Friend added successfully' }
     } catch (error) {
-      this.logger.error('Failed to connect friend:', error);
-      throw new BadRequestException('Invalid share reference');
+      this.logger.error('Failed to connect friend:', error)
+      throw new BadRequestException('Invalid share reference')
     }
   }
 
@@ -274,17 +274,17 @@ export class ShareService {
       where: { sharerId: userId, isActive: true },
       relations: ['meal'],
       order: { createdAt: 'DESC' },
-    });
+    })
 
     const stats = await Promise.all(
       shares.map(async (share) => {
         const trackingCount = await this.shareTrackingRepository.count({
           where: { shareId: share.id },
-        });
+        })
 
         const conversions = await this.shareTrackingRepository.count({
           where: { shareId: share.id, convertedAt: Not(IsNull()) },
-        });
+        })
 
         return {
           shareId: share.shareId,
@@ -293,10 +293,10 @@ export class ShareService {
           trackingCount,
           conversions,
           createdAt: share.createdAt,
-        };
-      }),
-    );
+        }
+      })
+    )
 
-    return stats;
+    return stats
   }
 }
