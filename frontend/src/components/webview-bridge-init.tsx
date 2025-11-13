@@ -12,8 +12,14 @@ import { initializeWebViewBridge } from '@/lib/webview-bridge'
 export function WebViewBridgeInit() {
   useEffect(() => {
     // 클라이언트 사이드에서만 실행
-    console.log('� [WebViewBridgeInit] Component mounted in browser')
+    console.log('🟢 [WebViewBridgeInit] Component mounted in browser')
     console.log('🟡 [WebViewBridgeInit] Calling initializeWebViewBridge()...')
+
+    // 디버그: Alert로 확인 (WebView에서 무조건 보임)
+    if (globalThis.window?.ReactNativeWebView) {
+      alert('✅ WebViewBridgeInit mounted! ReactNativeWebView detected!')
+    }
+
     initializeWebViewBridge()
   }, [])
 
