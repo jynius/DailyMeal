@@ -37,10 +37,13 @@ export function initializeWebViewBridge() {
               url: url,
             })
           )
+          return // 실제 네비게이션 차단
         } else {
-          console.error('❌ [WebView Bridge] ReactNativeWebView not available!')
+          // ReactNativeWebView 없으면 window.open으로 시도 (onOpenWindow에서 잡힘)
+          console.log('⚠️ [WebView Bridge] No ReactNativeWebView, trying window.open')
+          globalThis.open(url, '_blank')
+          return
         }
-        return // 실제 네비게이션 차단
       }
 
       // Kakao URL 감지
@@ -54,10 +57,11 @@ export function initializeWebViewBridge() {
               url: url,
             })
           )
+          return
         } else {
-          console.error('❌ [WebView Bridge] ReactNativeWebView not available!')
+          globalThis.open(url, '_blank')
+          return
         }
-        return
       }
 
       // 일반 URL은 정상 처리
@@ -92,8 +96,12 @@ export function initializeWebViewBridge() {
             url: urlString,
           })
         )
+        return null
+      } else {
+        // ReactNativeWebView 없어도 실제 window.open 호출 (onOpenWindow에서 잡힘)
+        console.log('⚠️ [WebView Bridge] No ReactNativeWebView, using originalOpen')
+        return originalOpen.call(globalThis, url, target, features)
       }
-      return null
     }
 
     if (urlString.startsWith('kakaotalk://') || urlString.startsWith('kakaokompassauth://')) {
@@ -105,8 +113,10 @@ export function initializeWebViewBridge() {
             url: urlString,
           })
         )
+        return null
+      } else {
+        return originalOpen.call(globalThis, url, target, features)
       }
-      return null
     }
 
     return originalOpen.call(globalThis, url, target, features)
