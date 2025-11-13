@@ -9,12 +9,15 @@
 
 export function initializeWebViewBridge() {
   console.log('🚀 [WebView Bridge] Initializing...')
+  alert('🚀 Bridge: Initializing...')
 
   // React Native WebView 환경 체크는 로그만 남기고, 브리지는 항상 설치
   if (globalThis.window?.ReactNativeWebView) {
     console.log('✅ [WebView Bridge] ReactNativeWebView detected!')
+    alert('✅ Bridge: ReactNativeWebView detected!')
   } else {
     console.log('⚠️ [WebView Bridge] ReactNativeWebView not available yet (may be injected later)')
+    alert('⚠️ Bridge: No ReactNativeWebView, using fallback (window.open)')
   }
 
   // ========== 1. location.href setter 오버라이드 ==========
