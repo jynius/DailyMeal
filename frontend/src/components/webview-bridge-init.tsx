@@ -3,6 +3,11 @@
 import { useEffect } from 'react'
 import { initializeWebViewBridge } from '@/lib/webview-bridge'
 
+// 즉시 실행 (React 렌더링 전에 초기화)
+if (globalThis.window !== undefined) {
+  initializeWebViewBridge()
+}
+
 /**
  * WebView Bridge Initializer
  *
