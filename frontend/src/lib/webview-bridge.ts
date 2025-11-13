@@ -8,13 +8,14 @@
  */
 
 export function initializeWebViewBridge() {
-  // React Native WebView 환경이 아니면 실행하지 않음
-  if (!globalThis.window?.ReactNativeWebView) {
-    console.log('Not in React Native WebView environment')
-    return
-  }
-
   console.log('🚀 [WebView Bridge] Initializing...')
+
+  // React Native WebView 환경 체크는 로그만 남기고, 브리지는 항상 설치
+  if (globalThis.window?.ReactNativeWebView) {
+    console.log('✅ [WebView Bridge] ReactNativeWebView detected!')
+  } else {
+    console.log('⚠️ [WebView Bridge] ReactNativeWebView not available yet (may be injected later)')
+  }
 
   // ========== 1. location.href setter 오버라이드 ==========
   const originalLocationDescriptor = Object.getOwnPropertyDescriptor(globalThis.location, 'href')
@@ -29,12 +30,16 @@ export function initializeWebViewBridge() {
         console.log('📱 [WebView Bridge] ✅ INTENT URL DETECTED!')
         console.log('📱 [WebView Bridge] URL:', url.substring(0, 200))
 
-        globalThis.window.ReactNativeWebView!.postMessage(
-          JSON.stringify({
-            type: 'INTENT_URL',
-            url: url,
-          })
-        )
+        if (globalThis.window?.ReactNativeWebView) {
+          globalThis.window.ReactNativeWebView.postMessage(
+            JSON.stringify({
+              type: 'INTENT_URL',
+              url: url,
+            })
+          )
+        } else {
+          console.error('❌ [WebView Bridge] ReactNativeWebView not available!')
+        }
         return // 실제 네비게이션 차단
       }
 
@@ -42,12 +47,16 @@ export function initializeWebViewBridge() {
       if (url?.startsWith('kakaotalk://') || url?.startsWith('kakaokompassauth://')) {
         console.log('📱 [WebView Bridge] ✅ KAKAO URL DETECTED!')
 
-        globalThis.window.ReactNativeWebView!.postMessage(
-          JSON.stringify({
-            type: 'KAKAO_URL',
-            url: url,
-          })
-        )
+        if (globalThis.window?.ReactNativeWebView) {
+          globalThis.window.ReactNativeWebView.postMessage(
+            JSON.stringify({
+              type: 'KAKAO_URL',
+              url: url,
+            })
+          )
+        } else {
+          console.error('❌ [WebView Bridge] ReactNativeWebView not available!')
+        }
         return
       }
 
@@ -76,23 +85,27 @@ export function initializeWebViewBridge() {
 
     if (urlString.startsWith('intent://')) {
       console.log('📱 [WebView Bridge] Intent in window.open')
-      globalThis.window.ReactNativeWebView!.postMessage(
-        JSON.stringify({
-          type: 'INTENT_URL',
-          url: urlString,
-        })
-      )
+      if (globalThis.window?.ReactNativeWebView) {
+        globalThis.window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: 'INTENT_URL',
+            url: urlString,
+          })
+        )
+      }
       return null
     }
 
     if (urlString.startsWith('kakaotalk://') || urlString.startsWith('kakaokompassauth://')) {
       console.log('📱 [WebView Bridge] Kakao in window.open')
-      globalThis.window.ReactNativeWebView!.postMessage(
-        JSON.stringify({
-          type: 'KAKAO_URL',
-          url: urlString,
-        })
-      )
+      if (globalThis.window?.ReactNativeWebView) {
+        globalThis.window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: 'KAKAO_URL',
+            url: urlString,
+          })
+        )
+      }
       return null
     }
 

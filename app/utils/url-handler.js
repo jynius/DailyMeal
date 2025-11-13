@@ -41,14 +41,21 @@ export const handleSpecialUrl = (url) => {
 
   // 3. 외부 HTTP(S) URL 처리
   if (url.startsWith('http://') || url.startsWith('https://')) {
-    const isInternal = url.includes('dailymeal.life') || url.includes('localhost')
+    // URL의 호스트만 추출 (쿼리 파라미터 제외)
+    try {
+      const urlObj = new URL(url)
+      const hostname = urlObj.hostname
+      const isInternal = hostname.includes('dailymeal.life') || hostname.includes('localhost')
 
-    if (!isInternal) {
-      console.log('🌐 [URL Handler] External URL detected')
-      Linking.openURL(url).catch((err) => {
-        console.error('❌ Failed to open external URL:', err)
-      })
-      return true
+      if (!isInternal) {
+        console.log('🌐 [URL Handler] External URL detected:', hostname)
+        Linking.openURL(url).catch((err) => {
+          console.error('❌ Failed to open external URL:', err)
+        })
+        return true
+      }
+    } catch (e) {
+      console.error('❌ [URL Handler] Failed to parse URL:', e)
     }
   }
 
