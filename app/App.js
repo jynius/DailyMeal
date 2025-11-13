@@ -1,3 +1,4 @@
+// app/App.js
 import { StatusBar } from 'expo-status-bar'
 import {
   StyleSheet,
@@ -13,6 +14,10 @@ import { useState, useEffect, useRef } from 'react'
 import * as Linking from 'expo-linking'
 import * as NavigationBar from 'expo-navigation-bar'
 import * as ImagePicker from 'expo-image-picker'
+
+// 유틸리티 및 설정
+import { handleSpecialUrl, parseIntentUrl } from './utils/url-handler'
+import { WEBVIEW_CONFIG } from './config/webview-config'
 
 export default function App() {
   const [loading, setLoading] = useState(true)
@@ -270,20 +275,6 @@ export default function App() {
   const WEB_URL = initialUrl ? parseWebUrl(initialUrl) : getBaseWebUrl()
 
   // 메시지 핸들러 함수들
-  // Intent URL 표준 파싱 (Android Intent URI 스펙 준수)
-  // Format: intent://HOST/PATH#Intent;scheme=SCHEME;package=PACKAGE;end
-  const parseIntentUrl = (url) => {
-    const schemeMatch = url.match(/scheme=([^;]+)/)
-    const packageMatch = url.match(/package=([^;]+)/)
-    const pathMatch = url.match(/^intent:\/\/([^#]+)/)
-
-    return {
-      scheme: schemeMatch ? schemeMatch[1] : null,
-      package: packageMatch ? packageMatch[1] : null,
-      path: pathMatch ? pathMatch[1] : '',
-    }
-  }
-
   const handleIntentUrl = (url) => {
     console.log('🔗 Intent URL detected:', url)
 
@@ -389,143 +380,21 @@ export default function App() {
       <WebView
         ref={webViewRef}
         source={{ uri: WEB_URL }}
-        // Pull-to-Refresh 활성화
-        pullToRefreshEnabled={true}
+        {...WEBVIEW_CONFIG}
+        // 이벤트 핸들러
         onRefresh={onRefresh}
-        // JavaScript 활성화 (필수)
-        javaScriptEnabled={true}
-        // DOM 저장소 활성화 (필수)
-        domStorageEnabled={true}
-        // Android: Self-signed 인증서 허용 및 Mixed Content 허용
-        mixedContentMode="always"
-        // 파일 업로드 지원
-        androidLayerType="hardware"
-        allowsInlineMediaPlayback={true}
-        allowsFullscreenVideo={true}
-        // 캐시 활성화
-        cacheEnabled={true}
-        cacheMode="LOAD_DEFAULT"
-        // 서드파티 쿠키 허용
-        thirdPartyCookiesEnabled={true}
-        // 줌 허용
-        scalesPageToFit={true}
-        // 🔥 팝업 허용 (카카오톡 공유 등)
-        setSupportMultipleWindows={true}
-        // 🐛 WebView console.log를 앱 로그로 캡처 (디버깅용)
         onConsoleMessage={(event) => {
           console.log(`[WebView Console] ${event.nativeEvent.message}`)
         }}
-        // 🔥 JavaScript 주입: Intent URL 자동 감지 및 앱으로 전송
-        injectedJavaScript={`
-          (function() {
-            console.log('🚀 [DEBUG] Injected JS starting...');
-            
-            // window.open 오버라이드하여 Intent URL 캡처
-            const originalOpen = window.open;
-            window.open = function(url, target, features) {
-              console.log('🪟 [DEBUG] window.open called with:', url, target, features);
-              
-              if (url && url.startsWith('intent://')) {
-                console.log('📱 [DEBUG] Intent URL detected in window.open:', url);
-                // 네이티브 앱으로 전달
-                if (window.ReactNativeWebView) {
-                  console.log('✅ [DEBUG] Sending to ReactNativeWebView');
-                  window.ReactNativeWebView.postMessage(JSON.stringify({
-                    type: 'INTENT_URL',
-                    url: url
-                  }));
-                } else {
-                  console.error('❌ [DEBUG] ReactNativeWebView not available!');
-                }
-                return null;
-              }
-              
-              if (url && (url.startsWith('kakaotalk://') || url.startsWith('kakaokompassauth://'))) {
-                console.log('📱 [DEBUG] Kakao URL detected in window.open:', url);
-                if (window.ReactNativeWebView) {
-                  console.log('✅ [DEBUG] Sending Kakao URL to ReactNativeWebView');
-                  window.ReactNativeWebView.postMessage(JSON.stringify({
-                    type: 'KAKAO_URL',
-                    url: url
-                  }));
-                } else {
-                  console.error('❌ [DEBUG] ReactNativeWebView not available!');
-                }
-                return null;
-              }
-              
-              console.log('➡️ [DEBUG] Calling original window.open');
-              return originalOpen.call(window, url, target, features);
-            };
-            
-            // location.href 변경 감지
-            let lastHref = window.location.href;
-            const observer = new MutationObserver(() => {
-              const currentHref = window.location.href;
-              if (currentHref !== lastHref) {
-                console.log('🔗 [DEBUG] URL changed:', currentHref);
-                if (currentHref.startsWith('intent://') || currentHref.startsWith('kakaotalk://')) {
-                  console.log('📱 [DEBUG] Special URL in location:', currentHref);
-                }
-                lastHref = currentHref;
-              }
-            });
-            observer.observe(document, { subtree: true, childList: true });
-            
-            // 카카오 SDK 모니터링
-            if (window.Kakao) {
-              console.log('✅ [DEBUG] Kakao SDK detected:', typeof window.Kakao);
-              console.log('✅ [DEBUG] Kakao.Share:', typeof window.Kakao.Share);
-              console.log('✅ [DEBUG] Kakao.Link:', typeof window.Kakao.Link);
-            } else {
-              console.log('⏳ [DEBUG] Kakao SDK not loaded yet, will check again...');
-              setTimeout(() => {
-                if (window.Kakao) {
-                  console.log('✅ [DEBUG] Kakao SDK loaded (delayed)');
-                } else {
-                  console.log('❌ [DEBUG] Kakao SDK still not available');
-                }
-              }, 2000);
-            }
-            
-            console.log('✅ [DEBUG] DailyMeal WebView bridge initialized');
-          })();
-          true; // 반드시 true 반환
-        `}
-        // 🔥 URL 가로채기 - Android 표준 방식
         onShouldStartLoadWithRequest={(request) => {
-          const { url } = request
-          console.log('🔍 [DEBUG] onShouldStartLoadWithRequest:', url)
-
-          // Intent URL 처리 (Android 표준)
-          if (url.startsWith('intent://')) {
-            console.log('✅ [DEBUG] Intent URL caught in onShouldStartLoadWithRequest')
-            handleIntentUrl(url)
-            return false // WebView에서 로딩하지 않음
+          const shouldLoad = !handleSpecialUrl(request.url)
+          return shouldLoad
+        }}
+        onOpenWindow={(syntheticEvent) => {
+          const url = syntheticEvent.nativeEvent.targetUrl
+          if (url) {
+            handleSpecialUrl(url)
           }
-
-          // 카카오톡 앱 스킴 직접 처리
-          if (url.startsWith('kakaotalk://') || url.startsWith('kakaokompassauth://')) {
-            console.log('✅ [DEBUG] Kakao URL caught in onShouldStartLoadWithRequest')
-            console.log('📱 Kakao URL detected:', url)
-            Linking.openURL(url).catch((err) => {
-              console.error('❌ Failed to open Kakao:', err)
-              Alert.alert('오류', '카카오톡 앱을 열 수 없습니다.')
-            })
-            return false
-          }
-
-          // 외부 링크는 기본 브라우저로
-          if (url.startsWith('http://') || url.startsWith('https://')) {
-            const isInternal = url.includes('dailymeal.life') || url.includes('localhost')
-            if (!isInternal) {
-              console.log('🌐 External link:', url)
-              Linking.openURL(url)
-              return false
-            }
-          }
-
-          return true // 내부 링크는 WebView에서 로딩
         }}
         style={styles.webview}
         onLoadStart={() => {
@@ -611,43 +480,6 @@ export default function App() {
         // 네비게이션 상태 변경 감지
         onNavigationStateChange={(navState) => {
           console.log('Navigation state:', navState.url, 'Loading:', navState.loading)
-        }}
-        // 🔥 새 창(팝업) 요청 처리 - 카카오톡 공유 등 (백업용, onShouldStartLoadWithRequest가 우선)
-        onOpenWindow={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent
-          const url = nativeEvent.targetUrl
-          console.log('🪟 [DEBUG] onOpenWindow called with:', url)
-
-          if (!url) {
-            console.log('⚠️ [DEBUG] onOpenWindow: no URL provided')
-            return
-          }
-
-          // Intent URL 처리
-          if (url.startsWith('intent://')) {
-            console.log('✅ [DEBUG] Intent URL caught in onOpenWindow')
-            handleIntentUrl(url)
-            return
-          }
-
-          // 카카오톡 앱 스킴 처리
-          if (url.startsWith('kakaotalk://') || url.startsWith('kakaokompassauth://')) {
-            console.log('✅ [DEBUG] Kakao URL caught in onOpenWindow')
-            console.log('📱 Opening Kakao app from popup:', url)
-            Linking.openURL(url).catch((err) => {
-              console.error('❌ Failed to open Kakao:', err)
-              Alert.alert('오류', '카카오톡 앱을 열 수 없습니다.')
-            })
-            return
-          }
-
-          // HTTP/HTTPS URL은 기본 브라우저로
-          if (url.startsWith('http://') || url.startsWith('https://')) {
-            console.log('🌐 [DEBUG] Opening external URL in browser:', url)
-            Linking.openURL(url).catch((err) => {
-              console.error('❌ Failed to open URL:', err)
-            })
-          }
         }}
       />
 
