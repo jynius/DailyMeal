@@ -3,15 +3,6 @@
 import { useEffect } from 'react'
 import { initializeWebViewBridge } from '@/lib/webview-bridge'
 
-// 디버그: 파일이 로드되었는지 확인
-console.log('🟢 [WebViewBridgeInit] Component file loaded!')
-
-// 즉시 실행 (React 렌더링 전에 초기화)
-if (globalThis.window !== undefined) {
-  console.log('🟡 [WebViewBridgeInit] Calling initializeWebViewBridge() immediately...')
-  initializeWebViewBridge()
-}
-
 /**
  * WebView Bridge Initializer
  *
@@ -20,7 +11,9 @@ if (globalThis.window !== undefined) {
  */
 export function WebViewBridgeInit() {
   useEffect(() => {
-    console.log('🔵 [WebViewBridgeInit] useEffect called, initializing bridge...')
+    // 클라이언트 사이드에서만 실행
+    console.log('� [WebViewBridgeInit] Component mounted in browser')
+    console.log('🟡 [WebViewBridgeInit] Calling initializeWebViewBridge()...')
     initializeWebViewBridge()
   }, [])
 

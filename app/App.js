@@ -384,7 +384,13 @@ export default function App() {
         // 이벤트 핸들러
         onRefresh={onRefresh}
         onConsoleMessage={(event) => {
-          console.log(`[WebView Console] ${event.nativeEvent.message}`)
+          const message = event.nativeEvent.message
+          console.log(`[WebView Console] ${message}`)
+
+          // 디버그: 모든 console 이벤트 출력
+          if (message.includes('WebView') || message.includes('Bridge')) {
+            console.log('🔴 [DEBUG] WebView Bridge related log detected!')
+          }
         }}
         onShouldStartLoadWithRequest={(request) => {
           const shouldLoad = !handleSpecialUrl(request.url)
