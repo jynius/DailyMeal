@@ -3,6 +3,11 @@
 import { useEffect } from 'react'
 import { initializeWebViewBridge } from '@/lib/webview-bridge'
 
+// 즉시 실행 - 모듈 로드 시 바로 alert
+if (globalThis.window?.ReactNativeWebView) {
+  alert('🔴 [Module Level] ReactNativeWebView detected at module load!')
+}
+
 /**
  * WebView Bridge Initializer
  *
@@ -17,7 +22,9 @@ export function WebViewBridgeInit() {
 
     // 디버그: Alert로 확인 (WebView에서 무조건 보임)
     if (globalThis.window?.ReactNativeWebView) {
-      alert('✅ WebViewBridgeInit mounted! ReactNativeWebView detected!')
+      alert('✅ [useEffect] WebViewBridgeInit mounted! ReactNativeWebView detected!')
+    } else {
+      alert('⚠️ [useEffect] WebViewBridgeInit mounted but ReactNativeWebView NOT found!')
     }
 
     initializeWebViewBridge()
