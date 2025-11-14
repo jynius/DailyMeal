@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react'
+import React, { createContext, useContext, useState, ReactNode } from 'react'
 import * as Toast from '@radix-ui/react-toast'
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 
@@ -34,44 +34,81 @@ interface ToastState extends ToastOptions {
   isOpen: boolean
 }
 
-export function ToastProvider({ children }: { children: ReactNode }) {
+// Helper function to generate UUID outside component
+const generateToastId = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
+}
+
+// Helper to filter out toast by id
+const filterToastById = (toasts: ToastState[], id: string) => toasts.filter((t) => t.id !== id)
+
+export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [toasts, setToasts] = useState<ToastState[]>([])
 
-  const showToast = (options: ToastOptions) => {
-    const id = crypto.randomUUID() // Date.now() 대신 UUID 사용
-    const newToast: ToastState = {
-      id,
-      isOpen: true,
-      type: 'info',
-      duration: 5000,
-      ...options
-    }
+  const removeToast = React.useCallback((id: string) => {
+    setToasts((prev) => filterToastById(prev, id))
+  }, [])
 
-    setToasts(prev => [...prev, newToast])
-
-    // 자동 제거
+  const scheduleRemoval = React.useCallback((id: string, duration: number) => {
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id))
-    }, newToast.duration)
-  }
+      setToasts((prev) => filterToastById(prev, id))
+    }, duration)
+  }, [])
 
-  const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id))
-  }
+  const showToast = React.useCallback(
+    (options: ToastOptions) => {
+      const id = generateToastId()
+      const duration = options.duration ?? 5000
 
-  const success = (message: string, title?: string) => 
-    showToast({ message, title, type: 'success' })
+      const newToast: ToastState = {
+        id,
+        isOpen: true,
+        type: 'info',
+        duration,
+        ...options,
+      }
 
-  const error = (message: string, title?: string) => 
-    showToast({ message, title, type: 'error', duration: 7000 })
+      setToasts((prev) => [...prev, newToast])
+      scheduleRemoval(id, duration)
+    },
+    [scheduleRemoval]
+  )
 
-  const warning = (message: string, title?: string) => 
-    showToast({ message, title, type: 'warning', duration: 6000 })
+  const success = React.useCallback(
+    (message: string, title?: string) => {
+      showToast({ message, title, type: 'success' })
+    },
+    [showToast]
+  )
 
-  const info = (message: string, title?: string) => 
-    showToast({ message, title, type: 'info' })
+  const error = React.useCallback(
+    (message: string, title?: string) => {
+      showToast({ message, title, type: 'error', duration: 7000 })
+    },
+    [showToast]
+  )
 
-  const value = React.useMemo(() => ({ showToast, success, error, warning, info }), []);
+  const warning = React.useCallback(
+    (message: string, title?: string) => {
+      showToast({ message, title, type: 'warning', duration: 6000 })
+    },
+    [showToast]
+  )
+
+  const info = React.useCallback(
+    (message: string, title?: string) => {
+      showToast({ message, title, type: 'info' })
+    },
+    [showToast]
+  )
+
+  const value = React.useMemo(
+    () => ({ showToast, success, error, warning, info }),
+    [showToast, success, error, warning, info]
+  )
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -111,18 +148,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             className={`fixed top-4 right-4 w-96 p-4 rounded-lg border shadow-lg z-50 animate-in slide-in-from-right duration-300 ${getColorClass(type || 'info')}`}
           >
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                {getIcon(type || 'info')}
-              </div>
+              <div className="flex-shrink-0 mt-0.5">{getIcon(type || 'info')}</div>
               <div className="flex-1 min-w-0">
-                {title && (
-                  <Toast.Title className="font-semibold text-sm mb-1">
-                    {title}
-                  </Toast.Title>
-                )}
-                <Toast.Description className="text-sm opacity-90">
-                  {message}
-                </Toast.Description>
+                {title && <Toast.Title className="font-semibold text-sm mb-1">{title}</Toast.Title>}
+                <Toast.Description className="text-sm opacity-90">{message}</Toast.Description>
               </div>
               <Toast.Close asChild>
                 <button

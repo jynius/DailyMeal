@@ -100,9 +100,14 @@ export function MealCard({
       log.info('Share link created successfully', { url: result.url })
       setShareUrl(result.url)
 
-      // 링크 복사
-      await navigator.clipboard.writeText(result.url)
-      toast.success('공유 링크가 복사되었습니다! 📋')
+      // 링크 복사 (실패해도 모달은 열기)
+      try {
+        await navigator.clipboard.writeText(result.url)
+        toast.success('공유 링크가 복사되었습니다! 📋')
+      } catch (clipboardError) {
+        log.warn('Clipboard API not available', clipboardError)
+        // 클립보드 실패는 무시 (비보안 컨텍스트에서는 정상)
+      }
 
       // ShareModal 열기 (추가 공유 옵션용)
       setShowShareModal(true)

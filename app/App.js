@@ -19,9 +19,17 @@ import * as ImagePicker from 'expo-image-picker'
 import { handleSpecialUrl, parseIntentUrl } from './utils/url-handler'
 import { WEBVIEW_CONFIG } from './config/webview-config'
 
-// WebView 디버깅 활성화 (Android)
+// WebView 디버깅 활성화 (Android) - 조건부로 import
 if (Platform.OS === 'android') {
-  WebView.setWebContentsDebuggingEnabled(true)
+  try {
+    const RNWebView = require('react-native-webview')
+    if (RNWebView && typeof RNWebView.default?.setWebContentsDebuggingEnabled === 'function') {
+      RNWebView.default.setWebContentsDebuggingEnabled(true)
+      console.log('✅ WebView debugging enabled')
+    }
+  } catch (error) {
+    console.warn('⚠️ Could not enable WebView debugging:', error.message)
+  }
 }
 
 export default function App() {
@@ -393,46 +401,57 @@ export default function App() {
             
             // location.href setter 오버라이드
             const originalDescriptor = Object.getOwnPropertyDescriptor(window.location, 'href');
-            Object.defineProperty(window.location, 'href', {
-              set: function(url) {
-                console.log('🔗 [Injected JS] location.href setter called:', url);
-                
-                // Intent URL 감지
-                if (url && url.startsWith('intent://')) {
-                  console.log('� [Injected JS] Intent URL detected!');
-                  if (window.ReactNativeWebView) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({
-                      type: 'INTENT_URL',
-                      url: url
-                    }));
-                    console.log('✅ [Injected JS] Intent URL sent to React Native');
-                  } else {
-                    console.log('❌ [Injected JS] ReactNativeWebView not found!');
-                  }
-                  return; // 실제 navigation 차단
-                }
-                
-                // 카카오톡 URL 감지
-                if (url && (url.startsWith('kakaotalk://') || url.startsWith('kakaokompassauth://'))) {
-                  console.log('📱 [Injected JS] Kakao URL detected!');
-                  if (window.ReactNativeWebView) {
-                    window.ReactNativeWebView.postMessage(JSON.stringify({
-                      type: 'KAKAO_URL',
-                      url: url
-                    }));
-                  }
-                  return;
-                }
-                
-                // 일반 URL은 정상 처리
-                if (originalDescriptor && originalDescriptor.set) {
-                  originalDescriptor.set.call(window.location, url);
-                }
-              },
-              get: originalDescriptor ? originalDescriptor.get : undefined
-            });
             
-            console.log('✅ [Injected JS] location.href interceptor installed!');
+            // 이미 오버라이드되어 있거나 재정의 불가능하면 스킵
+            if (originalDescriptor && !originalDescriptor.configurable) {
+              console.log('⚠️ [Injected JS] location.href already overridden or not configurable, skipping');
+            } else {
+              try {
+                Object.defineProperty(window.location, 'href', {
+                  configurable: true,
+                  set: function(url) {
+                    console.log('🔗 [Injected JS] location.href setter called:', url);
+                    
+                    // Intent URL 감지
+                    if (url && url.startsWith('intent://')) {
+                      console.log('📱 [Injected JS] Intent URL detected!');
+                      if (window.ReactNativeWebView) {
+                        window.ReactNativeWebView.postMessage(JSON.stringify({
+                          type: 'INTENT_URL',
+                          url: url
+                        }));
+                        console.log('✅ [Injected JS] Intent URL sent to React Native');
+                      } else {
+                        console.log('❌ [Injected JS] ReactNativeWebView not found!');
+                      }
+                      return; // 실제 navigation 차단
+                    }
+                    
+                    // 카카오톡 URL 감지
+                    if (url && (url.startsWith('kakaotalk://') || url.startsWith('kakaokompassauth://'))) {
+                      console.log('📱 [Injected JS] Kakao URL detected!');
+                      if (window.ReactNativeWebView) {
+                        window.ReactNativeWebView.postMessage(JSON.stringify({
+                          type: 'KAKAO_URL',
+                          url: url
+                        }));
+                      }
+                      return;
+                    }
+                    
+                    // 일반 URL은 정상 처리
+                    if (originalDescriptor && originalDescriptor.set) {
+                      originalDescriptor.set.call(window.location, url);
+                    }
+                  },
+                  get: originalDescriptor ? originalDescriptor.get : undefined
+                });
+                console.log('✅ [Injected JS] location.href interceptor installed!');
+              } catch (e) {
+                console.error('❌ [Injected JS] Failed to override location.href:', e.message);
+              }
+            }
+            
             true;
           })();
         `}

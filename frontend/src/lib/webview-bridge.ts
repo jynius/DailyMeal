@@ -24,61 +24,73 @@ export function initializeWebViewBridge() {
   const originalLocationDescriptor = Object.getOwnPropertyDescriptor(globalThis.location, 'href')
   const originalLocationSetter = originalLocationDescriptor ? originalLocationDescriptor.set : null
 
-  Object.defineProperty(globalThis.location, 'href', {
-    set: function (url: string) {
-      console.log('🔗 [WebView Bridge] location.href setter called:', url)
+  // 이미 오버라이드되어 있으면 스킵
+  if (originalLocationDescriptor && !originalLocationDescriptor.configurable) {
+    console.log(
+      '⚠️ [WebView Bridge] location.href already overridden or not configurable, skipping'
+    )
+  } else {
+    try {
+      Object.defineProperty(globalThis.location, 'href', {
+        configurable: true, // 재정의 가능하도록 설정
+        set: function (url: string) {
+          console.log('🔗 [WebView Bridge] location.href setter called:', url)
 
-      // Intent URL 감지
-      if (url?.startsWith('intent://')) {
-        console.log('📱 [WebView Bridge] ✅ INTENT URL DETECTED!')
-        console.log('📱 [WebView Bridge] URL:', url.substring(0, 200))
+          // Intent URL 감지
+          if (url?.startsWith('intent://')) {
+            console.log('📱 [WebView Bridge] ✅ INTENT URL DETECTED!')
+            console.log('📱 [WebView Bridge] URL:', url.substring(0, 200))
 
-        if (globalThis.window?.ReactNativeWebView) {
-          globalThis.window.ReactNativeWebView.postMessage(
-            JSON.stringify({
-              type: 'INTENT_URL',
-              url: url,
-            })
-          )
-          return // 실제 네비게이션 차단
-        } else {
-          // ReactNativeWebView 없으면 window.open으로 시도 (onOpenWindow에서 잡힘)
-          console.log('⚠️ [WebView Bridge] No ReactNativeWebView, trying window.open')
-          globalThis.open(url, '_blank')
-          return
-        }
-      }
+            if (globalThis.window?.ReactNativeWebView) {
+              globalThis.window.ReactNativeWebView.postMessage(
+                JSON.stringify({
+                  type: 'INTENT_URL',
+                  url: url,
+                })
+              )
+              return // 실제 네비게이션 차단
+            } else {
+              // ReactNativeWebView 없으면 window.open으로 시도 (onOpenWindow에서 잡힘)
+              console.log('⚠️ [WebView Bridge] No ReactNativeWebView, trying window.open')
+              globalThis.open(url, '_blank')
+              return
+            }
+          }
 
-      // Kakao URL 감지
-      if (url?.startsWith('kakaotalk://') || url?.startsWith('kakaokompassauth://')) {
-        console.log('📱 [WebView Bridge] ✅ KAKAO URL DETECTED!')
+          // Kakao URL 감지
+          if (url?.startsWith('kakaotalk://') || url?.startsWith('kakaokompassauth://')) {
+            console.log('📱 [WebView Bridge] ✅ KAKAO URL DETECTED!')
 
-        if (globalThis.window?.ReactNativeWebView) {
-          globalThis.window.ReactNativeWebView.postMessage(
-            JSON.stringify({
-              type: 'KAKAO_URL',
-              url: url,
-            })
-          )
-          return
-        } else {
-          globalThis.open(url, '_blank')
-          return
-        }
-      }
+            if (globalThis.window?.ReactNativeWebView) {
+              globalThis.window.ReactNativeWebView.postMessage(
+                JSON.stringify({
+                  type: 'KAKAO_URL',
+                  url: url,
+                })
+              )
+              return
+            } else {
+              globalThis.open(url, '_blank')
+              return
+            }
+          }
 
-      // 일반 URL은 정상 처리
-      console.log('➡️ [WebView Bridge] Normal URL, passing through')
-      if (originalLocationSetter) {
-        originalLocationSetter.call(globalThis.location, url)
-      }
-    },
-    get: function () {
-      return originalLocationDescriptor
-        ? originalLocationDescriptor.get!.call(globalThis.location)
-        : undefined
-    },
-  })
+          // 일반 URL은 정상 처리
+          console.log('➡️ [WebView Bridge] Normal URL, passing through')
+          if (originalLocationSetter) {
+            originalLocationSetter.call(globalThis.location, url)
+          }
+        },
+        get: function () {
+          return originalLocationDescriptor
+            ? originalLocationDescriptor.get!.call(globalThis.location)
+            : undefined
+        },
+      })
+    } catch (e) {
+      console.error('❌ [WebView Bridge] Failed to override location.href:', e)
+    }
+  }
 
   // ========== 2. window.open 오버라이드 ==========
   const originalOpen = globalThis.open
