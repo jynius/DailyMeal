@@ -181,56 +181,62 @@ export default function RestaurantsPage() {
               <div className="w-full h-full flex items-center justify-center bg-gray-100">
                 <div className="text-center text-gray-500 px-4">
                   <MapPin size={48} className="mx-auto mb-2 text-gray-400 animate-pulse" />
-                  {location.isLoading ? (
-                    <p className="text-sm">현재 위치를 가져오는 중...</p>
-                  ) : location.error ? (
-                    <div>
-                      <p className="text-sm font-medium text-red-600 mb-2">
-                        위치 정보를 가져올 수 없습니다
-                      </p>
-                      <p className="text-xs text-gray-600 mb-3">{location.error.message}</p>
-                      <button
-                        onClick={() => {
-                          alert.showConfirm({
-                            title: '📍 위치 권한 재요청',
-                            message:
-                              '위치 권한을 다시 요청하시겠습니까?\n\n브라우저 설정에서 위치 권한이 차단된 경우,\n설정에서 직접 허용해주셔야 합니다.',
-                            type: 'warning',
-                            confirmText: '다시 시도',
-                            cancelText: '취소',
-                            onConfirm: () => {
-                              location.fetchLocation()
-                            },
-                          })
-                        }}
-                        className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
-                      >
-                        다시 시도
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-sm mb-3">위치 권한을 허용해주세요</p>
-                      <button
-                        onClick={() => {
-                          alert.showConfirm({
-                            title: '📍 위치 권한 필요',
-                            message:
-                              '주변 맛집을 지도에 표시하려면 위치 권한이 필요합니다.\n\n권한을 허용하시겠습니까?',
-                            type: 'info',
-                            confirmText: '허용하기',
-                            cancelText: '취소',
-                            onConfirm: () => {
-                              location.fetchLocation()
-                            },
-                          })
-                        }}
-                        className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
-                      >
-                        위치 권한 요청
-                      </button>
-                    </div>
-                  )}
+                  {(() => {
+                    if (location.isLoading) {
+                      return <p className="text-sm">현재 위치를 가져오는 중...</p>
+                    }
+                    if (location.error) {
+                      return (
+                        <div>
+                          <p className="text-sm font-medium text-red-600 mb-2">
+                            위치 정보를 가져올 수 없습니다
+                          </p>
+                          <p className="text-xs text-gray-600 mb-3">{location.error.message}</p>
+                          <button
+                            onClick={() => {
+                              alert.showConfirm({
+                                title: '📍 위치 권한 재요청',
+                                message:
+                                  '위치 권한을 다시 요청하시겠습니까?\n\n브라우저 설정에서 위치 권한이 차단된 경우,\n설정에서 직접 허용해주셔야 합니다.',
+                                type: 'warning',
+                                confirmText: '다시 시도',
+                                cancelText: '취소',
+                                onConfirm: () => {
+                                  location.fetchLocation()
+                                },
+                              })
+                            }}
+                            className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
+                          >
+                            다시 시도
+                          </button>
+                        </div>
+                      )
+                    }
+                    return (
+                      <div>
+                        <p className="text-sm mb-3">위치 권한을 허용해주세요</p>
+                        <button
+                          onClick={() => {
+                            alert.showConfirm({
+                              title: '📍 위치 권한 필요',
+                              message:
+                                '주변 맛집을 지도에 표시하려면 위치 권한이 필요합니다.\n\n권한을 허용하시겠습니까?',
+                              type: 'info',
+                              confirmText: '허용하기',
+                              cancelText: '취소',
+                              onConfirm: () => {
+                                location.fetchLocation()
+                              },
+                            })
+                          }}
+                          className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
+                        >
+                          허용하기
+                        </button>
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
             )}
@@ -268,33 +274,37 @@ export default function RestaurantsPage() {
           </div>
         </div>
       ) : (
-        <>
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                내 맛집 ({sortedRestaurants.length})
-              </h3>
-              <select
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="text-sm text-gray-600 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="recent">최근 방문 순</option>
-                <option value="count">방문 횟수 순</option>
-                <option value="rating">별점 순</option>
-              </select>
-            </div>
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              내 맛집 ({sortedRestaurants.length})
+            </h3>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as SortOption)}
+              className="text-sm text-gray-600 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="recent">최근 방문순</option>
+              <option value="count">방문 횟수순</option>
+              <option value="rating">평점 높은순</option>
+            </select>
+          </div>
 
-            {loading ? (
-              <Spinner container="page" text="맛집 불러오는 중..." />
-            ) : sortedRestaurants.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-lg">
-                <p className="text-gray-500 mb-2">아직 등록된 맛집이 없습니다</p>
-                <p className="text-sm text-gray-400">
-                  식사를 기록하고 평가하면 자동으로 맛집이 생성됩니다!
-                </p>
-              </div>
-            ) : (
+          {(() => {
+            if (loading) {
+              return <Spinner container="page" text="맛집 불러오는 중..." />
+            }
+            if (sortedRestaurants.length === 0) {
+              return (
+                <div className="text-center py-12 bg-white rounded-lg">
+                  <p className="text-gray-500 mb-2">아직 등록된 맛집이 없습니다</p>
+                  <p className="text-sm text-gray-400">
+                    식사를 기록하고 평가하면 자동으로 맛집이 생성됩니다!
+                  </p>
+                </div>
+              )
+            }
+            return (
               <div className="space-y-3">
                 {sortedRestaurants.map((restaurant) => (
                   <Link
@@ -312,9 +322,9 @@ export default function RestaurantsPage() {
                         )}
                       </div>
                       <div className="flex items-center ml-2">
-                        {[...Array(5)].map((_, i) => (
+                        {Array.from({ length: 5 }, (_, i) => (
                           <Star
-                            key={i}
+                            key={`star-${restaurant.id}-${i}`}
                             size={14}
                             className={`${
                               i < Math.round(restaurant.avgRating)
@@ -349,9 +359,9 @@ export default function RestaurantsPage() {
                   </Link>
                 ))}
               </div>
-            )}
-          </div>
-        </>
+            )
+          })()}
+        </div>
       )}
     </div>
   )

@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/toast'
 import Image from 'next/image'
 import Spinner from '@/components/ui/spinner'
 import { transformImageUrl } from '@/lib/constants'
+import { logger } from '@/lib/logger'
 
 interface EvaluateFormData {
   rating: number
@@ -79,7 +80,7 @@ function EvaluatePageContent({ id }: { id: string }) {
           })
         }
       } catch (error) {
-        console.error('Failed to fetch meal:', error)
+        logger.error('Failed to fetch meal for evaluation:', error, 'EvaluatePage')
         showAlert({
           title: '오류',
           message: '식사 기록을 불러오는데 실패했습니다.',
@@ -128,8 +129,10 @@ function EvaluatePageContent({ id }: { id: string }) {
               location: data.display_name.split(',').slice(0, 2).join(','),
             }))
           }
-        } catch (error) {
-          console.error('역지오코딩 실패:', error)
+        } catch (error: unknown) {
+          // 역지오코딩 실패는 치명적이지 않음 - GPS 좌표는 이미 저장됨
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+          logger.warn(`Reverse geocoding failed: ${errorMessage}`, 'EvaluatePage')
         }
 
         setGpsLoading(false)

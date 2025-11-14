@@ -18,6 +18,7 @@ import * as ImagePicker from 'expo-image-picker'
 // 유틸리티 및 설정
 import { handleSpecialUrl, parseIntentUrl } from './utils/url-handler'
 import { WEBVIEW_CONFIG } from './config/webview-config'
+import { INJECTED_JAVASCRIPT } from './config/injected-javascript'
 
 // WebView 디버깅 활성화 (Android) - 조건부로 import
 if (Platform.OS === 'android') {
@@ -25,7 +26,6 @@ if (Platform.OS === 'android') {
     const RNWebView = require('react-native-webview')
     if (RNWebView && typeof RNWebView.default?.setWebContentsDebuggingEnabled === 'function') {
       RNWebView.default.setWebContentsDebuggingEnabled(true)
-      console.log('✅ WebView debugging enabled')
     }
   } catch (error) {
     console.warn('⚠️ Could not enable WebView debugging:', error.message)
@@ -44,14 +44,10 @@ export default function App() {
   useEffect(() => {
     // Android 내비게이션 바 숨기기 (전체화면 모드)
     if (Platform.OS === 'android') {
-      NavigationBar.setVisibilityAsync('hidden').catch((err) =>
-        console.log('Navigation bar hide failed:', err)
-      )
+      NavigationBar.setVisibilityAsync('hidden').catch(() => {})
 
       // 내비게이션 바 배경색 설정 (보일 때를 대비)
-      NavigationBar.setBackgroundColorAsync('#ffffff').catch((err) =>
-        console.log('Navigation bar color failed:', err)
-      )
+      NavigationBar.setBackgroundColorAsync('#ffffff').catch(() => {})
     }
   }, [])
 
@@ -99,32 +95,16 @@ export default function App() {
   // 파일 선택 핸들러 - WebView에서 이미지 업로드 시 호출
   const handleImagePicker = async () => {
     try {
-      console.log('📸 Starting image picker...')
-
-      // 권한 요청
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
-      console.log('📸 Permission status:', status)
-
-      if (status !== 'granted') {
-        console.warn('⚠️ Media library permission denied')
-        return null
-      }
-
-      // 이미지 선택 (갤러리)
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'], // deprecated 경고 해결
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsMultipleSelection: true,
         quality: 0.8,
-        base64: true, // Base64로 변환하여 WebView에 전달
+        base64: true,
       })
 
-      console.log('📸 Picker result:', result)
-
       if (!result.canceled && result.assets) {
-        console.log('✅ Images selected:', result.assets.length)
         return result.assets
       }
-      console.log('⚠️ Image selection canceled or no assets')
       return null
     } catch (err) {
       console.error('❌ Image picker error:', err)
@@ -135,14 +115,10 @@ export default function App() {
   // 카메라 촬영 핸들러
   const handleCamera = async () => {
     try {
-      console.log('📷 Starting camera...')
-
       // 권한 요청
       const { status } = await ImagePicker.requestCameraPermissionsAsync()
-      console.log('📷 Camera permission status:', status)
 
       if (status !== 'granted') {
-        console.warn('⚠️ Camera permission denied')
         Alert.alert('권한 필요', '카메라를 사용하려면 권한이 필요합니다.')
         return null
       }
@@ -153,13 +129,9 @@ export default function App() {
         base64: true,
       })
 
-      console.log('📷 Camera result:', result)
-
       if (!result.canceled && result.assets) {
-        console.log('✅ Photo captured')
         return result.assets
       }
-      console.log('⚠️ Camera canceled or no assets')
       return null
     } catch (err) {
       console.error('❌ Camera error:', err)
@@ -312,31 +284,24 @@ export default function App() {
             console.log('⚠️ Kakao Talk not installed')
             // Play Store로 이동
             return Linking.openURL(`market://details?id=${packageName}`).catch(() => {
-              Alert.alert('카카오톡 설치 필요', '카카오톡을 설치한 후 다시 시도해주세요.')
+              console.warn('⚠️ Play Store open failed')
             })
           }
         })
         .catch((err) => {
           console.error('❌ Failed to open Kakao Talk:', err)
-          Alert.alert('오류', '카카오톡을 열 수 없습니다.')
         })
-    } else {
-      console.log(`⚠️ Unsupported package: ${packageName}`)
     }
   }
 
   const handleKakaoUrl = (url) => {
-    console.log('📱 Kakao URL from WebView:', url)
     Linking.openURL(url).catch((err) => {
       console.error('❌ Failed to open Kakao app:', err)
-      Alert.alert('오류', '카카오톡 앱을 열 수 없습니다.')
     })
   }
 
   const handlePickImage = async () => {
-    console.log('📸 pickImage request received')
     const images = await showImageSourceDialog()
-    console.log('📸 Images returned:', images ? images.length : 'null')
 
     if (images) {
       const imageData = images.map((img) => ({
@@ -395,66 +360,7 @@ export default function App() {
         source={{ uri: WEB_URL }}
         {...WEBVIEW_CONFIG}
         // Intent URL 가로채기 (location.href setter 오버라이드)
-        injectedJavaScript={`
-          (function() {
-            console.log('🔴 [Injected JS] Installing location.href interceptor...');
-            
-            // location.href setter 오버라이드
-            const originalDescriptor = Object.getOwnPropertyDescriptor(window.location, 'href');
-            
-            // 이미 오버라이드되어 있거나 재정의 불가능하면 스킵
-            if (originalDescriptor && !originalDescriptor.configurable) {
-              console.log('⚠️ [Injected JS] location.href already overridden or not configurable, skipping');
-            } else {
-              try {
-                Object.defineProperty(window.location, 'href', {
-                  configurable: true,
-                  set: function(url) {
-                    console.log('🔗 [Injected JS] location.href setter called:', url);
-                    
-                    // Intent URL 감지
-                    if (url && url.startsWith('intent://')) {
-                      console.log('📱 [Injected JS] Intent URL detected!');
-                      if (window.ReactNativeWebView) {
-                        window.ReactNativeWebView.postMessage(JSON.stringify({
-                          type: 'INTENT_URL',
-                          url: url
-                        }));
-                        console.log('✅ [Injected JS] Intent URL sent to React Native');
-                      } else {
-                        console.log('❌ [Injected JS] ReactNativeWebView not found!');
-                      }
-                      return; // 실제 navigation 차단
-                    }
-                    
-                    // 카카오톡 URL 감지
-                    if (url && (url.startsWith('kakaotalk://') || url.startsWith('kakaokompassauth://'))) {
-                      console.log('📱 [Injected JS] Kakao URL detected!');
-                      if (window.ReactNativeWebView) {
-                        window.ReactNativeWebView.postMessage(JSON.stringify({
-                          type: 'KAKAO_URL',
-                          url: url
-                        }));
-                      }
-                      return;
-                    }
-                    
-                    // 일반 URL은 정상 처리
-                    if (originalDescriptor && originalDescriptor.set) {
-                      originalDescriptor.set.call(window.location, url);
-                    }
-                  },
-                  get: originalDescriptor ? originalDescriptor.get : undefined
-                });
-                console.log('✅ [Injected JS] location.href interceptor installed!');
-              } catch (e) {
-                console.error('❌ [Injected JS] Failed to override location.href:', e.message);
-              }
-            }
-            
-            true;
-          })();
-        `}
+        injectedJavaScript={INJECTED_JAVASCRIPT}
         // 이벤트 핸들러
         onRefresh={onRefresh}
         onConsoleMessage={(event) => {

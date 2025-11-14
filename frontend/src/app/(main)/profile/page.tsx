@@ -2,10 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { User, Settings, Calendar, LogOut, Edit2, Camera } from 'lucide-react'
-import { tokenManager } from '@/lib/api'
+import { tokenManager, profileApi, UserProfile } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
-import { profileApi, UserProfile } from '@/lib/api'
 import Spinner from '@/components/ui/spinner'
 
 export default function ProfilePage() {
@@ -98,13 +97,11 @@ export default function ProfilePage() {
 
     try {
       // 이미지가 변경된 경우 먼저 업로드
-      let imageUrl = editData.avatar
       if (editData.avatar && editData.avatar.startsWith('data:')) {
         // Base64 이미지를 File 객체로 변환
         const blob = await fetch(editData.avatar).then((r) => r.blob())
         const file = new File([blob], 'profile.jpg', { type: 'image/jpeg' })
-        const uploadResult = await profileApi.uploadProfileImage(file)
-        imageUrl = uploadResult.profileImage
+        await profileApi.uploadProfileImage(file)
       }
 
       // 프로필 정보 업데이트
@@ -180,27 +177,41 @@ export default function ProfilePage() {
         />
 
         <div className="flex items-start space-x-4">
-          <div
-            onClick={handleImageClick}
-            className={`relative w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 ${
-              isEditing ? 'cursor-pointer hover:opacity-80' : ''
-            }`}
-          >
-            {(isEditing ? editData.avatar : profile.profileImage) ? (
-              <img
-                src={isEditing ? editData.avatar! : profile.profileImage!}
-                alt="Profile"
-                className="w-20 h-20 rounded-full object-cover"
-              />
-            ) : (
-              <User size={40} className="text-blue-500" />
-            )}
-            {isEditing && (
+          {isEditing ? (
+            <button
+              type="button"
+              onClick={handleImageClick}
+              className="relative w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80"
+            >
+              {(() => {
+                const avatarSrc = editData.avatar
+                return avatarSrc ? (
+                  <img
+                    src={avatarSrc}
+                    alt="Profile"
+                    className="w-20 h-20 rounded-full object-cover"
+                  />
+                ) : (
+                  <User size={40} className="text-blue-500" />
+                )
+              })()}
               <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center">
                 <Camera size={24} className="text-white" />
               </div>
-            )}
-          </div>
+            </button>
+          ) : (
+            <div className="relative w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+              {profile.profileImage ? (
+                <img
+                  src={profile.profileImage}
+                  alt="Profile"
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+              ) : (
+                <User size={40} className="text-blue-500" />
+              )}
+            </div>
+          )}
 
           <div className="flex-1 min-w-0">
             {isEditing ? (
@@ -289,9 +300,9 @@ export default function ProfilePage() {
             desc: '프라이버시, 알림, 장소 관리',
           },
           { icon: Calendar, label: '통계', href: '/statistics', desc: '평가 분석 및 방문 기록' },
-        ].map((item, index) => (
+        ].map((item) => (
           <button
-            key={index}
+            key={item.href}
             onClick={() => router.push(item.href)}
             className="w-full flex items-center justify-between bg-white p-4 rounded-lg border hover:bg-gray-50 transition-colors"
           >
@@ -348,8 +359,7 @@ export default function ProfilePage() {
           onClick={handleDeleteAccount}
           className="w-full flex items-center justify-center bg-red-50 text-red-600 p-4 rounded-lg border border-red-200 hover:bg-red-100 transition-colors"
         >
-          <span className="mr-2">⚠️</span>
-          회원 탈퇴
+          <span className="mr-2">⚠️</span> 회원 탈퇴
         </button>
       </div>
 

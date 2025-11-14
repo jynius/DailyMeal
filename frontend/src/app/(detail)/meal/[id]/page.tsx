@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, Star, MapPin, Share2 } from 'lucide-react'
+import { Star, MapPin, Share2 } from 'lucide-react'
 import Link from 'next/link'
 import { useAlert } from '@/components/ui/alert'
 import { useToast } from '@/components/ui/toast'
@@ -10,17 +9,13 @@ import { ShareModal } from '@/components/share-modal'
 import { createShare } from '@/lib/api'
 import Image from 'next/image'
 import type { MealRecord } from '@/types'
-import { Header } from '@/components/header'
 import Spinner from '@/components/ui/spinner'
 import { transformImageUrl } from '@/lib/constants'
+import { logger } from '@/lib/logger'
 
-export default async function MealDetailPage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
-}) {
+export default async function MealDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  
+
   return <MealDetailContent id={id} />
 }
 
@@ -31,7 +26,6 @@ function MealDetailContent({ id }: { id: string }) {
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareUrl, setShareUrl] = useState<string>('')
   const [isCreatingShare, setIsCreatingShare] = useState(false)
-  const router = useRouter()
   const { showAlert } = useAlert()
   const toast = useToast()
 
@@ -41,11 +35,11 @@ function MealDetailContent({ id }: { id: string }) {
       const data = await mealRecordsApi.getOne(id)
       setMeal(data)
     } catch (error) {
-      console.error('Failed to fetch meal:', error)
+      logger.error('Failed to fetch meal:', error, 'MealDetailPage')
       showAlert({
         title: '오류',
         message: '식사 기록을 불러오는데 실패했습니다.',
-        type: 'error'
+        type: 'error',
       })
     } finally {
       setLoading(false)
@@ -73,7 +67,12 @@ function MealDetailContent({ id }: { id: string }) {
     )
   }
 
-  const photos = meal.photos && meal.photos.length > 0 ? meal.photos : (meal.photo ? [meal.photo] : [])
+  const getPhotos = () => {
+    if (meal.photos && meal.photos.length > 0) return meal.photos
+    if (meal.photo) return [meal.photo]
+    return []
+  }
+  const photos = getPhotos()
   const hasRating = meal.rating !== undefined && meal.rating !== null && meal.rating > 0
 
   // 이미지 URL을 절대 경로로 변환 (카카오톡 공유용)
@@ -88,7 +87,7 @@ function MealDetailContent({ id }: { id: string }) {
   const handleShare = async () => {
     try {
       setIsCreatingShare(true)
-      
+
       // 이미 공유 URL이 있으면 재사용, 없으면 생성
       let url = shareUrl
       if (!url) {
@@ -96,14 +95,14 @@ function MealDetailContent({ id }: { id: string }) {
         url = result.url
         setShareUrl(url)
       }
-      
+
       // 클립보드에 복사
       await navigator.clipboard.writeText(url)
       toast.success('공유 링크가 복사되었습니다!')
-      
+
       setShowShareModal(true)
     } catch (error) {
-      console.error('Failed to create share link:', error)
+      logger.error('Failed to create share link:', error, 'MealDetailPage')
       toast.error('공유 링크 생성에 실패했습니다.')
     } finally {
       setIsCreatingShare(false)
@@ -115,8 +114,8 @@ function MealDetailContent({ id }: { id: string }) {
   const shareData = {
     title: `${meal.name} - DailyMeal`,
     description: meal.memo || `${meal.name} 식사 기록`,
-    url: shareUrl || `${window.location.origin}/meal/${meal.id}`,
-    imageUrl: getAbsoluteImageUrl(photos.length > 0 ? photos[0] : undefined)
+    url: shareUrl || `${globalThis.location.origin}/meal/${meal.id}`,
+    imageUrl: getAbsoluteImageUrl(photos.length > 0 ? photos[0] : undefined),
   }
 
   return (
@@ -126,60 +125,92 @@ function MealDetailContent({ id }: { id: string }) {
         <div className="relative">
           <div className="aspect-square bg-gray-100 relative overflow-hidden">
             {/* 현재 사진 */}
-            {photos.map((photoUrl, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
-                  index === currentPhotoIndex ? 'translate-x-0' : index < currentPhotoIndex ? '-translate-x-full' : 'translate-x-full'
-                }`}
-              >
-                <Image
-                  src={transformImageUrl(photoUrl)}
-                  alt={`${meal.name} ${index + 1}`}
-                  width={800}
-                  height={800}
-                  unoptimized
-                  className="w-full h-full object-cover"
-                  priority={index === 0}
-                />
-              </div>
-            ))}
+            {photos.map((photoUrl, index) => {
+              const getTransformClass = () => {
+                if (index === currentPhotoIndex) return 'translate-x-0'
+                if (index < currentPhotoIndex) return '-translate-x-full'
+                return 'translate-x-full'
+              }
+
+              return (
+                <div
+                  key={`photo-${photoUrl}-${index}`}
+                  className={`absolute inset-0 transition-transform duration-300 ease-in-out ${getTransformClass()}`}
+                >
+                  <Image
+                    src={transformImageUrl(photoUrl)}
+                    alt={`${meal.name} ${index + 1}`}
+                    width={800}
+                    height={800}
+                    unoptimized
+                    className="w-full h-full object-cover"
+                    priority={index === 0}
+                  />
+                </div>
+              )
+            })}
           </div>
-          
+
           {/* 네비게이션 버튼 (2장 이상일 때만) */}
           {photos.length > 1 && (
             <>
               <button
-                onClick={() => setCurrentPhotoIndex(prev => prev === 0 ? photos.length - 1 : prev - 1)}
+                onClick={() =>
+                  setCurrentPhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1))
+                }
                 className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-black/70 transition-colors z-[5]"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polyline points="15 18 9 12 15 6"></polyline>
                 </svg>
               </button>
               <button
-                onClick={() => setCurrentPhotoIndex(prev => prev === photos.length - 1 ? 0 : prev + 1)}
+                onClick={() =>
+                  setCurrentPhotoIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1))
+                }
                 className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-black/70 transition-colors z-[5]"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
               </button>
-              
+
               {/* 페이지 인디케이터 */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium z-[5]">
                 {currentPhotoIndex + 1} / {photos.length}
               </div>
-              
+
               {/* 썸네일 미리보기 */}
               <div className="absolute bottom-16 left-0 right-0 px-4">
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide justify-center">
                   {photos.map((photoUrl, index) => (
                     <button
-                      key={index}
+                      key={`thumbnail-${photoUrl}-${index}`}
                       onClick={() => setCurrentPhotoIndex(index)}
                       className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                        index === currentPhotoIndex ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-60'
+                        index === currentPhotoIndex
+                          ? 'border-white scale-110 shadow-lg'
+                          : 'border-transparent opacity-60'
                       }`}
                     >
                       <Image
@@ -203,9 +234,7 @@ function MealDetailContent({ id }: { id: string }) {
       <div className="p-4 space-y-4">
         {/* 동행자 (사진 바로 다음) */}
         <div className="flex items-center text-sm text-gray-700 pb-3 border-b border-gray-200">
-          <span className="mr-2">
-            {meal.companionNames ? '👥' : '🙋'}
-          </span>
+          <span className="mr-2">{meal.companionNames ? '👥' : '🙋'}</span>
           <span>{meal.companionNames || '혼밥'}</span>
         </div>
 
@@ -236,13 +265,13 @@ function MealDetailContent({ id }: { id: string }) {
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
-                    minute: '2-digit'
+                    minute: '2-digit',
                   })}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-2 ml-3">
-              <button 
+              <button
                 onClick={handleShare}
                 disabled={isCreatingShare}
                 className="text-gray-600 hover:text-blue-500 transition-colors p-2 rounded-lg hover:bg-gray-50 disabled:opacity-50"
@@ -263,20 +292,18 @@ function MealDetailContent({ id }: { id: string }) {
           <div className="space-y-3">
             {/* 별점 */}
             <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
+              {Array.from({ length: 5 }, (_, i) => (
                 <Star
-                  key={i}
+                  key={`star-rating-${meal.id}-${i}`}
                   size={24}
                   className={`${
                     i < meal.rating! ? 'text-yellow-500 fill-current' : 'text-gray-300'
                   }`}
                 />
               ))}
-              <span className="ml-2 text-lg font-semibold text-gray-700">
-                {meal.rating}/5
-              </span>
+              <span className="ml-2 text-lg font-semibold text-gray-700">{meal.rating}/5</span>
             </div>
-            
+
             {/* 메모 */}
             {meal.memo && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -288,9 +315,7 @@ function MealDetailContent({ id }: { id: string }) {
           </div>
         ) : (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-            <p className="text-sm text-gray-600">
-              아직 평가하지 않은 식사입니다.
-            </p>
+            <p className="text-sm text-gray-600">아직 평가하지 않은 식사입니다.</p>
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Star, MapPin, Share2, Users as UsersIcon, Eye } from 'lucide-react'
+import { Star, MapPin, Share2, Eye } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ShareModal } from '@/components/share-modal'
@@ -57,12 +57,13 @@ function SharedMealContent({ shareId }: { shareId: string }) {
       setMeal(data)
 
       // 조회 추적
-      trackShareView(currentShareId).catch((err: Error) =>
-        console.error('Failed to track view:', err)
-      )
+      trackShareView(currentShareId).catch(() => {
+        // 조회수 추적 실패
+      })
     } catch (err) {
-      console.error('Failed to fetch shared meal:', err)
-      setError('공유된 식사 기록을 찾을 수 없습니다.')
+      const errorMessage =
+        err instanceof Error ? err.message : '공유된 식사 기록을 찾을 수 없습니다.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -100,7 +101,7 @@ function SharedMealContent({ shareId }: { shareId: string }) {
   const shareData = {
     title: `${meal.name} - DailyMeal`,
     description: meal.memo || `${meal.sharerName}님이 공유한 ${meal.name}`,
-    url: typeof window !== 'undefined' ? window.location.href : '',
+    url: globalThis.window === undefined ? '' : globalThis.window.location.href,
     imageUrl: photos.length > 0 ? photos[0] : undefined,
   }
 
@@ -166,28 +167,29 @@ function SharedMealContent({ shareId }: { shareId: string }) {
       {hasPhotos && (
         <div className="relative w-full max-w-2xl mx-auto">
           <div className="aspect-square relative bg-gray-100 overflow-hidden">
-            {photos.map((photoUrl, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
-                  index === currentPhotoIndex
-                    ? 'translate-x-0'
-                    : index < currentPhotoIndex
-                      ? '-translate-x-full'
-                      : 'translate-x-full'
-                }`}
-              >
-                <Image
-                  src={photoUrl}
-                  alt={`${meal.name} ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  priority={index === 0}
-                  sizes="(max-width: 768px) 100vw, 672px"
-                  unoptimized
-                />
-              </div>
-            ))}
+            {photos.map((photoUrl, index) => {
+              const getTransformClass = () => {
+                if (index === currentPhotoIndex) return 'translate-x-0'
+                if (index < currentPhotoIndex) return '-translate-x-full'
+                return 'translate-x-full'
+              }
+              return (
+                <div
+                  key={`photo-${photoUrl}-${index}`}
+                  className={`absolute inset-0 transition-transform duration-300 ease-in-out ${getTransformClass()}`}
+                >
+                  <Image
+                    src={photoUrl}
+                    alt={`${meal.name} ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    priority={index === 0}
+                    sizes="(max-width: 768px) 100vw, 672px"
+                    unoptimized
+                  />
+                </div>
+              )
+            })}
 
             {/* 네비게이션 버튼 (2장 이상) */}
             {photos.length > 1 && (
@@ -278,9 +280,9 @@ function SharedMealContent({ shareId }: { shareId: string }) {
         {/* 별점 */}
         {meal.rating && meal.rating > 0 && (
           <div className="flex items-center gap-1">
-            {[...Array(5)].map((_, i) => (
+            {Array.from({ length: 5 }, (_, i) => (
               <Star
-                key={i}
+                key={`star-${meal.rating}-${i}`}
                 size={24}
                 className={`${i < meal.rating! ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
               />

@@ -6,46 +6,46 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-} from 'typeorm';
-import { User } from './user.entity';
+} from 'typeorm'
+import { User } from './user.entity'
 
 @Entity('meal_records')
 export class MealRecord {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string
 
   @Column()
-  name: string;
+  name: string
 
   @Column({ nullable: true })
-  photo: string;
+  photo: string | null
 
   // 다중 사진을 위한 JSON 배열 (기존 photo와 병행)
   @Column('simple-json', { nullable: true })
-  photos: string[];
+  photos: string[] | null
 
   @Column({ nullable: true })
-  location: string;
+  location: string | null
 
   // GPS 좌표 정보
   @Column('decimal', { precision: 10, scale: 7, nullable: true })
-  latitude: number;
+  latitude: number | null
 
   @Column('decimal', { precision: 10, scale: 7, nullable: true })
-  longitude: number;
+  longitude: number | null
 
   // 상세 주소 (GPS에서 역변환된 주소)
   @Column({ nullable: true })
-  address: string;
+  address: string | null
 
   @Column('int', { nullable: true })
-  rating: number;
+  rating: number | null
 
   @Column({ nullable: true, length: 200 })
-  memo: string;
+  memo: string | null
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  price: number;
+  price: number | null
 
   // 식사 카테고리 (집밥, 배달, 식당)
   @Column({
@@ -53,29 +53,29 @@ export class MealRecord {
     nullable: true,
     default: 'restaurant',
   })
-  category: 'home' | 'delivery' | 'restaurant';
+  category: 'home' | 'delivery' | 'restaurant' | null
 
   // 같이 식사한 사람들 (친구 ID 배열)
   @Column('simple-json', { nullable: true })
-  companionIds: string[];
+  companionIds: string[] | null
 
   // 같이 식사한 사람들 (텍스트)
   @Column({ nullable: true, length: 200 })
-  companionNames: string;
+  companionNames: string | null
 
   @Column({ type: 'timestamp', nullable: true })
-  photoTakenAt: Date;
+  photoTakenAt: Date | null
 
   @Column('uuid')
-  userId: string;
+  userId: string
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt: Date
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt: Date
 
   @ManyToOne(() => User, (user) => user.mealRecords)
   @JoinColumn({ name: 'userId' })
-  user: User;
+  user: User
 }

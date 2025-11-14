@@ -90,13 +90,12 @@ const handleIntentUrl = (url) => {
         } else {
           console.log('⚠️ [Intent] Kakao Talk not installed')
           return Linking.openURL(`market://details?id=${packageName}`).catch(() => {
-            Alert.alert('카카오톡 설치 필요', '카카오톡을 설치한 후 다시 시도해주세요.')
+            console.warn('⚠️ Play Store open failed')
           })
         }
       })
       .catch((err) => {
         console.error('❌ [Intent] Failed to open Kakao Talk:', err)
-        Alert.alert('오류', '카카오톡을 열 수 없습니다.')
       })
   } else {
     console.log(`⚠️ [Intent] Unsupported package: ${packageName}`)

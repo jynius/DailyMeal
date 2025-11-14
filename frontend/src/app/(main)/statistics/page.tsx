@@ -3,11 +3,9 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, Star, MapPin, Calendar } from 'lucide-react'
 import { profileApi, UserStatistics } from '@/lib/api'
-import { useToast } from '@/components/ui/toast'
 import Spinner from '@/components/ui/spinner'
 
 export default function StatisticsPage() {
-  const toast = useToast()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<UserStatistics | null>(null)
 
@@ -16,10 +14,6 @@ export default function StatisticsPage() {
       try {
         const data = await profileApi.getStatistics()
         setStats(data)
-      } catch (error) {
-        console.error('통계 로딩 실패:', error)
-        // 에러를 다시 던져서 Error Boundary가 처리하도록 함
-        throw error
       } finally {
         setLoading(false)
       }
@@ -75,9 +69,9 @@ export default function StatisticsPage() {
             </div>
 
             <div className="space-y-3">
-              {stats.monthlyStats.map((stat, index) => (
+              {stats.monthlyStats.map((stat) => (
                 <div
-                  key={index}
+                  key={stat.month}
                   className="flex items-center justify-between py-2 border-b last:border-b-0"
                 >
                   <span className="text-sm text-gray-600">{stat.month}</span>
@@ -102,7 +96,10 @@ export default function StatisticsPage() {
 
             <div className="space-y-3">
               {stats.topRatedRestaurants.map((restaurant, index) => (
-                <div key={index} className="flex items-center justify-between">
+                <div
+                  key={`${restaurant.name}-${restaurant.rating}`}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                       <span className="text-sm font-bold text-gray-600">{index + 1}</span>

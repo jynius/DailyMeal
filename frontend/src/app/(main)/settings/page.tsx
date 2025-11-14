@@ -37,7 +37,7 @@ export default function SettingsPage() {
         const data = await profileApi.getSettings()
         setSettings(data)
       } catch (error) {
-        console.error('설정 로딩 실패:', error)
+        console.error('Failed to fetch settings:', error)
         toast.error('설정을 불러올 수 없습니다', '오류')
       }
     }
@@ -50,7 +50,7 @@ export default function SettingsPage() {
       await profileApi.updateSettings(settings)
       toast.success('설정이 저장되었습니다', '저장 완료')
     } catch (error) {
-      console.error('설정 저장 실패:', error)
+      console.error('Failed to save settings:', error)
       toast.error('설정 저장에 실패했습니다', '오류')
     }
   }
@@ -87,12 +87,11 @@ export default function SettingsPage() {
             toast.success(`${type === 'home' ? '집' : '회사'} 위치가 설정되었습니다`, '위치 저장')
           }
         } catch (error) {
-          console.error('역지오코딩 실패:', error)
+          console.error('Failed to fetch address:', error)
           toast.error('주소를 가져오는데 실패했습니다', '오류')
         }
       },
-      (error) => {
-        console.error('위치 가져오기 실패:', error)
+      () => {
         toast.error('위치 정보를 가져올 수 없습니다', '오류')
       }
     )

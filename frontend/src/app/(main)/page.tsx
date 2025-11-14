@@ -1,30 +1,36 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Camera, TrendingUp, MapPin, Users, Sparkles, ArrowRight, Zap, Star } from 'lucide-react'
+import { Camera, TrendingUp, MapPin, Users, Sparkles, ArrowRight, Star } from 'lucide-react'
 import { tokenManager, mealRecordsApi } from '@/lib/api'
 import type { MealRecord } from '@/types'
 import { MealCard } from '@/components/meal-card'
-import { useSocket } from '@/contexts/socket-context'
 import { AIMenuRecommendation } from '@/components/ai-menu-recommendation'
 import Link from 'next/link'
 import { isWebView, setupWebViewDebug, logClick } from '@/lib/webview-utils'
-import { Header } from '@/components/header'
 import Spinner from '@/components/ui/spinner'
+import { logger } from '@/lib/logger'
+
+// 별점 표시 헬퍼 함수
+const renderStars = (rating: number, mealId: string) => {
+  return Array.from({ length: 5 }, (_, i) => (
+    <Star
+      key={`meal-${mealId}-star-${i}`}
+      size={16}
+      className={`${i < rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
+    />
+  ))
+}
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [meals, setMeals] = useState<MealRecord[]>([])
   const [mealsLoading, setMealsLoading] = useState(false)
-  const { notifications, isConnected, connectedUsers } = useSocket()
-  const router = useRouter()
 
   // WebView 디버깅 설정
   useEffect(() => {
     if (isWebView()) {
-      console.log('[WebView] Detected! Setting up debug mode...')
       setupWebViewDebug()
     }
   }, [])
@@ -54,7 +60,7 @@ export default function Home() {
         setMeals(result.data) // 전체 데이터 가져오기
       }
     } catch (error) {
-      console.error('식사 기록 로딩 실패:', error)
+      logger.error('Failed to fetch meals:', error, 'HomePage')
       setMeals([]) // 에러시 빈 배열
     } finally {
       setMealsLoading(false)
@@ -149,7 +155,6 @@ export default function Home() {
             className="group"
             onClick={() => {
               logClick('statistics-link')
-              console.log('[Link Click] Statistics')
             }}
           >
             <div className="bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
@@ -168,7 +173,6 @@ export default function Home() {
             className="group"
             onClick={() => {
               logClick('restaurant-link')
-              console.log('[Link Click] Restaurant')
             }}
           >
             <div className="bg-white px-4 py-1 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105">
@@ -185,167 +189,167 @@ export default function Home() {
       </div>
 
       {/* 최근 식사 기록 또는 시작 가이드 */}
-      {mealsLoading ? (
-        <div className="px-6 py-8 text-center">
-          <div className="animate-pulse">
-            <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-32 mx-auto mb-2"></div>
-            <div className="h-3 bg-gray-200 rounded w-48 mx-auto"></div>
-          </div>
-        </div>
-      ) : meals.length === 0 ? (
-        <div className="px-6 py-4">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 text-center border border-blue-100">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Sparkles size={24} className="text-white" />
+      {(() => {
+        if (mealsLoading) {
+          return (
+            <div className="px-6 py-8 text-center">
+              <div className="animate-pulse">
+                <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-32 mx-auto mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-48 mx-auto"></div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">시작해보세요!</h3>
-            <p className="text-gray-600 mb-4">
-              첫 번째 식사를 기록하고
-              <br />
-              맛있는 여정을 시작해보세요
-            </p>
-            <Link
-              href="/add"
-              className="inline-flex items-center bg-blue-500 text-white py-2.5 px-5 rounded-xl font-medium hover:bg-blue-600 transition-colors"
-            >
-              <Camera size={18} className="mr-2" />첫 기록 만들기
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div className="px-6 py-2">
-          {/* 미평가 식사 섹션 */}
-          {(() => {
-            // rating이 없는 항목만 미평가로 간주
-            const unratedMeals = meals.filter((meal) => !meal.rating)
-            const unratedMeal = unratedMeals[0]
+          )
+        }
 
-            if (!unratedMeal) return null
+        if (meals.length === 0) {
+          return (
+            <div className="px-6 py-4">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 text-center border border-blue-100">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Sparkles size={24} className="text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">시작해보세요!</h3>
+                <p className="text-gray-600 mb-4">
+                  첫 번째 식사를 기록하고
+                  <br />
+                  맛있는 여정을 시작해보세요
+                </p>
+                <Link
+                  href="/add"
+                  className="inline-flex items-center bg-blue-500 text-white py-2.5 px-5 rounded-xl font-medium hover:bg-blue-600 transition-colors"
+                >
+                  <Camera size={18} className="mr-2" />첫 기록 만들기
+                </Link>
+              </div>
+            </div>
+          )
+        }
 
-            return (
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-bold text-gray-900">평가 완료하기</h2>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 bg-orange-100 text-orange-600 text-xs rounded-full font-medium">
-                      미평가 {unratedMeals.length}개
-                    </span>
+        return (
+          <div className="px-6 py-2">
+            {/* 미평가 식사 섹션 */}
+            {(() => {
+              // rating이 없는 항목만 미평가로 간주
+              const unratedMeals = meals.filter((meal) => !meal.rating)
+              const unratedMeal = unratedMeals[0]
+
+              if (!unratedMeal) return null
+
+              return (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-bold text-gray-900">평가 완료하기</h2>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-1 bg-orange-100 text-orange-600 text-xs rounded-full font-medium">
+                        미평가 {unratedMeals.length}개
+                      </span>
+                      <Link
+                        href="/feed?filter=unrated"
+                        className="flex items-center text-orange-600 hover:text-orange-700 text-sm font-medium"
+                      >
+                        평가하기
+                        <ArrowRight size={16} className="ml-1" />
+                      </Link>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl shadow-sm border border-orange-200 overflow-hidden">
+                    <MealCard {...unratedMeal} onEvaluated={fetchMeals} />
+                  </div>
+                </div>
+              )
+            })()}
+
+            {/* 최근 평가 완료된 식사 섹션 */}
+            {(() => {
+              // rating이 있는 항목만 평가 완료로 간주
+              const ratedMeals = meals.filter((meal) => meal.rating).slice(0, 3)
+
+              if (ratedMeals.length === 0) return null
+
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-gray-900">최근 식사</h2>
                     <Link
-                      href="/feed?filter=unrated"
-                      className="flex items-center text-orange-600 hover:text-orange-700 text-sm font-medium"
+                      href="/feed?filter=rated"
+                      className="flex items-center text-blue-500 text-sm font-medium hover:text-blue-600"
                     >
-                      평가하기
+                      전체보기
                       <ArrowRight size={16} className="ml-1" />
                     </Link>
                   </div>
-                </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-orange-200 overflow-hidden">
-                  <MealCard {...unratedMeal} onEvaluated={fetchMeals} />
-                </div>
-              </div>
-            )
-          })()}
-
-          {/* 최근 평가 완료된 식사 섹션 */}
-          {(() => {
-            // rating이 있는 항목만 평가 완료로 간주
-            const ratedMeals = meals.filter((meal) => meal.rating).slice(0, 3)
-
-            if (ratedMeals.length === 0) return null
-
-            return (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-900">최근 식사</h2>
-                  <Link
-                    href="/feed?filter=rated"
-                    className="flex items-center text-blue-500 text-sm font-medium hover:text-blue-600"
-                  >
-                    전체보기
-                    <ArrowRight size={16} className="ml-1" />
-                  </Link>
-                </div>
-
-                {/* 식사 기록 리스트 (텍스트만) */}
-                <div className="space-y-2">
-                  {ratedMeals.map((meal) => (
-                    <Link
-                      key={meal.id}
-                      href={`/feed`}
-                      className="block bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          {/* 동행자 (맨 위) */}
-                          <div className="flex items-center text-xs text-gray-700 mb-2 pb-2 border-b border-gray-100">
-                            <span className="mr-1.5">{meal.companionNames ? '👥' : '🙋'}</span>
-                            <span className="truncate">{meal.companionNames || '혼밥'}</span>
-                          </div>
-
-                          {/* 식사 이름 */}
-                          <h3 className="font-bold text-gray-900 mb-1 truncate">{meal.name}</h3>
-
-                          {/* 가격 */}
-                          {meal.price && (
-                            <div className="text-base font-semibold text-blue-600 mb-2">
-                              ₩{meal.price.toLocaleString()}
+                  {/* 식사 기록 리스트 (텍스트만) */}
+                  <div className="space-y-2">
+                    {ratedMeals.map((meal) => (
+                      <Link
+                        key={meal.id}
+                        href={`/feed`}
+                        className="block bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            {/* 동행자 (맨 위) */}
+                            <div className="flex items-center text-xs text-gray-700 mb-2 pb-2 border-b border-gray-100">
+                              <span className="mr-1.5">{meal.companionNames ? '👥' : '🙋'}</span>
+                              <span className="truncate">{meal.companionNames || '혼밥'}</span>
                             </div>
-                          )}
 
-                          {/* 식당 이름 & 날짜 */}
-                          <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
-                            {meal.location && (
-                              <>
-                                <div className="flex items-center">
-                                  <MapPin size={12} className="mr-1 flex-shrink-0" />
-                                  <span className="font-medium truncate">{meal.location}</span>
-                                </div>
-                                <span className="text-gray-400">•</span>
-                              </>
+                            {/* 식사 이름 */}
+                            <h3 className="font-bold text-gray-900 mb-1 truncate">{meal.name}</h3>
+
+                            {/* 가격 */}
+                            {meal.price && (
+                              <div className="text-base font-semibold text-blue-600 mb-2">
+                                ₩{meal.price.toLocaleString()}
+                              </div>
                             )}
-                            <span className="whitespace-nowrap">
-                              {new Date(meal.createdAt).toLocaleDateString('ko-KR', {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </span>
-                          </div>
 
-                          {/* 별점 */}
-                          {meal.rating && (
-                            <div className="flex items-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  size={16}
-                                  className={`${
-                                    i < meal.rating!
-                                      ? 'text-yellow-500 fill-current'
-                                      : 'text-gray-300'
-                                  }`}
-                                />
-                              ))}
-                              <span className="ml-1 text-sm font-semibold text-gray-700">
-                                {meal.rating}/5
+                            {/* 식당 이름 & 날짜 */}
+                            <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                              {meal.location && (
+                                <>
+                                  <div className="flex items-center">
+                                    <MapPin size={12} className="mr-1 flex-shrink-0" />
+                                    <span className="font-medium truncate">{meal.location}</span>
+                                  </div>
+                                  <span className="text-gray-400">•</span>
+                                </>
+                              )}
+                              <span className="whitespace-nowrap">
+                                {new Date(meal.createdAt).toLocaleDateString('ko-KR', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
                               </span>
                             </div>
-                          )}
-                        </div>
 
-                        <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mt-1" />
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </>
-            )
-          })()}
-        </div>
-      )}
+                            {/* 별점 */}
+                            {meal.rating && (
+                              <div className="flex items-center gap-1">
+                                {renderStars(meal.rating, meal.id)}
+                                <span className="ml-1 text-sm font-semibold text-gray-700">
+                                  {meal.rating}/5
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mt-1" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        )
+      })()}
 
       {/* AI 추천 메뉴 섹션 - 맨 아래로 이동 */}
       {isAuthenticated && (
