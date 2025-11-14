@@ -120,8 +120,10 @@ class KakaoShareService {
 
       // 🔧 WebView 환경: Kakao SDK 우회하고 직접 공유 URL 생성
       if (this.isWebView()) {
-        // localhost를 실제 IP로 변환 (Kakao 도메인 검증 통과)
-        const shareUrl = data.url.replace('http://localhost:3000', 'http://192.170.1.58:3000')
+        // localhost를 실제 도메인으로 변환 (Kakao 도메인 검증 통과)
+        const shareUrl = data.url
+          .replace('http://localhost:3000', 'https://www.dailymeal.life')
+          .replace('http://192.170.1.58:3000', 'https://www.dailymeal.life')
 
         // Kakao 공유 페이지 URL 직접 생성
         const kakaoShareUrl = new URL('https://sharer.kakao.com/talk/friends/picker/link')

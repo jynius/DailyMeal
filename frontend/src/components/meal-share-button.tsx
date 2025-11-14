@@ -34,8 +34,10 @@ export function MealShareButton({ meal }: Readonly<MealShareButtonProps>) {
       // 공유 링크 생성 (공유 전용 shareId 생성)
       const result = await createShare(meal.id)
       
-      // localhost를 실제 IP로 변환 (WebView 환경)
-      const finalShareUrl = result.url.replace('http://localhost:3000', 'http://192.170.1.58:3000')
+      // localhost를 실제 도메인으로 변환
+      const finalShareUrl = result.url
+        .replace('http://localhost:3000', 'https://www.dailymeal.life')
+        .replace('http://192.170.1.58:3000', 'https://www.dailymeal.life')
       
       setShareUrl(finalShareUrl)
 
