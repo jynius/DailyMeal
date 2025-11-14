@@ -1,12 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { initializeWebViewBridge } from '@/lib/webview-bridge'
-
-// 즉시 실행 - 모듈 로드 시 바로 alert
-if (globalThis.window?.ReactNativeWebView) {
-  alert('🔴 [Module Level] ReactNativeWebView detected at module load!')
-}
+import { initializeBridge } from '@/lib/webview-bridge'
 
 /**
  * WebView Bridge Initializer
@@ -16,22 +11,8 @@ if (globalThis.window?.ReactNativeWebView) {
  */
 export function WebViewBridgeInit() {
   useEffect(() => {
-    // 클라이언트 사이드에서만 실행
-    console.log('🟢 [WebViewBridgeInit] Component mounted in browser')
-    console.log('🟡 [WebViewBridgeInit] Calling initializeWebViewBridge()...')
-
-    // 디버그: Alert로 상세 정보 확인
-    const hasReactNativeWebView = !!globalThis.window?.ReactNativeWebView
-    alert(
-      `WebViewBridgeInit:\nReactNativeWebView: ${hasReactNativeWebView ? 'YES ✅' : 'NO ❌'}\n\nNow initializing bridge...`
-    )
-
-    initializeWebViewBridge()
-
-    // 초기화 후 다시 확인
-    setTimeout(() => {
-      alert('Bridge initialized!\nNow try Kakao Share.')
-    }, 1000)
+    // Bridge 초기화 함수 실행
+    initializeBridge()
   }, [])
 
   return null

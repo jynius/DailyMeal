@@ -7,18 +7,19 @@
  * 3. Intent/Kakao URL을 React Native로 전송
  */
 
-export function initializeWebViewBridge() {
-  console.log('🚀 [WebView Bridge] Initializing...')
-  alert('🚀 Bridge: Initializing...')
+export function initializeBridge() {
+  console.log('[WebView Bridge] Initializing...')
 
   // React Native WebView 환경 체크는 로그만 남기고, 브리지는 항상 설치
   if (globalThis.window?.ReactNativeWebView) {
-    console.log('✅ [WebView Bridge] ReactNativeWebView detected!')
-    alert('✅ Bridge: ReactNativeWebView detected!')
+    console.log('[WebView Bridge] ReactNativeWebView detected!')
   } else {
-    console.log('⚠️ [WebView Bridge] ReactNativeWebView not available yet (may be injected later)')
-    alert('⚠️ Bridge: No ReactNativeWebView, using fallback (window.open)')
+    console.log('[WebView Bridge] ReactNativeWebView not available yet (may be injected later)')
   }
+}
+
+export function _initializeWebViewBridgeInternal() {
+  console.log('[WebView Bridge] Internal initialization...')
 
   // ========== 1. location.href setter 오버라이드 ==========
   const originalLocationDescriptor = Object.getOwnPropertyDescriptor(globalThis.location, 'href')
