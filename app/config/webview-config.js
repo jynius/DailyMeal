@@ -2,6 +2,10 @@
 /**
  * WebView 설정 상수
  */
+
+// BASE_WEB_URL은 prebuild 시점에 scripts/inject-weburl.js에 의해 주입됨
+export const BASE_WEB_URL = 'https://www.dailymeal.life'
+
 export const WEBVIEW_CONFIG = {
   // 기본 설정
   javaScriptEnabled: true,

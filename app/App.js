@@ -197,16 +197,9 @@ export default function App() {
     }
   }
 
-  // 기본 웹 URL 가져오기
+  // 기본 웹 URL 가져오기 (환경변수에서)
   const getBaseWebUrl = () => {
-    const Constants = require('expo-constants').default
-
-    // 개발 모드: app.json의 extra.webUrl 사용 (예: http://192.168.x.x:3000)
-    // 운영 모드: 프로덕션 URL
-    if (__DEV__) {
-      return Constants.expoConfig?.extra?.webUrl || 'https://www.dailymeal.life'
-    }
-    return 'https://www.dailymeal.life'
+    return process.env.EXPO_PUBLIC_API_URL
   }
 
   const parseWebUrl = (deepLinkUrl) => {

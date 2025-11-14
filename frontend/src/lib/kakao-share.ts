@@ -113,11 +113,59 @@ class KakaoShareService {
     try {
       log.info('Sharing to Kakao', {
         title: data.title,
-        url: data.url, // 🔍 전체 URL 로그
+        url: data.url,
         hasImage: !!data.imageUrl,
         imageUrl: data.imageUrl?.substring(0, 50) + '...',
       })
 
+      // 🔧 WebView 환경: Kakao SDK 우회하고 직접 공유 URL 생성
+      if (this.isWebView()) {
+        // localhost를 실제 IP로 변환 (Kakao 도메인 검증 통과)
+        const shareUrl = data.url.replace('http://localhost:3000', 'http://192.170.1.58:3000')
+
+        // Kakao 공유 페이지 URL 직접 생성
+        const kakaoShareUrl = new URL('https://sharer.kakao.com/talk/friends/picker/link')
+        kakaoShareUrl.searchParams.set('app_key', process.env.NEXT_PUBLIC_KAKAO_API_KEY || '')
+        kakaoShareUrl.searchParams.set('validation_action', 'default')
+        kakaoShareUrl.searchParams.set(
+          'validation_params',
+          JSON.stringify({
+            link_ver: '4.0',
+            template_object: {
+              object_type: 'feed',
+              content: {
+                title: data.title,
+                description: data.description,
+                image_url:
+                  data.imageUrl ||
+                  'https://k.kakaocdn.net/14/dn/btqvX1CL6kz/sSBw1mbWkyZTkk1Mpt9nw1/o.jpg',
+                link: {
+                  mobile_web_url: shareUrl,
+                  web_url: shareUrl,
+                },
+              },
+              buttons: [
+                {
+                  title: '자세히 보기',
+                  link: {
+                    mobile_web_url: shareUrl,
+                    web_url: shareUrl,
+                  },
+                },
+              ],
+            },
+          })
+        )
+
+        log.info('🔗 Opening Kakao share URL:', kakaoShareUrl.toString())
+
+        // 외부 브라우저로 열기
+        globalThis.window.open(kakaoShareUrl.toString(), '_blank')
+
+        return true
+      }
+
+      // 일반 웹/PWA: Kakao SDK 사용
       const sharePayload = {
         objectType: 'feed',
         content: {
@@ -142,24 +190,11 @@ class KakaoShareService {
         ],
       }
 
-      log.info('🔍 Kakao share payload:', sharePayload) // debug → info로 변경
-
-      // 🔍 [DEBUG] window.open 호출 감지를 위한 로그
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-      console.log('🚀 [KAKAO-DEBUG] About to call Kakao.sendDefault()')
-      console.log('🚀 [KAKAO-DEBUG] WebView?', this.isWebView())
-      console.log('🚀 [KAKAO-DEBUG] ReactNativeWebView?', !!globalThis.window?.ReactNativeWebView)
-      console.log('🚀 [KAKAO-DEBUG] Share method:', shareMethod.sendDefault ? 'exists' : 'missing')
-      console.log('🚀 [KAKAO-DEBUG] Payload:', JSON.stringify(sharePayload, null, 2))
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      log.info('🔍 Kakao share payload:', sharePayload)
 
       // Kakao.Share.sendDefault 또는 Kakao.Link.sendDefault 사용
-      console.log('⏳ [KAKAO-DEBUG] Calling sendDefault()...')
       const result = await shareMethod.sendDefault(sharePayload)
 
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-      console.log('✅ [KAKAO-DEBUG] sendDefault() returned:', result)
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       log.info('✅ Kakao Share API 호출 완료', { result })
 
       return true

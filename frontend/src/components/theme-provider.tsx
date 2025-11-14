@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -15,10 +15,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('system')
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     // 로컬 스토리지에서 테마 설정 불러오기
-    const savedTheme = localStorage.getItem('theme') as Theme
+    const savedTheme =
+      globalThis.window === undefined ? null : (localStorage.getItem('theme') as Theme)
     if (savedTheme) {
       setTheme(savedTheme)
     }
@@ -27,13 +30,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const updateTheme = () => {
       let newTheme: 'light' | 'dark' = 'light'
-      
+
       if (theme === 'dark') {
         newTheme = 'dark'
       } else if (theme === 'system') {
-        newTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        newTheme = globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
       }
-      
+
       setActualTheme(newTheme)
       document.documentElement.classList.toggle('dark', newTheme === 'dark')
     }
@@ -41,7 +44,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     updateTheme()
 
     // 시스템 테마 변경 감지
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const mediaQuery = globalThis.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = () => {
       if (theme === 'system') {
         updateTheme()
@@ -54,14 +57,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const updateTheme = (newTheme: Theme) => {
     setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
+    if (globalThis.window !== undefined) {
+      localStorage.setItem('theme', newTheme)
+    }
   }
 
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme: updateTheme, actualTheme }}>
-      {children}
-    </ThemeContext.Provider>
+  const contextValue = useMemo(
+    () => ({ theme, setTheme: updateTheme, actualTheme }),
+    [theme, actualTheme]
   )
+
+  // Hydration 에러 방지: 클라이언트에서만 렌더링
+  if (!mounted) {
+    return null
+  }
+
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>
 }
 
 export function useTheme() {

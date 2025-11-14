@@ -90,14 +90,10 @@ export function MealCard({
     e.preventDefault() // Link 클릭 방지
     e.stopPropagation()
 
-    log.debug('Share button clicked', { mealId: id })
-
     setIsCreatingShare(true)
     try {
-      log.debug('Calling createShare API')
       // 공유 링크 생성
       const result = await createShare(id)
-      log.info('Share link created successfully', { url: result.url })
       setShareUrl(result.url)
 
       // 링크 복사 (실패해도 모달은 열기)

@@ -17,14 +17,14 @@ export class MealRecord {
   @Column()
   name: string
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   photo: string | null
 
   // 다중 사진을 위한 JSON 배열 (기존 photo와 병행)
   @Column('simple-json', { nullable: true })
   photos: string[] | null
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   location: string | null
 
   // GPS 좌표 정보
@@ -35,13 +35,13 @@ export class MealRecord {
   longitude: number | null
 
   // 상세 주소 (GPS에서 역변환된 주소)
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   address: string | null
 
   @Column('int', { nullable: true })
   rating: number | null
 
-  @Column({ nullable: true, length: 200 })
+  @Column({ type: 'varchar', length: 200, nullable: true })
   memo: string | null
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
@@ -60,7 +60,7 @@ export class MealRecord {
   companionIds: string[] | null
 
   // 같이 식사한 사람들 (텍스트)
-  @Column({ nullable: true, length: 200 })
+  @Column({ type: 'varchar', length: 200, nullable: true })
   companionNames: string | null
 
   @Column({ type: 'timestamp', nullable: true })

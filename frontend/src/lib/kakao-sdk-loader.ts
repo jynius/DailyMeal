@@ -126,6 +126,18 @@ export async function initializeKakao(appKey: string): Promise<void> {
         appKey: appKey.substring(0, 10) + '...',
         isInitialized: window.Kakao.isInitialized(),
       })
+
+      // WebView 환경에서 강제로 Web 모드로 작동하도록 설정
+      // Intent URL 대신 window.open() 팝업 사용하도록 강제
+      if (isWebView()) {
+        log.info('🔧 WebView detected - forcing Web share mode')
+        // @ts-ignore - Kakao SDK 내부 속성 직접 접근
+        if (globalThis.Kakao.Share?._getInstallUrl) {
+          log.debug('Overriding _getInstallUrl to null')
+          // @ts-ignore
+          globalThis.Kakao.Share._getInstallUrl = () => null
+        }
+      }
     } catch (error) {
       log.error('❌ Failed to initialize Kakao SDK', error)
       throw error
@@ -133,4 +145,12 @@ export async function initializeKakao(appKey: string): Promise<void> {
   } else {
     log.debug('Kakao SDK already initialized')
   }
+}
+
+/**
+ * WebView 환경 감지
+ */
+function isWebView(): boolean {
+  const ua = navigator.userAgent.toLowerCase()
+  return /wv|webview/i.test(ua) || (globalThis as any).ReactNativeWebView !== undefined
 }
