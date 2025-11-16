@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "scheme": "dailymeal",
     "newArchEnabled": true,
-    "plugins": ["./plugins/withAndroidQueries"],
+    "plugins": ["./plugins/withAndroidQueries", "./plugins/withKakaoMaven"],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",

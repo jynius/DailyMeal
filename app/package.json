@@ -16,6 +16,9 @@
     "build:ios:production": "eas build --platform ios --profile production"
   },
   "dependencies": {
+    "@react-native-kakao/core": "^2.4.2",
+    "@react-native-kakao/share": "^2.4.2",
+    "@react-native-kakao/social": "^2.4.2",
     "expo": "^54.0.13",
     "expo-constants": "^18.0.9",
     "expo-document-picker": "^14.0.7",

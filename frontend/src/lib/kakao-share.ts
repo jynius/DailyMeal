@@ -71,11 +71,35 @@ class KakaoShareService {
       return false
     }
 
-    // 🔥 WebView 환경 감지 (로그만 출력, 웹뷰에서도 카카오 SDK 사용)
+    // 🔥 WebView 환경 감지 - Native SDK 사용
     if (this.isWebView()) {
-      log.info('📱 WebView detected - using Kakao SDK in WebView')
+      log.info('📱 WebView detected - sending message to native app')
+
+      const shareData = {
+        title: data.title,
+        description: data.description,
+        imageUrl:
+          data.imageUrl ||
+          'https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png',
+        url: data.url,
+      }
+
+      try {
+        globalThis.window.ReactNativeWebView?.postMessage(
+          JSON.stringify({
+            type: 'KAKAO_SHARE',
+            payload: shareData,
+          })
+        )
+        log.info('✅ WebView message sent to native app')
+        return true
+      } catch (error) {
+        log.error('❌ Failed to send WebView message', error)
+        return false
+      }
     }
 
+    // 일반 웹 환경에서는 Kakao JavaScript SDK 사용
     if (!globalThis.window?.Kakao) {
       log.error('❌ Kakao SDK not loaded - window.Kakao is undefined')
       return false
@@ -118,7 +142,6 @@ class KakaoShareService {
         imageUrl: data.imageUrl?.substring(0, 50) + '...',
       })
 
-      // WebView와 일반 웹 모두 Kakao SDK 사용
       const sharePayload = {
         objectType: 'feed',
         content: {
