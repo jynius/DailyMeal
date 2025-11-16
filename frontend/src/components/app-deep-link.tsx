@@ -24,33 +24,19 @@ export function AppDeepLink({ shareId }: AppDeepLinkProps) {
 
   const tryOpenInApp = () => {
     const deepLinkUrl = `dailymeal://share/meal/${shareId}`
-    const universalLinkUrl = `https://dailymeal.app/share/meal/${shareId}`
 
-    // Universal Link 시도 (iOS & Android App Links)
-    const universalLinkAttempt = document.createElement('a')
-    universalLinkAttempt.href = universalLinkUrl
-    universalLinkAttempt.style.display = 'none'
-    document.body.appendChild(universalLinkAttempt)
-    universalLinkAttempt.click()
-    universalLinkAttempt.remove()
+    // Custom Scheme Deep Link 시도 (앱이 설치되어 있으면 열림)
+    const iframe = document.createElement('iframe')
+    iframe.style.display = 'none'
+    iframe.src = deepLinkUrl
+    document.body.appendChild(iframe)
 
-    // 2초 후에도 페이지에 있으면 Deep Link 시도
+    // 1초 후 iframe 제거
     setTimeout(() => {
-      if (document.hidden) return // 이미 앱이 열렸으면 중단
-
-      // Custom Scheme Deep Link 시도 (Fallback)
-      const iframe = document.createElement('iframe')
-      iframe.style.display = 'none'
-      iframe.src = deepLinkUrl
-      document.body.appendChild(iframe)
-
-      // 1초 후 iframe 제거
-      setTimeout(() => {
-        if (document.body.contains(iframe)) {
-          iframe.remove()
-        }
-      }, 1000)
-    }, 2000)
+      if (document.body.contains(iframe)) {
+        iframe.remove()
+      }
+    }, 1000)
   }
 
   return null // 렌더링할 UI 없음
