@@ -8,9 +8,9 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:dev": "cp .env.local .env && npx expo prebuild --platform android --clean && cd android && ./gradlew assembleRelease",
-    "build:preview": "cp .env.preview .env && npx expo prebuild --platform android --clean && cd android && ./gradlew assembleRelease",
-    "build:prod": "cp .env.production .env && npx expo prebuild --platform android --clean && cd android && ./gradlew assembleRelease",
+    "build:dev": "cp config/env.local .env && npx expo prebuild --platform android --clean && cd android && ./gradlew assembleRelease",
+    "build:preview": "cp config/env.preview .env && npx expo prebuild --platform android --clean && cd android && ./gradlew assembleRelease",
+    "build:prod": "cp config/env.production .env && npx expo prebuild --platform android --clean && cd android && ./gradlew assembleRelease",
     "build:android:preview": "eas build --platform android --profile preview",
     "build:android:production": "eas build --platform android --profile production",
     "build:ios:production": "eas build --platform ios --profile production"

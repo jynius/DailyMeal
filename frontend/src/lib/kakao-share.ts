@@ -136,26 +136,25 @@ class KakaoShareService {
         kakaoShareUrl.searchParams.set(
           'validation_params',
           JSON.stringify({
-            link_ver: '4.0',
-            template_object: {
-              object_type: 'feed',
+            templateObject: {
+              objectType: 'feed',
               content: {
                 title: data.title,
                 description: data.description,
-                image_url:
+                imageUrl:
                   data.imageUrl ||
                   'https://k.kakaocdn.net/14/dn/btqvX1CL6kz/sSBw1mbWkyZTkk1Mpt9nw1/o.jpg',
                 link: {
-                  mobile_web_url: shareUrl,
-                  web_url: shareUrl,
+                  mobileWebUrl: shareUrl,
+                  webUrl: shareUrl,
                 },
               },
               buttons: [
                 {
                   title: '자세히 보기',
                   link: {
-                    mobile_web_url: shareUrl,
-                    web_url: shareUrl,
+                    mobileWebUrl: shareUrl,
+                    webUrl: shareUrl,
                   },
                 },
               ],

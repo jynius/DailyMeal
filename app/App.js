@@ -422,6 +422,47 @@ export default function App() {
             } else if (message.type === 'KAKAO_URL') {
               console.log('✅ [DEBUG] KAKAO_URL message received')
               handleKakaoUrl(message.url)
+            } else if (message.type === 'KAKAO_SHARE') {
+              console.log('✅ [DEBUG] KAKAO_SHARE message received')
+              console.log('📋 Share data:', JSON.stringify(message.payload, null, 2))
+
+              // Kakao 공유 URL 생성 (camelCase 사용, link_ver 제거)
+              const kakaoShareUrl = new URL('https://sharer.kakao.com/talk/friends/picker/link')
+              kakaoShareUrl.searchParams.set('app_key', '197d152438e3a21af616caac12a6db11')
+              kakaoShareUrl.searchParams.set('validation_action', 'default')
+              kakaoShareUrl.searchParams.set(
+                'validation_params',
+                JSON.stringify({
+                  templateObject: {
+                    objectType: 'feed',
+                    content: {
+                      title: message.payload.title,
+                      description: message.payload.description,
+                      imageUrl: message.payload.imageUrl,
+                      link: {
+                        mobileWebUrl: message.payload.url,
+                        webUrl: message.payload.url,
+                      },
+                    },
+                    buttons: [
+                      {
+                        title: '자세히 보기',
+                        link: {
+                          mobileWebUrl: message.payload.url,
+                          webUrl: message.payload.url,
+                        },
+                      },
+                    ],
+                  },
+                })
+              )
+
+              console.log('🔗 Generated Kakao URL:', kakaoShareUrl.toString())
+
+              // 외부 브라우저로 열기
+              Linking.openURL(kakaoShareUrl.toString()).catch((err) => {
+                console.error('❌ Failed to open Kakao share:', err)
+              })
             } else if (message.type === 'SHARE_KAKAO') {
               // ⚠️ DEPRECATED: 웹뷰에서 카카오 SDK를 직접 사용하도록 변경됨
               // 앱의 Share.share()는 이미지를 지원하지 않으므로 사용하지 않음

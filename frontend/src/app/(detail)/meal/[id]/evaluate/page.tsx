@@ -34,8 +34,13 @@ interface MealRecord {
   createdAt: string
 }
 
-export default async function EvaluatePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+interface PageProps {
+  params: Promise<{ id: string }>
+}
+
+export default async function EvaluatePage(props: PageProps) {
+  const params = await props.params
+  const { id } = params
 
   return <EvaluatePageContent id={id} />
 }
