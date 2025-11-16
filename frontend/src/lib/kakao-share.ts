@@ -28,7 +28,11 @@ class KakaoShareService {
    * WebView 환경인지 감지
    */
   private isWebView(): boolean {
-    return globalThis.window?.ReactNativeWebView !== undefined
+    // 두 가지 방법으로 체크: ReactNativeWebView 객체 또는 플래그
+    return (
+      globalThis.window?.ReactNativeWebView !== undefined ||
+      (globalThis.window as any)?.isReactNativeWebView === true
+    )
   }
 
   async init() {
