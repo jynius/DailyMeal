@@ -8,7 +8,17 @@
     "userInterfaceStyle": "light",
     "scheme": "dailymeal",
     "newArchEnabled": true,
-    "plugins": ["./plugins/withAndroidQueries", "./plugins/withKakaoMaven"],
+    "plugins": [
+      "./plugins/withAndroidQueries",
+      "./plugins/withKakaoMaven",
+      [
+        "./plugins/withKakaoAppKey",
+        {
+          "androidAppKey": "9b3258bdda10fd2b357f5160532e9969",
+          "iosAppKey": "9b3258bdda10fd2b357f5160532e9969"
+        }
+      ]
+    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",

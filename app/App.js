@@ -14,7 +14,7 @@ import { useState, useEffect, useRef } from 'react'
 import * as Linking from 'expo-linking'
 import * as NavigationBar from 'expo-navigation-bar'
 import * as ImagePicker from 'expo-image-picker'
-import { shareDefault } from '@react-native-kakao/share'
+import { shareFeedTemplate } from '@react-native-kakao/share'
 
 // 유틸리티 및 설정
 import { handleSpecialUrl, parseIntentUrl } from './utils/url-handler'
@@ -353,6 +353,12 @@ export default function App() {
         ref={webViewRef}
         source={{ uri: WEB_URL }}
         {...WEBVIEW_CONFIG}
+        // ReactNativeWebView 객체가 사용 가능한지 먼저 확인 (콘텐츠 로드 전)
+        injectedJavaScriptBeforeContentLoaded={`
+          window.isReactNativeWebView = true;
+          console.log('🔵 [Pre-inject] window.isReactNativeWebView set to true');
+          console.log('🔵 [Pre-inject] window.ReactNativeWebView available:', typeof window.ReactNativeWebView !== 'undefined');
+        `}
         // Intent URL 가로채기 (location.href setter 오버라이드)
         injectedJavaScript={INJECTED_JAVASCRIPT}
         // 이벤트 핸들러
@@ -429,7 +435,6 @@ export default function App() {
 
               // Native Kakao SDK를 사용한 공유
               const shareTemplate = {
-                objectType: 'feed',
                 content: {
                   title: message.payload.title,
                   description: message.payload.description,
@@ -451,14 +456,20 @@ export default function App() {
               }
 
               console.log('📤 Calling native Kakao share...')
+              console.log('📋 Share template:', JSON.stringify(shareTemplate, null, 2))
 
-              shareDefault(shareTemplate)
-                .then((response) => {
-                  console.log('✅ Kakao share success:', response)
+              // shareFeedTemplate 사용
+              shareFeedTemplate({ template: shareTemplate })
+                .then(() => {
+                  console.log('✅ Kakao share success')
+                  Alert.alert('공유 성공', '카카오톡 공유가 완료되었습니다.')
                 })
                 .catch((error) => {
                   console.error('❌ Kakao share failed:', error)
-                  Alert.alert('공유 실패', '카카오톡 공유에 실패했습니다.')
+                  Alert.alert(
+                    '공유 실패',
+                    `카카오톡 공유에 실패했습니다: ${error?.message || String(error)}`
+                  )
                 })
             } else if (message.type === 'SHARE_KAKAO') {
               // ⚠️ DEPRECATED: 웹뷰에서 카카오 SDK를 직접 사용하도록 변경됨
@@ -496,7 +507,30 @@ export default function App() {
         }}
         // 네비게이션 상태 변경 감지
         onNavigationStateChange={(navState) => {
-          console.log('Navigation state:', navState.url, 'Loading:', navState.loading)
+          console.log('🌐 [Navigation] URL:', navState.url)
+          console.log('🌐 [Navigation] Loading:', navState.loading)
+
+          // 🔍 URL 디버깅: dailymeal.app 도메인 감지
+          if (navState.url.includes('dailymeal.app')) {
+            console.log('⚠️ [DEBUG] dailymeal.app detected!')
+            console.log('🔗 [DEBUG] Full URL:', navState.url)
+
+            // dailymeal.app → www.dailymeal.life 교체
+            const correctedUrl = navState.url
+              .replace('http://dailymeal.app', 'https://www.dailymeal.life')
+              .replace('https://dailymeal.app', 'https://www.dailymeal.life')
+
+            console.log('✅ [DEBUG] Corrected URL:', correctedUrl)
+
+            // 교체된 URL로 리다이렉트
+            if (correctedUrl !== navState.url) {
+              console.log('🔄 [DEBUG] Redirecting to corrected URL...')
+              webViewRef.current?.injectJavaScript(`
+                window.location.href = '${correctedUrl}';
+                true;
+              `)
+            }
+          }
         }}
       />
 
