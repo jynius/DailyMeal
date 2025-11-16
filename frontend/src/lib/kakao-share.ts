@@ -118,59 +118,7 @@ class KakaoShareService {
         imageUrl: data.imageUrl?.substring(0, 50) + '...',
       })
 
-      // 🔧 WebView 환경: Kakao SDK 우회하고 직접 공유 URL 생성
-      if (this.isWebView()) {
-        log.debug('Original data.url: ' + data.url, 'KakaoShare')
-
-        // localhost를 실제 도메인으로 변환 (Kakao 도메인 검증 통과)
-        const shareUrl = data.url
-          .replace('http://localhost:3000', 'https://www.dailymeal.life')
-          .replace('http://192.170.1.58:3000', 'https://www.dailymeal.life')
-
-        log.debug('Converted shareUrl: ' + shareUrl, 'KakaoShare')
-
-        // Kakao 공유 페이지 URL 직접 생성
-        const kakaoShareUrl = new URL('https://sharer.kakao.com/talk/friends/picker/link')
-        kakaoShareUrl.searchParams.set('app_key', process.env.NEXT_PUBLIC_KAKAO_API_KEY || '')
-        kakaoShareUrl.searchParams.set('validation_action', 'default')
-        kakaoShareUrl.searchParams.set(
-          'validation_params',
-          JSON.stringify({
-            templateObject: {
-              objectType: 'feed',
-              content: {
-                title: data.title,
-                description: data.description,
-                imageUrl:
-                  data.imageUrl ||
-                  'https://k.kakaocdn.net/14/dn/btqvX1CL6kz/sSBw1mbWkyZTkk1Mpt9nw1/o.jpg',
-                link: {
-                  mobileWebUrl: shareUrl,
-                  webUrl: shareUrl,
-                },
-              },
-              buttons: [
-                {
-                  title: '자세히 보기',
-                  link: {
-                    mobileWebUrl: shareUrl,
-                    webUrl: shareUrl,
-                  },
-                },
-              ],
-            },
-          })
-        )
-
-        log.info('🔗 Opening Kakao share URL:', kakaoShareUrl.toString())
-
-        // 외부 브라우저로 열기
-        globalThis.window.open(kakaoShareUrl.toString(), '_blank')
-
-        return true
-      }
-
-      // 일반 웹/PWA: Kakao SDK 사용
+      // WebView와 일반 웹 모두 Kakao SDK 사용
       const sharePayload = {
         objectType: 'feed',
         content: {
