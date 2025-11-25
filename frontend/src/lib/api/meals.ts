@@ -1,6 +1,6 @@
 // frontend/src/lib/api/meals.ts
 
-import type { MealRecord } from '@/types'
+import type { MealRecord, CreateMealResponse } from '@/types'
 import { apiRequest } from './client'
 
 export interface CreateMealRecordData {
@@ -50,14 +50,14 @@ export const mealRecordsApi = {
       formData.append('address', data.address);
     }
     
-    return apiRequest<MealRecord>('/meal-records', {
+    return apiRequest<CreateMealResponse>('/meal-records', {
       method: 'POST',
       body: formData,
     });
   },
 
   createWithFiles: async (formData: FormData) => {
-    return apiRequest<MealRecord>('/meal-records', {
+    return apiRequest<CreateMealResponse>('/meal-records', {
       method: 'POST',
       body: formData,
     });

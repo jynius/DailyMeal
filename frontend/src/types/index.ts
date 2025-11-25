@@ -21,6 +21,12 @@ export interface MealRecord {
   userId: string
 }
 
+// 식사 기록 생성 응답 (경고 포함)
+export interface CreateMealResponse {
+  data: MealRecord
+  warnings?: string[]
+}
+
 export interface CreateMealRequest {
   name: string
   photo: File

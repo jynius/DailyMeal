@@ -230,7 +230,16 @@ function AddMealPage() {
 
     try {
       // Use centralized API client (handles base URL and auth header)
-      await mealRecordsApi.createWithFiles(data)
+      const response = await mealRecordsApi.createWithFiles(data)
+
+      // 경고가 있으면 표시
+      if (response.warnings && response.warnings.length > 0) {
+        showAlert({
+          title: '⚠️ 확인 필요',
+          message: response.warnings.join('\n\n'),
+          type: 'warning',
+        })
+      }
 
       toast.success('식사가 성공적으로 등록되었습니다.')
       router.push('/')
