@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Sparkles, RefreshCw, MapPin, Clock, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { profileApi, aiApi, RecommendationType } from '@/lib/api'
 
 interface MenuRecommendation {
   id: string
@@ -29,17 +30,79 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
   const [recommendations, setRecommendations] = useState<MenuRecommendation[]>([])
   const [loading, setLoading] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [userSettings, setUserSettings] = useState<any>(null)
 
   useEffect(() => {
-    generateRecommendations()
-  }, [preferences])
+    loadUserSettings()
+  }, [])
+
+  useEffect(() => {
+    if (userSettings) {
+      generateRecommendations()
+    }
+  }, [preferences, userSettings])
+
+  const loadUserSettings = async () => {
+    try {
+      const settings = await profileApi.getSettings()
+      setUserSettings(settings)
+    } catch (error) {
+      console.error('설정 로드 실패:', error)
+      // 기본값 사용
+      setUserSettings({
+        aiRecommendationType: 'social',
+        aiRecommendationMaxDistance: 5000,
+        aiRecommendationMinRating: 4.0,
+        aiRecommendationExcludeVisited: true,
+      })
+    }
+  }
 
   const generateRecommendations = async () => {
     setLoading(true)
     
-    // 시뮬레이션된 AI 추천 (실제로는 백엔드 AI API 호출)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
+    try {
+      // ✅ 실제 AI API 호출로 변경 (사용자 설정 사용)
+      const recommendationType = userSettings?.aiRecommendationType || 'social'
+      const data = await aiApi.getRecommendations(
+        RecommendationType[recommendationType.toUpperCase() as keyof typeof RecommendationType],
+        {
+          excludeVisited: userSettings?.aiRecommendationExcludeVisited ?? true,
+          maxDistance: userSettings?.aiRecommendationMaxDistance || 5000,
+          minRating: userSettings?.aiRecommendationMinRating || 4,
+          maxPrice: userSettings?.aiRecommendationMaxPrice,
+        }
+      )
+      
+      // Backend 추천 데이터를 MenuRecommendation 형식으로 변환
+      const converted: MenuRecommendation[] = data.recommendations.slice(0, 3).map((rec, idx) => ({
+        id: `rec-${idx}`,
+        name: rec.restaurantName,
+        category: rec.category === 'restaurant' ? '외식' : rec.category === 'delivery' ? '배달' : '집밥',
+        description: rec.address || '맛있는 음식점입니다',
+        estimatedPrice: rec.averagePrice ? `${rec.averagePrice.toLocaleString()}원` : '가격 정보 없음',
+        cookingTime: rec.distance ? `${(rec.distance / 1000).toFixed(1)}km 거리` : '정보 없음',
+        difficulty: 'medium' as const,
+        reason: rec.likedByFriends && rec.likedByFriends.length > 0
+          ? `${rec.likedByFriends.map(f => f.friendName).join(', ')}님이 좋아한 맛집입니다`
+          : rec.visitCount 
+            ? `${rec.visitCount}명이 방문한 인기 맛집입니다`
+            : '추천 맛집입니다',
+        nearbyRestaurants: []
+      }))
+      
+      setRecommendations(converted)
+    } catch (error) {
+      console.error('AI 추천 로딩 실패:', error)
+      // 에러 시 기존 시뮬레이션 로직 유지
+      fallbackRecommendations()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 에러 시 대체 로직
+  const fallbackRecommendations = () => {
     const hour = currentTime.getHours()
     const isWeekend = [0, 6].includes(currentTime.getDay())
     
@@ -132,7 +195,6 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
     }
     
     setRecommendations(filteredRecommendations.slice(0, 3))
-    setLoading(false)
   }
 
   const getDifficultyColor = (difficulty: string) => {

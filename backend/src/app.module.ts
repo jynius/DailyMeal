@@ -15,6 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { CryptoModule } from './common/crypto.module'
+import { AiModule } from './ai/ai.module'
 
 @Module({
   imports: [
@@ -26,14 +27,13 @@ import { CryptoModule } from './common/crypto.module'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const uploadDir =
-          configService.get<string>('UPLOAD_DIR') || '../uploads';
+        const uploadDir = configService.get<string>('UPLOAD_DIR') || '../uploads'
         return [
           {
             rootPath: join(__dirname, '..', '..', uploadDir),
             serveRoot: '/uploads',
           },
-        ];
+        ]
       },
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
@@ -46,6 +46,7 @@ import { CryptoModule } from './common/crypto.module'
     FriendsModule,
     RestaurantsModule,
     CryptoModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

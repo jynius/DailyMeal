@@ -25,6 +25,9 @@ const eslintConfig = [
           allow: [],
         },
       ],
+      // Edge Tools inline style 경고 비활성화
+      'no-inline-styles': 'off',
+      '@microsoft/sdl/no-inline-styles': 'off',
     },
   },
 ]

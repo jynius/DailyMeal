@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { User, Settings, Calendar, LogOut, Edit2, Camera } from 'lucide-react'
+import { User, Settings, Calendar, LogOut, Edit2, Camera, Brain } from 'lucide-react'
 import { tokenManager, profileApi, UserProfile } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
@@ -169,11 +169,12 @@ export default function ProfilePage() {
       {/* Profile Info */}
       <div className="bg-white p-6 border-b pt-safe">
         <input
-          ref={fileInputRef}
           type="file"
+          title="프로필 사진 변경"
           accept="image/*"
-          onChange={handleImageChange}
           className="hidden"
+          ref={fileInputRef}
+          onChange={handleImageChange}
         />
 
         <div className="flex items-start space-x-4">
@@ -300,6 +301,7 @@ export default function ProfilePage() {
             desc: '프라이버시, 알림, 장소 관리',
           },
           { icon: Calendar, label: '통계', href: '/statistics', desc: '평가 분석 및 방문 기록' },
+          { icon: Brain, label: 'AI 인사이트', href: '/ai-insights', desc: '식사 패턴 분석 및 맛집 추천' },
         ].map((item) => (
           <button
             key={item.href}

@@ -33,6 +33,17 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: false, // 명시적 Transform 데코레이터만 사용
+      },
+      exceptionFactory: (errors) => {
+        logger.error('❌ Validation failed:')
+        errors.forEach((error) => {
+          logger.error(`  - ${error.property}: ${JSON.stringify(error.constraints)}`)
+          logger.error(`    Value: ${JSON.stringify(error.value)}`)
+        })
+        return new ValidationPipe().createExceptionFactory()(errors)
+      },
     })
   )
 

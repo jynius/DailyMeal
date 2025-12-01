@@ -19,6 +19,54 @@ export interface UpdateProfileDto {
   bio?: string
 }
 
+export interface UserSettings {
+  id: string
+  userId: string
+  // 알림 설정
+  notificationFriendRequest: boolean
+  notificationNewReview: boolean
+  notificationNearbyFriend: boolean
+  // 프라이버시 설정
+  privacyProfilePublic: boolean
+  privacyShowLocation: boolean
+  privacyShowMealDetails: boolean
+  // 장소 설정
+  locationHome?: string
+  locationOffice?: string
+  locationHomeLatitude?: number
+  locationHomeLongitude?: number
+  locationOfficeLatitude?: number
+  locationOfficeLongitude?: number
+  // AI 추천 설정
+  aiRecommendationType: 'social' | 'popular' | 'collaborative'
+  aiRecommendationMaxDistance: number
+  aiRecommendationMaxPrice?: number
+  aiRecommendationMinRating: number
+  aiRecommendationExcludeVisited: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface UpdateSettingsDto {
+  notificationFriendRequest?: boolean
+  notificationNewReview?: boolean
+  notificationNearbyFriend?: boolean
+  privacyProfilePublic?: boolean
+  privacyShowLocation?: boolean
+  privacyShowMealDetails?: boolean
+  locationHome?: string
+  locationOffice?: string
+  locationHomeLatitude?: number
+  locationHomeLongitude?: number
+  locationOfficeLatitude?: number
+  locationOfficeLongitude?: number
+  aiRecommendationType?: 'social' | 'popular' | 'collaborative'
+  aiRecommendationMaxDistance?: number
+  aiRecommendationMaxPrice?: number
+  aiRecommendationMinRating?: number
+  aiRecommendationExcludeVisited?: boolean
+}
+
 export interface UserStatistics {
   totalReviews: number
   totalRestaurants: number
@@ -91,13 +139,13 @@ export const profileApi = {
   },
 
   // 설정 조회
-  async getSettings(): Promise<any> {
-    return apiRequest('/users/me/settings')
+  async getSettings(): Promise<UserSettings> {
+    return apiRequest<UserSettings>('/users/me/settings')
   },
 
   // 설정 업데이트
-  async updateSettings(settings: any): Promise<void> {
-    await apiRequest('/users/me/settings', {
+  async updateSettings(settings: UpdateSettingsDto): Promise<UserSettings> {
+    return apiRequest<UserSettings>('/users/me/settings', {
       method: 'PATCH',
       body: JSON.stringify(settings)
     })

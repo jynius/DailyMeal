@@ -1,33 +1,35 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, Lock, MapPin, Home, Briefcase, Save } from 'lucide-react'
+import { Bell, Lock, MapPin, Home, Briefcase, Save, Sparkles } from 'lucide-react'
 import { useToast } from '@/components/ui/toast'
-import { profileApi } from '@/lib/api'
+import { profileApi, type UserSettings } from '@/lib/api'
 import { APP_CONFIG } from '@/lib/constants'
 
 export default function SettingsPage() {
   const toast = useToast()
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<Partial<UserSettings>>({
     // 알림 설정
-    notifications: {
-      friendRequest: true,
-      newReview: true,
-      nearbyFriend: false,
-    },
+    notificationFriendRequest: true,
+    notificationNewReview: true,
+    notificationNearbyFriend: false,
     // 프라이버시 설정
-    privacy: {
-      profilePublic: false,
-      showLocation: true,
-      showMealDetails: true,
-    },
+    privacyProfilePublic: false,
+    privacyShowLocation: true,
+    privacyShowMealDetails: true,
     // 장소 설정
-    locations: {
-      home: '',
-      office: '',
-      homeCoords: { lat: 0, lng: 0 },
-      officeCoords: { lat: 0, lng: 0 },
-    },
+    locationHome: '',
+    locationOffice: '',
+    locationHomeLatitude: 0,
+    locationHomeLongitude: 0,
+    locationOfficeLatitude: 0,
+    locationOfficeLongitude: 0,
+    // AI 추천 설정
+    aiRecommendationType: 'social',
+    aiRecommendationMaxDistance: 5000,
+    aiRecommendationMinRating: 4.0,
+    aiRecommendationMaxPrice: undefined,
+    aiRecommendationExcludeVisited: true,
   })
 
   // 설정 데이터 가져오기
@@ -78,11 +80,17 @@ export default function SettingsPage() {
             const shortAddress = data.address.split(',').slice(0, 3).join(', ')
             setSettings((prev) => ({
               ...prev,
-              locations: {
-                ...prev.locations,
-                [type]: shortAddress,
-                [`${type}Coords`]: { lat: latitude, lng: longitude },
-              },
+              ...(type === 'home'
+                ? {
+                    locationHome: shortAddress,
+                    locationHomeLatitude: latitude,
+                    locationHomeLongitude: longitude,
+                  }
+                : {
+                    locationOffice: shortAddress,
+                    locationOfficeLatitude: latitude,
+                    locationOfficeLongitude: longitude,
+                  }),
             }))
             toast.success(`${type === 'home' ? '집' : '회사'} 위치가 설정되었습니다`, '위치 저장')
           }
@@ -112,14 +120,11 @@ export default function SettingsPage() {
               <span className="text-gray-700">친구 요청</span>
               <input
                 type="checkbox"
-                checked={settings.notifications.friendRequest}
+                checked={settings.notificationFriendRequest ?? true}
                 onChange={(e) =>
                   setSettings((prev) => ({
                     ...prev,
-                    notifications: {
-                      ...prev.notifications,
-                      friendRequest: e.target.checked,
-                    },
+                    notificationFriendRequest: e.target.checked,
                   }))
                 }
                 className="w-5 h-5 text-blue-500"
@@ -130,14 +135,11 @@ export default function SettingsPage() {
               <span className="text-gray-700">새로운 평가</span>
               <input
                 type="checkbox"
-                checked={settings.notifications.newReview}
+                checked={settings.notificationNewReview ?? true}
                 onChange={(e) =>
                   setSettings((prev) => ({
                     ...prev,
-                    notifications: {
-                      ...prev.notifications,
-                      newReview: e.target.checked,
-                    },
+                    notificationNewReview: e.target.checked,
                   }))
                 }
                 className="w-5 h-5 text-blue-500"
@@ -148,14 +150,11 @@ export default function SettingsPage() {
               <span className="text-gray-700">근처 친구 알림</span>
               <input
                 type="checkbox"
-                checked={settings.notifications.nearbyFriend}
+                checked={settings.notificationNearbyFriend ?? false}
                 onChange={(e) =>
                   setSettings((prev) => ({
                     ...prev,
-                    notifications: {
-                      ...prev.notifications,
-                      nearbyFriend: e.target.checked,
-                    },
+                    notificationNearbyFriend: e.target.checked,
                   }))
                 }
                 className="w-5 h-5 text-blue-500"
@@ -179,14 +178,11 @@ export default function SettingsPage() {
               </div>
               <input
                 type="checkbox"
-                checked={settings.privacy.profilePublic}
+                checked={settings.privacyProfilePublic ?? false}
                 onChange={(e) =>
                   setSettings((prev) => ({
                     ...prev,
-                    privacy: {
-                      ...prev.privacy,
-                      profilePublic: e.target.checked,
-                    },
+                    privacyProfilePublic: e.target.checked,
                   }))
                 }
                 className="w-5 h-5 text-blue-500"
@@ -200,14 +196,11 @@ export default function SettingsPage() {
               </div>
               <input
                 type="checkbox"
-                checked={settings.privacy.showLocation}
+                checked={settings.privacyShowLocation ?? true}
                 onChange={(e) =>
                   setSettings((prev) => ({
                     ...prev,
-                    privacy: {
-                      ...prev.privacy,
-                      showLocation: e.target.checked,
-                    },
+                    privacyShowLocation: e.target.checked,
                   }))
                 }
                 className="w-5 h-5 text-blue-500"
@@ -221,14 +214,11 @@ export default function SettingsPage() {
               </div>
               <input
                 type="checkbox"
-                checked={settings.privacy.showMealDetails}
+                checked={settings.privacyShowMealDetails ?? true}
                 onChange={(e) =>
                   setSettings((prev) => ({
                     ...prev,
-                    privacy: {
-                      ...prev.privacy,
-                      showMealDetails: e.target.checked,
-                    },
+                    privacyShowMealDetails: e.target.checked,
                   }))
                 }
                 className="w-5 h-5 text-blue-500"
@@ -255,11 +245,11 @@ export default function SettingsPage() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={settings.locations.home}
+                  value={settings.locationHome || ''}
                   onChange={(e) =>
                     setSettings((prev) => ({
                       ...prev,
-                      locations: { ...prev.locations, home: e.target.value },
+                      locationHome: e.target.value,
                     }))
                   }
                   placeholder="주소를 입력하거나 현재 위치 설정"
@@ -282,11 +272,11 @@ export default function SettingsPage() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={settings.locations.office}
+                  value={settings.locationOffice || ''}
                   onChange={(e) =>
                     setSettings((prev) => ({
                       ...prev,
-                      locations: { ...prev.locations, office: e.target.value },
+                      locationOffice: e.target.value,
                     }))
                   }
                   placeholder="주소를 입력하거나 현재 위치 설정"
@@ -300,6 +290,118 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* AI 추천 설정 */}
+        <section className="bg-white rounded-lg border p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles size={20} className="text-purple-600" />
+            <h2 className="font-semibold text-gray-900">AI 추천 설정</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-gray-700 mb-2 block">추천 타입</label>
+              <select
+                title="추천 유형"
+                value={settings.aiRecommendationType || 'social'}
+                onChange={(e) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    aiRecommendationType: e.target.value as 'social' | 'popular' | 'collaborative',
+                  }))
+                }
+                className="w-full px-3 py-2 border rounded-lg text-sm"
+              >
+                <option value="social">친구 추천 (친구들이 좋아한 맛집)</option>
+                <option value="popular">인기 맛집 (방문 횟수 기반)</option>
+                <option value="collaborative">취향 기반 (비슷한 사용자)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-700 mb-2 block">
+                최대 거리: {((settings.aiRecommendationMaxDistance || 5000) / 1000).toFixed(1)}km
+              </label>
+              <input
+                title="최대 거리"
+                type="range"
+                min="1000"
+                max="10000"
+                step="500"
+                value={settings.aiRecommendationMaxDistance || 5000}
+                onChange={(e) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    aiRecommendationMaxDistance: parseInt(e.target.value),
+                  }))
+                }
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>1km</span>
+                <span>10km</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-700 mb-2 block">
+                최소 평점: {settings.aiRecommendationMinRating || 4.0}점
+              </label>
+              <input
+                title="최소 평점"
+                type="range"
+                min="3.0"
+                max="5.0"
+                step="0.5"
+                value={settings.aiRecommendationMinRating || 4.0}
+                onChange={(e) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    aiRecommendationMinRating: parseFloat(e.target.value),
+                  }))
+                }
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>3.0</span>
+                <span>5.0</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-700 mb-2 block">최대 가격 (선택)</label>
+              <input
+                title="최대 가격"
+                type="number"
+                value={settings.aiRecommendationMaxPrice || ''}
+                onChange={(e) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    aiRecommendationMaxPrice: e.target.value ? parseInt(e.target.value) : undefined,
+                  }))
+                }
+                placeholder="예: 20000 (비워두면 제한 없음)"
+                className="w-full px-3 py-2 border rounded-lg text-sm"
+              />
+            </div>
+
+            <label className="flex items-center justify-between">
+              <span className="text-gray-700">이미 방문한 곳 제외</span>
+              <input
+                title="이미 방문한 곳 제외"
+                type="checkbox"
+                checked={settings.aiRecommendationExcludeVisited ?? true}
+                onChange={(e) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    aiRecommendationExcludeVisited: e.target.checked,
+                  }))
+                }
+                className="w-5 h-5 text-blue-500"
+              />
+            </label>
           </div>
         </section>
 

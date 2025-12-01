@@ -16,6 +16,7 @@ export * from './profile'
 export * from './share'
 export * from './restaurants'
 export * from './locations'
+export * from './ai'
 
 // ============================================
 // 내부 전용 모듈 (외부에서 직접 import 금지)

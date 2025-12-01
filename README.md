@@ -65,12 +65,12 @@ npm run dev
 
 ```
 DailyMeal/
+├── app/            # React Native 앱 (Expo)
 ├── frontend/       # Next.js 프론트엔드 (Port: 3000)
 ├── backend/        # NestJS 백엔드 (Port: 8000)
-├── app/            # React Native 앱 (Expo)
-├── docs/           # 프로젝트 문서
+├── bin/            # 배포/운영 스크립트
 ├── scripts/        # 유틸리티 스크립트
-└── bin/            # 배포/운영 스크립트
+└── docs/           # 프로젝트 문서
 ```
 
 ## 📝 최근 변경사항

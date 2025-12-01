@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MapPin, Star, Map as MapIcon, List } from 'lucide-react'
+import { MapPin, Star, Map as MapIcon, List, Sparkles, RefreshCw } from 'lucide-react'
 import { KakaoMap } from '@/components/kakao-map'
 import { useLocationPermission } from '@/hooks/use-location-permission'
 import { useAlert } from '@/components/ui/alert'
 import Link from 'next/link'
 import Spinner from '@/components/ui/spinner'
+import { aiApi, RecommendationType, profileApi } from '@/lib/api'
+import type { RecommendationItem } from '@/lib/api'
 
 interface Restaurant {
   id: string
@@ -27,7 +29,9 @@ type SortOption = 'recent' | 'count' | 'rating'
 export default function RestaurantsPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [popularRestaurants, setPopularRestaurants] = useState<Restaurant[]>([])
+  const [aiRecommendations, setAiRecommendations] = useState<RecommendationItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [aiLoading, setAiLoading] = useState(false)
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
   const [sortOption, setSortOption] = useState<SortOption>('recent')
 
@@ -44,7 +48,31 @@ export default function RestaurantsPage() {
 
   useEffect(() => {
     fetchRestaurants()
+    fetchAiRecommendations()
   }, [latitude, longitude])
+
+  const fetchAiRecommendations = async () => {
+    try {
+      setAiLoading(true)
+      const settings = await profileApi.getSettings()
+      
+      const data = await aiApi.getRecommendations(
+        RecommendationType[settings.aiRecommendationType?.toUpperCase() as keyof typeof RecommendationType] || RecommendationType.SOCIAL,
+        {
+          excludeVisited: settings.aiRecommendationExcludeVisited ?? true,
+          maxDistance: settings.aiRecommendationMaxDistance || 5000,
+          minRating: settings.aiRecommendationMinRating || 4,
+          maxPrice: settings.aiRecommendationMaxPrice,
+        }
+      )
+      
+      setAiRecommendations(data.recommendations.slice(0, 4))
+    } catch (error) {
+      console.error('AI 추천 로딩 실패:', error)
+    } finally {
+      setAiLoading(false)
+    }
+  }
 
   const fetchRestaurants = async () => {
     try {
@@ -102,8 +130,89 @@ export default function RestaurantsPage() {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
+      {/* AI 추천 맛집 */}
+      <div className="p-4 bg-gradient-to-br from-purple-50 to-blue-50 border-b">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <Sparkles size={18} className="text-white" />
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900">AI 추천 맛집</h4>
+              <p className="text-xs text-gray-600">개인화된 맛집 추천</p>
+            </div>
+          </div>
+          <button
+            onClick={fetchAiRecommendations}
+            disabled={aiLoading}
+            className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+            title="새로고침"
+          >
+            <RefreshCw size={16} className={`text-purple-600 ${aiLoading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+        
+        {aiLoading ? (
+          <div className="grid grid-cols-2 gap-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white/70 rounded-lg p-3 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            ))}
+          </div>
+        ) : aiRecommendations.length > 0 ? (
+          <div className="grid grid-cols-2 gap-2">
+            {aiRecommendations.map((rec, idx) => (
+              <div
+                key={`ai-${idx}`}
+                className="bg-white rounded-lg p-3 border border-purple-100 hover:border-purple-300 transition-colors"
+              >
+                <div className="flex items-start justify-between mb-1">
+                  <h5 className="text-sm font-medium text-gray-900 truncate flex-1">
+                    {rec.restaurantName}
+                  </h5>
+                  {rec.rating && (
+                    <div className="flex items-center ml-1">
+                      <Star size={12} className="text-yellow-400 fill-current" />
+                      <span className="text-xs text-gray-600 ml-0.5">{rec.rating.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="text-xs text-gray-500 mb-1 truncate">
+                  {rec.address || '주소 정보 없음'}
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  {rec.distance && (
+                    <span className="text-purple-600">
+                      📍 {(rec.distance / 1000).toFixed(1)}km
+                    </span>
+                  )}
+                  {rec.likedByFriends && rec.likedByFriends.length > 0 && (
+                    <span className="text-blue-600 truncate" title={rec.likedByFriends.map(f => f.friendName).join(', ')}>
+                      👤 {rec.likedByFriends[0].friendName}
+                      {rec.likedByFriends.length > 1 && ` 외 ${rec.likedByFriends.length - 1}명`}
+                    </span>
+                  )}
+                  {rec.visitCount && rec.visitCount > 0 && (
+                    <span className="text-orange-600">
+                      🔥 {rec.visitCount}회
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white/70 rounded-lg p-4 text-center text-sm text-gray-500">
+            추천할 맛집이 없습니다
+          </div>
+        )}
+      </div>
+
+      {/* 인기 맛집 */}
       <div className="p-4 bg-white border-b">
-        <h4 className="text-sm font-medium text-gray-600 mb-2">인기 맛집</h4>
+        <h4 className="text-sm font-medium text-gray-600 mb-2">내가 자주 가는 맛집</h4>
         <div className="grid grid-cols-2 gap-2">
           {popularRestaurants.map((restaurant) => (
             <Link
@@ -280,6 +389,7 @@ export default function RestaurantsPage() {
               내 맛집 ({sortedRestaurants.length})
             </h3>
             <select
+              title='맛집 정렬 기준'
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as SortOption)}
               className="text-sm text-gray-600 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"

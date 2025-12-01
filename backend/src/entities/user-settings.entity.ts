@@ -56,6 +56,22 @@ export class UserSettings {
   @Column('decimal', { precision: 10, scale: 7, nullable: true })
   locationOfficeLongitude: number;
 
+  // AI 추천 설정
+  @Column({ type: 'varchar', default: 'social' })
+  aiRecommendationType: 'social' | 'popular' | 'collaborative';
+
+  @Column({ type: 'int', default: 5000 })
+  aiRecommendationMaxDistance: number;
+
+  @Column({ type: 'int', nullable: true })
+  aiRecommendationMaxPrice: number;
+
+  @Column({ type: 'decimal', precision: 2, scale: 1, default: 4.0 })
+  aiRecommendationMinRating: number;
+
+  @Column({ type: 'boolean', default: true })
+  aiRecommendationExcludeVisited: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
