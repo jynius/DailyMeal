@@ -88,7 +88,9 @@ export async function apiRequest<T>(
       throw new Error(errorMsg)
     }
 
-    const data = await response.json()
+    // 응답 본문 확인
+    const text = await response.text()
+    const data = text ? JSON.parse(text) : null
     console.log('✅ API Success:', data)
     
     // 성공 모니터링

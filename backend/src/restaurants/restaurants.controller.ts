@@ -7,6 +7,7 @@ import {
   UseGuards,
   Request,
   Query,
+  Param,
   ParseFloatPipe,
   DefaultValuePipe,
 } from '@nestjs/common';
@@ -18,6 +19,19 @@ import { RestaurantsService } from './restaurants.service';
 @Controller('restaurants')
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
+
+  @Get('detail/:placeIdOrName')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '음식점 상세 정보 조회 (Kakao Place ID 또는 식당명으로)' })
+  @ApiResponse({ status: 200, description: '음식점 상세 정보 조회 성공' })
+  async getRestaurantByPlaceId(
+    @Request() req: any,
+    @Param('placeIdOrName') placeIdOrName: string,
+  ) {
+    // URL 디코딩
+    const decoded = decodeURIComponent(placeIdOrName);
+    return this.restaurantsService.getRestaurantDetail(req.user.id, decoded);
+  }
 
   @Get()
   @UseGuards(JwtAuthGuard)

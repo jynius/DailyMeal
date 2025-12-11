@@ -69,14 +69,26 @@ export class FriendWhoLiked {
 }
 
 export class RecommendationItem {
-  @ApiProperty({ example: 1 })
-  restaurantId: number
+  @ApiProperty({ example: 1, required: false })
+  restaurantId?: number
+
+  @ApiProperty({ example: '12345678', required: false })
+  placeId?: string
 
   @ApiProperty({ example: 'OO식당' })
   restaurantName: string
 
   @ApiProperty({ example: '서울시 강남구...' })
   address: string
+
+  @ApiProperty({ example: '한식 > 찌개류', required: false })
+  categoryName?: string
+
+  @ApiProperty({ example: '김치찌개', required: false })
+  menuCategory?: string
+
+  @ApiProperty({ type: [String], example: ['김치찌개', '된장찌개'], required: false })
+  popularMenus?: string[]
 
   @ApiProperty({ example: 1500 })
   distance: number // meters

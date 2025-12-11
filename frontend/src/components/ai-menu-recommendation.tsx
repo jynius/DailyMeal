@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Sparkles, RefreshCw, MapPin, Clock, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { profileApi, aiApi, RecommendationType } from '@/lib/api'
+import Link from 'next/link'
 
 interface MenuRecommendation {
   id: string
@@ -64,6 +65,7 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
     try {
       // ✅ 실제 AI API 호출로 변경 (사용자 설정 사용)
       const recommendationType = userSettings?.aiRecommendationType || 'social'
+      console.log('AI 추천 요청:', recommendationType, userSettings)
       const data = await aiApi.getRecommendations(
         RecommendationType[recommendationType.toUpperCase() as keyof typeof RecommendationType],
         {
@@ -74,12 +76,17 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
         }
       )
       
+      console.log('AI 추천 응답:', data)
+      
       // Backend 추천 데이터를 MenuRecommendation 형식으로 변환
       const converted: MenuRecommendation[] = data.recommendations.slice(0, 3).map((rec, idx) => ({
         id: `rec-${idx}`,
         name: rec.restaurantName,
+        placeId: (rec as any).placeId,
         category: rec.category === 'restaurant' ? '외식' : rec.category === 'delivery' ? '배달' : '집밥',
         description: rec.address || '맛있는 음식점입니다',
+        menuCategory: (rec as any).menuCategory,
+        popularMenus: (rec as any).popularMenus,
         estimatedPrice: rec.averagePrice ? `${rec.averagePrice.toLocaleString()}원` : '가격 정보 없음',
         cookingTime: rec.distance ? `${(rec.distance / 1000).toFixed(1)}km 거리` : '정보 없음',
         difficulty: 'medium' as const,
@@ -255,8 +262,18 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
         </div>
       ) : (
         <div className="space-y-4">
-          {recommendations.map((rec, index) => (
-            <div key={rec.id} className="border border-gray-100 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+          {recommendations.map((rec, index) => {
+            // placeId가 있으면 사용, 없으면 이름 사용 (fallback 데이터)
+            const linkUrl = (rec as any).placeId 
+              ? `/restaurant/${(rec as any).placeId}` 
+              : `/restaurant/${encodeURIComponent(rec.name)}`;
+            
+            return (
+              <Link 
+                key={rec.id}
+                href={linkUrl}
+                className="block border border-gray-100 rounded-lg p-3 hover:bg-gray-50 transition-colors"
+              >)
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h4 className="font-medium text-gray-900 flex items-center gap-2">
@@ -265,6 +282,25 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
                     </span>
                     {rec.name}
                   </h4>
+                  
+                  {/* 메뉴 카테고리 */}
+                  {(rec as any).menuCategory && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      🍽️ {(rec as any).menuCategory}
+                    </p>
+                  )}
+                  
+                  {/* 인기 메뉴 */}
+                  {(rec as any).popularMenus && (rec as any).popularMenus.length > 0 && (
+                    <div className="flex gap-1 mt-1 flex-wrap">
+                      {(rec as any).popularMenus.slice(0, 3).map((menu: string, idx: number) => (
+                        <span key={idx} className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
+                          {menu}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
                   <p className="text-sm text-gray-600 mt-1">{rec.description}</p>
                 </div>
                 
@@ -284,9 +320,11 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
                 </div>
               </div>
               
-              <p className="text-sm text-blue-600 bg-blue-50 p-2 rounded text-center mb-2">
-                💡 {rec.reason}
-              </p>
+              {rec.reason && rec.reason !== '추천 맛집입니다' && (
+                <p className="text-sm text-blue-600 bg-blue-50 p-2 rounded text-center mb-2">
+                  💡 {rec.reason}
+                </p>
+              )}
               
               {rec.nearbyRestaurants && rec.nearbyRestaurants.length > 0 && (
                 <div>
@@ -303,8 +341,8 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
                   </div>
                 </div>
               )}
-            </div>
-          ))}
+            </Link>
+          )})}
           
           <div className="text-center pt-2">
             <p className="text-xs text-gray-400">

@@ -163,45 +163,61 @@ export default function RestaurantsPage() {
           </div>
         ) : aiRecommendations.length > 0 ? (
           <div className="grid grid-cols-2 gap-2">
-            {aiRecommendations.map((rec, idx) => (
-              <div
-                key={`ai-${idx}`}
-                className="bg-white rounded-lg p-3 border border-purple-100 hover:border-purple-300 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-1">
-                  <h5 className="text-sm font-medium text-gray-900 truncate flex-1">
-                    {rec.restaurantName}
-                  </h5>
-                  {rec.rating && (
-                    <div className="flex items-center ml-1">
-                      <Star size={12} className="text-yellow-400 fill-current" />
-                      <span className="text-xs text-gray-600 ml-0.5">{rec.rating.toFixed(1)}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="text-xs text-gray-500 mb-1 truncate">
-                  {rec.address || '주소 정보 없음'}
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  {rec.distance && (
-                    <span className="text-purple-600">
-                      📍 {(rec.distance / 1000).toFixed(1)}km
-                    </span>
-                  )}
-                  {rec.likedByFriends && rec.likedByFriends.length > 0 && (
-                    <span className="text-blue-600 truncate" title={rec.likedByFriends.map(f => f.friendName).join(', ')}>
-                      👤 {rec.likedByFriends[0].friendName}
-                      {rec.likedByFriends.length > 1 && ` 외 ${rec.likedByFriends.length - 1}명`}
-                    </span>
-                  )}
-                  {rec.visitCount && rec.visitCount > 0 && (
-                    <span className="text-orange-600">
-                      🔥 {rec.visitCount}회
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+            {aiRecommendations.map((rec, idx) => {
+              // placeId가 있으면 그것을 사용, 없으면 쿼리 파라미터 사용 (fallback)
+              const href = (rec as any).placeId 
+                ? `/restaurant/${(rec as any).placeId}`
+                : (() => {
+                    const queryParams = new URLSearchParams()
+                    if (rec.address) queryParams.set('address', rec.address)
+                    if (rec.latitude) queryParams.set('lat', rec.latitude.toString())
+                    if (rec.longitude) queryParams.set('lng', rec.longitude.toString())
+                    if (rec.rating) queryParams.set('rating', rec.rating.toString())
+                    if (rec.averagePrice) queryParams.set('price', rec.averagePrice.toString())
+                    return `/restaurant/${encodeURIComponent(rec.restaurantName)}?${queryParams.toString()}`
+                  })()
+              
+              return (
+                <Link
+                  key={`ai-${idx}`}
+                  href={href}
+                  className="bg-white rounded-lg p-3 border border-purple-100 hover:border-purple-300 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <h5 className="text-sm font-medium text-gray-900 truncate flex-1">
+                      {rec.restaurantName}
+                    </h5>
+                    {rec.rating && (
+                      <div className="flex items-center ml-1">
+                        <Star size={12} className="text-yellow-400 fill-current" />
+                        <span className="text-xs text-gray-600 ml-0.5">{rec.rating.toFixed(1)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500 mb-1 truncate">
+                    {rec.address || '주소 정보 없음'}
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    {rec.distance && (
+                      <span className="text-purple-600">
+                        📍 {(rec.distance / 1000).toFixed(1)}km
+                      </span>
+                    )}
+                    {rec.likedByFriends && rec.likedByFriends.length > 0 && (
+                      <span className="text-blue-600 truncate" title={rec.likedByFriends.map(f => f.friendName).join(', ')}>
+                        👤 {rec.likedByFriends[0].friendName}
+                        {rec.likedByFriends.length > 1 && ` 외 ${rec.likedByFriends.length - 1}명`}
+                      </span>
+                    )}
+                    {rec.visitCount && rec.visitCount > 0 && (
+                      <span className="text-orange-600">
+                        🔥 {rec.visitCount}회
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         ) : (
           <div className="bg-white/70 rounded-lg p-4 text-center text-sm text-gray-500">

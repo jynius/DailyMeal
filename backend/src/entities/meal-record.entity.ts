@@ -44,7 +44,15 @@ export class MealRecord {
   @Column({ type: 'varchar', length: 200, nullable: true })
   memo: string | null
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  @Column('decimal', {
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    transformer: {
+      to: (value: number | null) => value,
+      from: (value: string | null) => value ? parseFloat(value) : null,
+    },
+  })
   price: number | null
 
   // 식사 카테고리 (집밥, 배달, 식당)

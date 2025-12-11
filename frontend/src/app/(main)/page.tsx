@@ -303,7 +303,7 @@ export default function Home() {
                             {/* 가격 */}
                             {meal.price && (
                               <div className="text-base font-semibold text-blue-600 mb-2">
-                                ₩{meal.price.toLocaleString()}
+                                ₩{meal.price.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
                               </div>
                             )}
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ArrowLeft, MapPin, Star, Calendar, Users, DollarSign, Image as ImageIcon } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { KakaoMap } from '@/components/kakao-map'
@@ -40,61 +40,75 @@ interface RestaurantPageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function RestaurantPage({ params }: RestaurantPageProps) {
-  const { id } = await params
+export default function RestaurantPage({ params }: RestaurantPageProps) {
+  const [id, setId] = useState<string | null>(null)
+
+  useEffect(() => {
+    params.then(p => setId(p.id))
+  }, [params])
+
+  if (!id) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Spinner />
+      </div>
+    )
+  }
   
   return <RestaurantContent id={id} />
 }
 
 function RestaurantContent({ id }: { id: string }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [restaurant, setRestaurant] = useState<RestaurantDetail | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchRestaurantDetail()
-  }, [id])
+  }, [id, searchParams])
 
   const fetchRestaurantDetail = async () => {
     try {
       setLoading(true)
-      const { mealRecordsApi } = await import('@/lib/api')
+      const { restaurantsApi } = await import('@/lib/api')
       
-      const response = await mealRecordsApi.getAll(1, 1000)
-      const allMeals = response.data
-
-      const targetMeal = allMeals.find((m: any) => m.id === id)
-      if (!targetMeal || !targetMeal.location) {
-        throw new Error('Restaurant not found')
+      // placeId 또는 URL-encoded name으로 조회
+      const placeIdOrName = id.includes('%') ? decodeURIComponent(id) : id
+      
+      // Backend API를 통해 레스토랑 정보 조회 (사용자 기록 + Kakao 캐시)
+      const restaurantData = await restaurantsApi.getRestaurantDetail(placeIdOrName)
+      
+      if (!restaurantData) {
+        // API에서도 찾지 못한 경우 - 쿼리 파라미터에서 가져오기 (fallback)
+        const address = searchParams.get('address') || '주소 정보 없음'
+        const lat = searchParams.get('lat')
+        const lng = searchParams.get('lng')
+        const rating = searchParams.get('rating')
+        const price = searchParams.get('price')
+        const name = searchParams.get('name') || placeIdOrName
+        
+        const restaurantDetail: RestaurantDetail = {
+          id: placeIdOrName,
+          name: name,
+          address: address,
+          latitude: lat ? parseFloat(lat) : undefined,
+          longitude: lng ? parseFloat(lng) : undefined,
+          mealCount: 0,
+          avgRating: rating ? parseFloat(rating) : 0,
+          totalPrice: price ? parseFloat(price) : 0,
+          firstVisit: new Date().toISOString(),
+          lastVisit: new Date().toISOString(),
+          meals: []
+        }
+        setRestaurant(restaurantDetail)
+        return
       }
-
-      const restaurantMeals = allMeals.filter(
-        (meal: any) => meal.location === targetMeal.location
-      )
-
-      const totalRating = restaurantMeals.reduce((sum: number, meal: any) => sum + (meal.rating || 0), 0)
-      const totalPrice = restaurantMeals.reduce((sum: number, meal: any) => sum + (meal.price || 0), 0)
-      const dates = restaurantMeals.map((meal: any) => new Date(meal.createdAt))
-      const firstVisit = new Date(Math.min(...dates.map(d => d.getTime()))).toISOString()
-      const lastVisit = new Date(Math.max(...dates.map(d => d.getTime()))).toISOString()
-
-      const restaurantDetail: RestaurantDetail = {
-        id: id,
-        name: targetMeal.location,
-        address: targetMeal.address || '주소 정보 없음',
-        latitude: targetMeal.latitude,
-        longitude: targetMeal.longitude,
-        mealCount: restaurantMeals.length,
-        avgRating: totalRating / restaurantMeals.length,
-        totalPrice: totalPrice,
-        firstVisit: firstVisit,
-        lastVisit: lastVisit,
-        meals: restaurantMeals.sort((a: any, b: any) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
-      }
-
-      setRestaurant(restaurantDetail)
+      
+      // Backend에서 받은 데이터 설정
+      console.log('Restaurant data received:', restaurantData)
+      console.log('Latitude:', restaurantData?.latitude, 'Longitude:', restaurantData?.longitude)
+      setRestaurant(restaurantData)
     } catch (error) {
       console.error('Failed to fetch restaurant detail:', error)
     } finally {
@@ -108,17 +122,20 @@ function RestaurantContent({ id }: { id: string }) {
 
   if (!restaurant) {
     return (
-      <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">식당 정보를 찾을 수 없습니다</p>
-          <button
-            onClick={() => router.back()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-          >
-            돌아가기
-          </button>
+      <>
+        <Header title="맛집 정보" showBackButton />
+        <div className="max-w-md mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">식당 정보를 찾을 수 없습니다</p>
+            <button
+              onClick={() => router.back()}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+            >
+              돌아가기
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
@@ -129,7 +146,17 @@ function RestaurantContent({ id }: { id: string }) {
   const avgPrice = restaurant.totalPrice / restaurant.mealCount
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
+    <>
+      <Header title={restaurant.name} showBackButton />
+      <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
+        {/* 방문하지 않은 맛집 알림 */}
+        {restaurant.mealCount === 0 && (
+          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 text-center">
+            <p className="text-sm font-medium mb-1">🎯 AI 추천 맛집</p>
+            <p className="text-xs opacity-90">아직 방문하지 않은 맛집입니다. 방문 후 기록을 남겨보세요!</p>
+          </div>
+        )}
+
       <div className="bg-white p-6 border-b">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -146,7 +173,9 @@ function RestaurantContent({ id }: { id: string }) {
             <div className="flex items-center justify-center mb-1">
               <Star size={18} className="text-yellow-500 fill-current" />
             </div>
-            <div className="text-lg font-bold text-gray-900">{restaurant.avgRating.toFixed(1)}</div>
+            <div className="text-lg font-bold text-gray-900">
+              {restaurant.mealCount > 0 ? restaurant.avgRating.toFixed(1) : '-'}
+            </div>
             <div className="text-xs text-gray-600">평균 평점</div>
           </div>
 
@@ -162,17 +191,21 @@ function RestaurantContent({ id }: { id: string }) {
             <div className="flex items-center justify-center mb-1">
               <DollarSign size={18} className="text-purple-600" />
             </div>
-            <div className="text-lg font-bold text-gray-900">{formatPrice(Math.round(avgPrice / 1000))}k</div>
+            <div className="text-lg font-bold text-gray-900">
+              {restaurant.mealCount > 0 ? formatPrice(Math.round(avgPrice / 1000)) + 'k' : '-'}
+            </div>
             <div className="text-xs text-gray-600">평균 가격</div>
           </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600">
-          <div className="flex justify-between">
-            <span>첫 방문: {new Date(restaurant.firstVisit).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-            <span>최근: {new Date(restaurant.lastVisit).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+        {restaurant.mealCount > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600">
+            <div className="flex justify-between">
+              <span>첫 방문: {new Date(restaurant.firstVisit).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+              <span>최근: {new Date(restaurant.lastVisit).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {restaurant.latitude && restaurant.longitude && (
@@ -204,8 +237,19 @@ function RestaurantContent({ id }: { id: string }) {
           <h3 className="text-lg font-semibold text-gray-900">방문 기록 ({restaurant.meals.length})</h3>
         </div>
 
-        <div className="divide-y divide-gray-100">
-          {restaurant.meals.map((meal) => (
+        {restaurant.meals.length === 0 ? (
+          <div className="p-8 text-center">
+            <div className="mb-4">
+              <div className="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center">
+                <Star size={32} className="text-purple-500" />
+              </div>
+            </div>
+            <p className="text-gray-600 mb-2">아직 방문 기록이 없습니다</p>
+            <p className="text-sm text-gray-400">이 맛집을 방문하고 첫 번째 기록을 남겨보세요!</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {restaurant.meals.map((meal) => (
             <Link key={meal.id} href={`/meal/${meal.id}`} className="block p-4 hover:bg-gray-50 transition-colors">
               <div className="flex gap-3">
                 <div className="w-20 h-20 flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-100">
@@ -253,8 +297,10 @@ function RestaurantContent({ id }: { id: string }) {
               </div>
             </Link>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </div>
+    </>
   )
 }

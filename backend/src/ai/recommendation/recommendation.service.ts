@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config'
 import { MealRecord } from '../../entities/meal-record.entity'
 import { Friendship } from '../../entities/friendship.entity'
 import { User } from '../../entities/user.entity'
+import { KakaoPlace } from '../../entities/kakao-place.entity'
 import {
   RecommendationType,
   RecommendationResponseDto,
@@ -23,6 +24,8 @@ export class RecommendationService {
     private readonly friendshipRepository: Repository<Friendship>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(KakaoPlace)
+    private readonly kakaoPlaceRepository: Repository<KakaoPlace>,
     private readonly configService: ConfigService
   ) {}
 
@@ -140,7 +143,7 @@ export class RecommendationService {
   }
 
   /**
-   * 🌐 카카오 로컬 API: 실제 맛집 데이터 (운영 환경용)
+   * 🌐 카카오 로컬 API: 실제 맛집 데이터 (캐시 우선)
    */
   private async getKakaoLocalRecommendations(
     userId: string,
@@ -167,7 +170,70 @@ export class RecommendationService {
         lon = userMeals[0].longitude
       }
 
-      // 카카오 로컬 API 호출
+      // 1. 먼저 캐시(DB)에서 조회 - 최근 7일 이내 데이터
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+      const cachedPlaces = await this.kakaoPlaceRepository
+        .createQueryBuilder('place')
+        .where('place.updatedAt >= :sevenDaysAgo', { sevenDaysAgo })
+        .getMany()
+
+      // 사용자가 방문한 곳 제외
+      const userVisited = await this.mealRecordRepository.find({
+        where: { userId },
+        select: ['location'],
+      })
+      const visitedNames = new Set(userVisited.map((m) => m.location))
+
+      // 캐시된 데이터가 충분하면 반환
+      const cachedResultsPromises = cachedPlaces
+        .filter((place) => !visitedNames.has(place.placeName))
+        .slice(0, 10)
+        .map(async (place, index) => {
+          // 사용자들의 식사 기록에서 인기 메뉴 추출
+          const popularMeals = await this.mealRecordRepository
+            .createQueryBuilder('meal')
+            .select('meal.name', 'name')
+            .addSelect('COUNT(*)', 'count')
+            .where('meal.location = :location', { location: place.placeName })
+            .groupBy('meal.name')
+            .orderBy('count', 'DESC')
+            .limit(3)
+            .getRawMany()
+
+          const popularMenus = popularMeals.map(m => m.name)
+          const menuCategory = place.categoryName ? place.categoryName.split(' > ').pop() : undefined
+
+          return {
+            restaurantId: index + 1,
+            placeId: place.placeId,
+            restaurantName: place.placeName,
+            address: place.addressName || place.roadAddressName || '주소 정보 없음',
+            categoryName: place.categoryName || undefined,
+            menuCategory,
+            popularMenus: popularMenus.length > 0 ? popularMenus : undefined,
+            latitude: place.latitude,
+            longitude: place.longitude,
+            distance: this.calculateDistance(lat, lon, place.latitude, place.longitude),
+            rating: 4.0,
+            averagePrice: undefined,
+            visitCount: 0,
+            visited: false,
+            category: 'restaurant',
+            reason: `주변 인기 장소${menuCategory ? ` (${menuCategory})` : ''}`,
+          } as RecommendationItem
+        })
+
+      const resolvedResults = await Promise.all(cachedResultsPromises)
+
+      if (resolvedResults.length >= 5) {
+        this.logger.log(`Using ${resolvedResults.length} cached Kakao places`)
+        return resolvedResults
+      }
+
+      // 2. 캐시가 부족하면 카카오 API 호출
+      this.logger.log('Fetching from Kakao Local API')
       const response = await fetch(
         `https://dapi.kakao.com/v2/local/search/keyword.json?query=맛집&x=${lon}&y=${lat}&radius=5000&sort=accuracy`,
         {
@@ -183,31 +249,67 @@ export class RecommendationService {
 
       const data = await response.json()
 
-      // 사용자가 방문한 곳 제외
-      const userVisited = await this.mealRecordRepository.find({
-        where: { userId },
-        select: ['location'],
+      // 3. API 결과를 DB에 저장 (upsert)
+      const savePromises = data.documents.map(async (place: any) => {
+        return this.kakaoPlaceRepository.save({
+          placeId: place.id,
+          placeName: place.place_name,
+          categoryName: place.category_name,
+          addressName: place.address_name,
+          roadAddressName: place.road_address_name,
+          latitude: parseFloat(place.y),
+          longitude: parseFloat(place.x),
+          phone: place.phone,
+          placeUrl: place.place_url,
+        })
       })
-      const visitedNames = new Set(userVisited.map((m) => m.location))
+
+      await Promise.all(savePromises)
+      this.logger.log(`Saved ${data.documents.length} places to cache`)
 
       return data.documents
         .filter((place: any) => !visitedNames.has(place.place_name))
         .slice(0, 10)
-        .map((place: any, index: number) => ({
-          restaurantId: index + 1,
-          restaurantName: place.place_name,
-          address: place.address_name || place.road_address_name || '주소 정보 없음',
-          distance: parseInt(place.distance || '0'),
-          rating: 4.0, // 카카오는 평점 제공 안함 (기본값)
-          averagePrice: undefined,
-          visitCount: 0,
-          visited: false,
-          reason: `주변 인기 장소 (${place.category_name.split(' > ').pop()})`,
-        }))
+        .map((place: any, index: number) => {
+          const menuCategory = place.category_name ? place.category_name.split(' > ').pop() : undefined
+          
+          return {
+            restaurantId: index + 1,
+            placeId: place.id,
+            restaurantName: place.place_name,
+            address: place.address_name || place.road_address_name || '주소 정보 없음',
+            categoryName: place.category_name || undefined,
+            menuCategory,
+            latitude: parseFloat(place.y),
+            longitude: parseFloat(place.x),
+            distance: parseInt(place.distance || '0'),
+            rating: 4.0,
+            averagePrice: undefined,
+            visitCount: 0,
+            visited: false,
+            reason: `주변 인기 장소${menuCategory ? ` (${menuCategory})` : ''}`,
+          }
+        })
     } catch (error) {
       this.logger.error('Failed to fetch Kakao Local API:', error)
       return []
     }
+  }
+
+  // 거리 계산 헬퍼 (미터 단위)
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371e3 // 지구 반지름 (미터)
+    const φ1 = (lat1 * Math.PI) / 180
+    const φ2 = (lat2 * Math.PI) / 180
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+    return Math.round(R * c) // 미터 단위
   }
 
   private async getSocialRecommendations(userId: string): Promise<RecommendationItem[]> {
@@ -529,21 +631,5 @@ export class RecommendationService {
     }
 
     return filtered
-  }
-
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    // Haversine formula for distance calculation in meters
-    const R = 6371e3 // Earth radius in meters
-    const φ1 = (lat1 * Math.PI) / 180
-    const φ2 = (lat2 * Math.PI) / 180
-    const Δφ = ((lat2 - lat1) * Math.PI) / 180
-    const Δλ = ((lon2 - lon1) * Math.PI) / 180
-
-    const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-
-    return R * c
   }
 }

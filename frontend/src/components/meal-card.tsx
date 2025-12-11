@@ -303,7 +303,7 @@ export function MealCard({
             {/* 가격 */}
             {price && (
               <div className="text-base font-semibold text-blue-600 mb-2">
-                ₩{price.toLocaleString()}
+                ₩{price.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
               </div>
             )}
 
