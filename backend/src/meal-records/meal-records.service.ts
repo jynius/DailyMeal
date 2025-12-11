@@ -9,6 +9,7 @@ import { MealRecord } from '../entities/meal-record.entity'
 import { CreateMealRecordDto, UpdateMealRecordDto } from '../dto/meal-record.dto'
 import { RealTimeService } from '../realtime/realtime.service'
 import { ConfigService } from '../config/config.service'
+import { LocationsService } from '../locations/locations.service'
 
 @Injectable()
 export class MealRecordsService {
@@ -18,7 +19,8 @@ export class MealRecordsService {
     @InjectRepository(MealRecord)
     private readonly mealRecordRepository: Repository<MealRecord>,
     private readonly realTimeService: RealTimeService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly locationsService: LocationsService,
   ) {}
 
   /**
@@ -263,10 +265,28 @@ export class MealRecordsService {
     const finalLatitude = createMealRecordDto.latitude ?? extractedLatitude
     const finalLongitude = createMealRecordDto.longitude ?? extractedLongitude
 
+    // location이 있으면 UserLocation 생성 또는 찾기
+    let userLocationId: string | undefined
+    if (createMealRecordDto.location && finalLatitude && finalLongitude) {
+      try {
+        const userLocation = await this.locationsService.createUserLocation({
+          userId,
+          name: createMealRecordDto.location,
+          address: createMealRecordDto.address,
+          latitude: finalLatitude,
+          longitude: finalLongitude,
+        })
+        userLocationId = userLocation.id
+      } catch (error) {
+        this.logger.warn(`Failed to create user location: ${error.message}`)
+      }
+    }
+
     const mealRecord = this.mealRecordRepository.create({
       id: uuidv4(), // UUID 명시적 생성
       ...createMealRecordDto,
       userId,
+      userLocationId, // 새로운 location 시스템 연결
       photo: photos && photos.length > 0 ? photos[0] : undefined, // 첫 번째 사진을 메인 사진으로
       photos: photos || [], // 모든 사진들
       photoTakenAt, // 추출한 촬영 시간 저장

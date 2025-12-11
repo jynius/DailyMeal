@@ -9,6 +9,7 @@ import { KakaoMap } from '@/components/kakao-map'
 import { Header } from '@/components/header'
 import Spinner from '@/components/ui/spinner'
 import { transformImageUrl } from '@/lib/constants'
+import { LocationGroupInfo } from '@/components/location-group-info'
 
 interface MealRecord {
   id: string
@@ -24,6 +25,7 @@ interface MealRecord {
 
 interface RestaurantDetail {
   id: string
+  locationGroupId?: string // LocationGroup ID 추가 (방문자 표시용)
   name: string
   address: string
   latitude?: number
@@ -229,6 +231,16 @@ function RestaurantContent({ id }: { id: string }) {
               className="w-full h-64 rounded-lg"
             />
           </div>
+        </div>
+      )}
+
+      {/* 이 맛집을 방문한 친구들 표시 */}
+      {restaurant.locationGroupId && (
+        <div className="mt-4">
+          <LocationGroupInfo 
+            locationGroupId={restaurant.locationGroupId} 
+            restaurantName={restaurant.name} 
+          />
         </div>
       )}
 

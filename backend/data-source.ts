@@ -7,6 +7,9 @@ import { Friendship } from './src/entities/friendship.entity';
 import { MealShare } from './src/entities/meal-share.entity';
 import { ShareTracking } from './src/entities/share-tracking.entity';
 import { KakaoPlace } from './src/entities/kakao-place.entity';
+import { LocationGroup } from './src/entities/location-group.entity';
+import { UserLocation } from './src/entities/user-location.entity';
+import { ExternalPlaceMapping } from './src/entities/external-place-mapping.entity';
 
 // TypeORM CLI가 환경 변수를 올바르게 인식하도록 보장
 if (
@@ -36,6 +39,9 @@ export const dataSourceOptions: DataSourceOptions = {
     MealShare,
     ShareTracking,
     KakaoPlace,
+    LocationGroup,
+    UserLocation,
+    ExternalPlaceMapping,
   ],
   synchronize: process.env.NODE_ENV !== 'production',
   logging: process.env.NODE_ENV !== 'production',

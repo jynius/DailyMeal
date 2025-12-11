@@ -6,12 +6,14 @@ import { MealRecord } from '../entities/meal-record.entity';
 import { User } from '../entities/user.entity';
 import { RealTimeModule } from '../realtime/realtime.module';
 import { ConfigModule } from '../config/config.module';
+import { LocationsModule } from '../locations/locations.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([MealRecord, User]),
     RealTimeModule,
     ConfigModule,
+    LocationsModule,
   ],
   controllers: [MealRecordsController],
   providers: [MealRecordsService],

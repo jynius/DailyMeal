@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm'
 import { User } from './user.entity'
+import { UserLocation } from './user-location.entity'
 
 @Entity('meal_records')
 export class MealRecord {
@@ -26,6 +27,10 @@ export class MealRecord {
 
   @Column({ type: 'varchar', nullable: true })
   location: string | null
+
+  // 새로운 location 시스템 (Phase 1: 추가, Phase 4: 필수로 전환)
+  @Column({ type: 'uuid', nullable: true })
+  userLocationId: string | null
 
   // GPS 좌표 정보
   @Column('decimal', { precision: 10, scale: 7, nullable: true })
@@ -86,4 +91,10 @@ export class MealRecord {
   @ManyToOne(() => User, (user) => user.mealRecords)
   @JoinColumn({ name: 'userId' })
   user: User
+
+  @ManyToOne(() => UserLocation, (userLocation) => userLocation.mealRecords, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'userLocationId' })
+  userLocation: UserLocation | null
 }

@@ -273,7 +273,7 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
                 key={rec.id}
                 href={linkUrl}
                 className="block border border-gray-100 rounded-lg p-3 hover:bg-gray-50 transition-colors"
-              >)
+              >
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h4 className="font-medium text-gray-900 flex items-center gap-2">

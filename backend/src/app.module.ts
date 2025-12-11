@@ -16,6 +16,7 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { CryptoModule } from './common/crypto.module'
 import { AiModule } from './ai/ai.module'
+import { LocationsModule } from './locations/locations.module'
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { AiModule } from './ai/ai.module'
     RestaurantsModule,
     CryptoModule,
     AiModule,
+    LocationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

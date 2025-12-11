@@ -23,7 +23,8 @@
     "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert",
     "db:inspect": "node scripts/inspect-db.js",
-    "db:migrate": "node scripts/migrate-to-postgres.js"
+    "db:migrate": "node scripts/migrate-to-postgres.js",
+    "migrate:locations": "ts-node -r tsconfig-paths/register scripts/migrate-location-system.ts"
   },
   "dependencies": {
     "@nestjs/cli": "^11.0.0",

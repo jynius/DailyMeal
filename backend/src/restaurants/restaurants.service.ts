@@ -4,9 +4,14 @@ import { Repository } from 'typeorm';
 import { MealRecord } from '../entities/meal-record.entity';
 import { KakaoPlace } from '../entities/kakao-place.entity';
 import { AppLoggerService } from '../common/logger.service';
+import { LocationsService } from '../locations/locations.service';
+import { UserLocation } from '../entities/user-location.entity';
+import { LocationGroup } from '../entities/location-group.entity';
+import { ExternalPlaceMapping, ExternalPlatform } from '../entities/external-place-mapping.entity';
 
 export interface RestaurantSummary {
   id: string;
+  placeId?: string; // Kakao placeId 등 외부 플랫폼 ID
   name: string;
   address: string;
   latitude?: number;
@@ -56,6 +61,7 @@ export class RestaurantsService {
     private mealRecordRepository: Repository<MealRecord>,
     @InjectRepository(KakaoPlace)
     private kakaoPlaceRepository: Repository<KakaoPlace>,
+    private locationsService: LocationsService,
   ) {}
 
   // Haversine formula to calculate distance
@@ -75,70 +81,74 @@ export class RestaurantsService {
     return deg * (Math.PI / 180);
   }
 
-  // 사용자의 식사 기록을 기반으로 음식점 목록을 생성
+  // 사용자의 식사 기록을 기반으로 음식점 목록을 생성 (새 location 시스템 사용)
   async getRestaurantsFromMeals(
     userId: string,
     currentLat?: number,
     currentLon?: number,
     radius?: number, // in km
   ): Promise<RestaurantSummary[]> {
-    const query = this.mealRecordRepository.createQueryBuilder('meal')
-      .where('meal.userId = :userId', { userId })
-      .andWhere('meal.location IS NOT NULL');
+    // UserLocation 기반으로 조회
+    const userLocations = await this.locationsService.getUserLocations(userId);
 
-    const restaurantsRaw = await query
-      .select([
-        'meal.location as name',
-        'meal.address as address',
-        'AVG(meal.rating)::float as "averageRating"',
-        'COUNT(meal.id)::int as "totalVisits"',
-        'MIN(meal.createdAt) as "firstVisit"',
-        'MAX(meal.createdAt) as "lastVisit"',
-        'MAX(meal.latitude) as latitude',
-        'MAX(meal.longitude) as longitude',
-        '(array_agg(meal.photos))[1] as "representativePhoto"',
-        'AVG(meal.price)::float as "averagePrice"',
-      ])
-      .groupBy('meal.location, meal.address')
-      .getRawMany();
-
-    // Kakao Place 캐시에서 placeId 조회
-    const restaurantsWithPlaceId = await Promise.all(
-      restaurantsRaw.map(async (r) => {
-        // Kakao Place에서 해당 식당명으로 placeId 찾기
-        const kakaoPlace = await this.kakaoPlaceRepository.findOne({
-          where: { placeName: r.name },
+    const restaurants = await Promise.all(
+      userLocations.map(async (userLocation) => {
+        // 해당 UserLocation의 meal records 조회
+        const meals = await this.mealRecordRepository.find({
+          where: { userId, userLocationId: userLocation.id },
+          order: { createdAt: 'DESC' },
         });
 
+        // Legacy: userLocationId가 없는 경우 location 이름으로 매칭
+        const legacyMeals = await this.mealRecordRepository.find({
+          where: { userId, location: userLocation.name, userLocationId: null as any },
+          order: { createdAt: 'DESC' },
+        });
+
+        const allMeals = [...meals, ...legacyMeals];
+
+        if (allMeals.length === 0) return null;
+
+        const totalRating = allMeals.reduce((sum, meal) => sum + (meal.rating || 0), 0);
+        const totalPrice = allMeals.reduce((sum, meal) => sum + (meal.price || 0), 0);
+        const dates = allMeals.map((meal) => new Date(meal.createdAt));
+
+        // ExternalPlaceMapping에서 placeId 찾기
+        const externalMapping = userLocation.locationGroup?.externalMappings?.find(
+          (m) => m.platform === ExternalPlatform.KAKAO
+        );
+
         let priceRange: 'budget' | 'mid' | 'expensive' = 'mid';
-        if (r.averagePrice < 15000) priceRange = 'budget';
-        else if (r.averagePrice > 30000) priceRange = 'expensive';
+        const avgPrice = totalPrice / allMeals.length;
+        if (avgPrice < 15000) priceRange = 'budget';
+        else if (avgPrice > 30000) priceRange = 'expensive';
 
         return {
-          id: kakaoPlace?.placeId || encodeURIComponent(r.name), // placeId 우선, 없으면 이름
-          placeId: kakaoPlace?.placeId, // placeId 필드 추가
-          name: r.name,
-          address: r.address || r.name,
-          latitude: r.latitude,
-          longitude: r.longitude,
-          averageRating: Math.round(r.averageRating * 10) / 10,
-          totalVisits: r.totalVisits,
-          firstVisit: new Date(r.firstVisit).toISOString(),
-          lastVisit: new Date(r.lastVisit).toISOString(),
-          representativePhoto: r.representativePhoto ? `/uploads/${r.representativePhoto}` : undefined,
+          id: externalMapping?.externalId || userLocation.id,
+          placeId: externalMapping?.externalId,
+          name: userLocation.name, // 사용자가 지정한 이름
+          address: userLocation.address || userLocation.locationGroup.address || '주소 정보 없음',
+          latitude: (userLocation.latitude || userLocation.locationGroup.latitude) ?? 0,
+          longitude: (userLocation.longitude || userLocation.locationGroup.longitude) ?? 0,
+          category: userLocation.locationGroup.category,
+          averageRating: Math.round((totalRating / allMeals.length) * 10) / 10,
+          totalVisits: allMeals.length,
+          firstVisit: new Date(Math.min(...dates.map((d) => d.getTime()))).toISOString(),
+          lastVisit: new Date(Math.max(...dates.map((d) => d.getTime()))).toISOString(),
+          representativePhoto: allMeals[0]?.photo ? `/uploads/${allMeals[0].photo}` : undefined,
           priceRange,
-          category: this.inferCategory(r.name, []), // Category inference needs adjustment
         };
       })
     );
 
-    const restaurants = restaurantsWithPlaceId;
+    // null 제거
+    const validRestaurants = restaurants.filter(r => r !== null) as RestaurantSummary[];
 
-    let filteredRestaurants = restaurants;
+    let filteredRestaurants = validRestaurants;
 
     if (currentLat && currentLon && radius) {
-      filteredRestaurants = restaurants.filter(r => {
-        if (r.latitude && r.longitude) {
+      filteredRestaurants = validRestaurants.filter((r) => {
+        if (r.latitude !== undefined && r.longitude !== undefined) {
           const distance = this.getDistance(currentLat, currentLon, r.latitude, r.longitude);
           return distance <= radius;
         }
@@ -243,20 +253,42 @@ export class RestaurantsService {
     };
   }
 
-  // 레스토랑 상세 정보 조회 (placeId 또는 식당명)
-  async getRestaurantDetail(userId: string, placeIdOrName: string) {
-    // 1. placeId로 먼저 시도
-    const kakaoPlace = await this.kakaoPlaceRepository.findOne({
-      where: { placeId: placeIdOrName },
-    });
-
-    if (kakaoPlace) {
-      // placeId로 찾았으면 기존 로직 사용
-      return this.getRestaurantDetailByPlaceId(userId, placeIdOrName);
+  // 레스토랑 상세 정보 조회 (placeId, userLocationId, 또는 이름으로)
+  async getRestaurantDetailByPlaceIdOrName(userId: string, placeIdOrName: string) {
+    // 1. UserLocation ID로 조회 시도 (UUID 형식)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(placeIdOrName)) {
+      try {
+        const userLocation = await this.locationsService.getUserLocation(userId, placeIdOrName);
+        return this.getRestaurantDetailByUserLocation(userId, userLocation);
+      } catch (error) {
+        // UserLocation이 없으면 다음 단계로
+      }
     }
 
-    // 2. placeId로 못 찾았으면 식당명으로 조회
-    return this.getRestaurantDetailByName(userId, placeIdOrName);
+    // 2. External Platform ID로 조회 (Kakao placeId 등)
+    const externalMapping = await this.locationsService.getExternalPlaceMapping(
+      ExternalPlatform.KAKAO,
+      placeIdOrName
+    );
+    if (externalMapping?.locationGroup) {
+      // 해당 LocationGroup에 대한 사용자의 UserLocation 찾기
+      const userLocations = await this.locationsService.getUserLocations(userId);
+      const userLocation = userLocations.find(
+        (ul) => ul.locationGroupId === externalMapping.locationGroupId
+      );
+      
+      if (userLocation) {
+        return this.getRestaurantDetailByUserLocation(userId, userLocation);
+      } else {
+        // 방문 안 한 식당 (Kakao 정보만)
+        return this.getRestaurantDetailByExternalMapping(externalMapping);
+      }
+    }
+
+    // 3. 식당명으로 조회 (Legacy)
+    const decodedName = decodeURIComponent(placeIdOrName);
+    return this.getRestaurantDetailByName(userId, decodedName);
   }
 
   // 레스토랑 식당명으로 상세 정보 조회 (사용자 기록만)
@@ -381,6 +413,84 @@ export class RestaurantsService {
         placeUrl: kakaoPlace.placeUrl,
         categoryName: kakaoPlace.categoryName,
       },
+    };
+  }
+
+  // UserLocation 기반 상세 정보 (새 시스템)
+  private async getRestaurantDetailByUserLocation(userId: string, userLocation: UserLocation) {
+    // 해당 UserLocation의 meal records 조회
+    const meals = await this.mealRecordRepository.find({
+      where: { userId, userLocationId: userLocation.id },
+      order: { createdAt: 'DESC' },
+    });
+
+    // Legacy: userLocationId가 없는 경우 location 이름으로 매칭
+    const legacyMeals = await this.mealRecordRepository.find({
+      where: { userId, location: userLocation.name, userLocationId: null as any },
+      order: { createdAt: 'DESC' },
+    });
+
+    const allMeals = [...meals, ...legacyMeals];
+
+    if (allMeals.length === 0) {
+      return null;
+    }
+
+    const totalRating = allMeals.reduce((sum, meal) => sum + (meal.rating || 0), 0);
+    const totalPrice = allMeals.reduce((sum, meal) => sum + (meal.price || 0), 0);
+    const dates = allMeals.map((meal) => new Date(meal.createdAt));
+
+    // ExternalPlaceMapping에서 placeId 찾기
+    const externalMapping = userLocation.locationGroup?.externalMappings?.find(
+      (m) => m.platform === ExternalPlatform.KAKAO
+    );
+
+    return {
+      placeId: externalMapping?.externalId,
+      id: userLocation.id,
+      locationGroupId: userLocation.locationGroupId, // LocationGroup ID 추가
+      name: userLocation.name, // 사용자가 지정한 이름
+      address: userLocation.address || userLocation.locationGroup?.address || '주소 정보 없음',
+      latitude: userLocation.latitude || userLocation.locationGroup?.latitude,
+      longitude: userLocation.longitude || userLocation.locationGroup?.longitude,
+      mealCount: allMeals.length,
+      avgRating: totalRating / allMeals.length,
+      totalPrice: totalPrice,
+      firstVisit: new Date(Math.min(...dates.map((d) => d.getTime()))).toISOString(),
+      lastVisit: new Date(Math.max(...dates.map((d) => d.getTime()))).toISOString(),
+      visited: true,
+      meals: allMeals.map((meal) => ({
+        id: meal.id,
+        name: meal.name,
+        photo: meal.photo,
+        rating: meal.rating,
+        memo: meal.memo,
+        price: meal.price,
+        createdAt: meal.createdAt,
+        category: meal.category,
+        companionNames: meal.companionNames,
+      })),
+      kakaoInfo: externalMapping?.externalData,
+    };
+  }
+
+  // ExternalPlaceMapping 기반 상세 정보 (방문 안 한 식당)
+  private async getRestaurantDetailByExternalMapping(mapping: any) {
+    return {
+      placeId: mapping.externalId,
+      id: mapping.externalId,
+      name: mapping.externalName,
+      address: mapping.externalData?.address || '주소 정보 없음',
+      latitude: mapping.locationGroup?.latitude,
+      longitude: mapping.locationGroup?.longitude,
+      mealCount: 0,
+      avgRating: 0,
+      totalPrice: 0,
+      firstVisit: new Date().toISOString(),
+      lastVisit: new Date().toISOString(),
+      visited: false,
+      meals: [],
+      kakaoInfo: mapping.externalData,
     };
   }
 }

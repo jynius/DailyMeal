@@ -30,7 +30,7 @@ export class RestaurantsController {
   ) {
     // URL 디코딩
     const decoded = decodeURIComponent(placeIdOrName);
-    return this.restaurantsService.getRestaurantDetail(req.user.id, decoded);
+    return this.restaurantsService.getRestaurantDetailByPlaceIdOrName(req.user.id, decoded);
   }
 
   @Get()
