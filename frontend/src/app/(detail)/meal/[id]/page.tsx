@@ -13,8 +13,20 @@ import Spinner from '@/components/ui/spinner'
 import { transformImageUrl } from '@/lib/constants'
 import { logger } from '@/lib/logger'
 
-export default async function MealDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+interface MealDetailPageProps {
+  params: Promise<{ id: string }>
+}
+
+export default function MealDetailPage({ params }: MealDetailPageProps) {
+  const [id, setId] = useState<string | null>(null)
+
+  useEffect(() => {
+    params.then(p => setId(p.id))
+  }, [params])
+
+  if (!id) {
+    return <Spinner container="page" text="로딩 중..." />
+  }
 
   return <MealDetailContent id={id} />
 }

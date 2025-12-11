@@ -55,28 +55,30 @@ export default function SpendingAnalysisCard({ data }: SpendingAnalysisCardProps
       </div>
 
       {/* 지출 트렌드 */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          {getTrendIcon(data.trend.direction)}
-          <h3 className="font-medium text-gray-900">지출 추세</h3>
-        </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">{data.trend.message}</span>
-            <span
-              className={`text-sm font-bold ${
-                data.trend.direction === 'increasing' ? 'text-red-600' : 'text-green-600'
-              }`}
-            >
-              {data.trend.percentageChange > 0 ? '+' : ''}
-              {data.trend.percentageChange.toFixed(1)}%
-            </span>
+      {data.trend && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            {getTrendIcon(data.trend.direction)}
+            <h3 className="font-medium text-gray-900">지출 추세</h3>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">{data.trend.message}</span>
+              <span
+                className={`text-sm font-bold ${
+                  data.trend.direction === 'increasing' ? 'text-red-600' : 'text-green-600'
+                }`}
+              >
+                {data.trend.percentageChange > 0 ? '+' : ''}
+                {data.trend.percentageChange.toFixed(1)}%
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 월별 지출 추이 */}
-      {data.monthlyTrend.length > 0 && (
+      {data.monthlyTrend && data.monthlyTrend.length > 0 && (
         <div>
           <h3 className="font-medium text-gray-900 mb-3">월별 지출 추이</h3>
           <div className="space-y-2">
@@ -109,7 +111,7 @@ export default function SpendingAnalysisCard({ data }: SpendingAnalysisCardProps
       )}
 
       {/* 가성비 맛집 */}
-      {data.valueForMoney.length > 0 && (
+      {data.valueForMoney && data.valueForMoney.length > 0 && (
         <div>
           <h3 className="font-medium text-gray-900 mb-3">가성비 맛집 TOP 5</h3>
           <div className="space-y-2">
@@ -133,7 +135,7 @@ export default function SpendingAnalysisCard({ data }: SpendingAnalysisCardProps
       )}
 
       {/* 알림 */}
-      {data.alerts.length > 0 && (
+      {data.alerts && data.alerts.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle size={18} className="text-orange-500" />

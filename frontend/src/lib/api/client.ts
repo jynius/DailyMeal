@@ -81,7 +81,8 @@ export async function apiRequest<T>(
       const error = await response.json().catch(() => ({ 
         error: '서버 오류가 발생했습니다' 
       }))
-      console.error('❌ API Error:', error)
+      console.error(`❌ API Error [${method} ${endpoint}]:`, error)
+      console.error(`   Status: ${response.status} ${response.statusText}`)
       
       const errorMsg = error.error || error.message || '요청 실패'
       endMonitoring(response.status, errorMsg)

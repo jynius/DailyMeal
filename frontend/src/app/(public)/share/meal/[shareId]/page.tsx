@@ -15,8 +15,16 @@ interface SharedMealPageProps {
   params: Promise<{ shareId: string }>
 }
 
-export default async function SharedMealPage({ params }: SharedMealPageProps) {
-  const { shareId } = await params
+export default function SharedMealPage({ params }: SharedMealPageProps) {
+  const [shareId, setShareId] = useState<string | null>(null)
+
+  useEffect(() => {
+    params.then(p => setShareId(p.shareId))
+  }, [params])
+
+  if (!shareId) {
+    return <Spinner />
+  }
 
   return <SharedMealContent shareId={shareId} />
 }

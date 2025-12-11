@@ -1,29 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { Brain, TrendingUp, DollarSign, MapPin } from 'lucide-react'
-import { AnalysisPeriod, SpendingPeriod, RecommendationType } from '@/lib/api'
-import { usePatternAnalysis, useSpendingAnalysis, useRecommendations } from '@/hooks/use-ai'
+import { Brain, TrendingUp, DollarSign } from 'lucide-react'
+import { AnalysisPeriod, SpendingPeriod } from '@/lib/api'
+import { usePatternAnalysis, useSpendingAnalysis } from '@/hooks/use-ai'
 import Spinner from '@/components/ui/spinner'
 import PatternAnalysisCard from '@/components/ai/PatternAnalysisCard'
 import SpendingAnalysisCard from '@/components/ai/SpendingAnalysisCard'
-import RecommendationsCard from '@/components/ai/RecommendationsCard'
 
 export default function AIInsightsPage() {
   const [patternPeriod, setPatternPeriod] = useState<AnalysisPeriod>(AnalysisPeriod.MONTH)
   const [spendingPeriod, setSpendingPeriod] = useState<SpendingPeriod>(SpendingPeriod.MONTH)
-  const [recommendationType, setRecommendationType] = useState<RecommendationType>(
-    RecommendationType.SOCIAL
-  )
 
   const { data: patternData, isLoading: patternLoading } = usePatternAnalysis(patternPeriod)
   const { data: spendingData, isLoading: spendingLoading } = useSpendingAnalysis(spendingPeriod)
-  const { data: recommendationsData, isLoading: recommendationsLoading } = useRecommendations(
-    recommendationType,
-    { excludeVisited: true, maxDistance: 5000 }
-  )
 
-  const isLoading = patternLoading || spendingLoading || recommendationsLoading
+  const isLoading = patternLoading || spendingLoading
 
   if (isLoading) {
     return <Spinner container="page" text="AI 분석 중..." />
@@ -57,7 +49,6 @@ export default function AIInsightsPage() {
               <option value={AnalysisPeriod.WEEK}>1주일</option>
               <option value={AnalysisPeriod.MONTH}>1개월</option>
               <option value={AnalysisPeriod.QUARTER}>3개월</option>
-              <option value={AnalysisPeriod.YEAR}>1년</option>
             </select>
           </div>
           {patternData && <PatternAnalysisCard data={patternData} />}
@@ -82,27 +73,6 @@ export default function AIInsightsPage() {
             </select>
           </div>
           {spendingData && <SpendingAnalysisCard data={spendingData} />}
-        </section>
-
-        {/* 맛집 추천 */}
-        <section className="bg-white rounded-lg border p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <MapPin size={20} className="text-orange-500" />
-              <h2 className="font-semibold text-gray-900">맞춤 맛집 추천</h2>
-            </div>
-            <select
-              title="추천 유형 선택"
-              value={recommendationType}
-              onChange={(e) => setRecommendationType(e.target.value as RecommendationType)}
-              className="text-sm border rounded px-2 py-1"
-            >
-              <option value={RecommendationType.SOCIAL}>친구 추천</option>
-              <option value={RecommendationType.POPULAR}>인기 맛집</option>
-              <option value={RecommendationType.COLLABORATIVE}>취향 기반</option>
-            </select>
-          </div>
-          {recommendationsData && <RecommendationsCard data={recommendationsData} />}
         </section>
       </div>
     </div>

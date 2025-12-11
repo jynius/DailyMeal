@@ -101,32 +101,56 @@ export default function PatternAnalysisCard({ data }: PatternAnalysisCardProps) 
         </div>
       </div>
 
-      {/* 요일별 패턴 */}
+      {/* 주중/주말 패턴 */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Calendar size={18} className="text-gray-600" />
-          <h3 className="font-medium text-gray-900">요일별 패턴</h3>
+          <h3 className="font-medium text-gray-900">주중/주말 패턴</h3>
         </div>
-        <div className="grid grid-cols-7 gap-1">
-          {data.weekdayPattern.map((day) => {
-            const days = ['일', '월', '화', '수', '목', '금', '토']
-            const maxCount = Math.max(...data.weekdayPattern.map((d) => d.count))
-            const height = maxCount > 0 ? (day.count / maxCount) * 100 : 0
-
-            return (
-              <div key={day.weekday} className="flex flex-col items-center gap-1">
-                <div className="w-full h-24 bg-gray-100 rounded relative flex items-end justify-center">
-                  <div className="w-full bg-blue-500 rounded transition-all"
-                    style={{ height: `${height}%` }}
-                  />
-                  <span className="absolute bottom-1 text-xs font-medium text-white">
-                    {day.count}
-                  </span>
+        <div className="space-y-3">
+          {/* 주중 */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-gray-600">주중</span>
+              <span className="text-xs text-gray-500">월-금</span>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <div className="bg-green-100 rounded p-2 text-center">
+                  <div className="text-lg font-semibold text-green-700">{data.weekdayPattern.weekday.homeCooked}%</div>
+                  <div className="text-xs text-gray-600">집밥</div>
                 </div>
-                <span className="text-xs text-gray-600">{days[day.weekday]}</span>
               </div>
-            )
-          })}
+              <div className="flex-1">
+                <div className="bg-orange-100 rounded p-2 text-center">
+                  <div className="text-lg font-semibold text-orange-700">{data.weekdayPattern.weekday.eatingOut}%</div>
+                  <div className="text-xs text-gray-600">외식</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* 주말 */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-gray-600">주말</span>
+              <span className="text-xs text-gray-500">토-일</span>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <div className="bg-green-100 rounded p-2 text-center">
+                  <div className="text-lg font-semibold text-green-700">{data.weekdayPattern.weekend.homeCooked}%</div>
+                  <div className="text-xs text-gray-600">집밥</div>
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="bg-orange-100 rounded p-2 text-center">
+                  <div className="text-lg font-semibold text-orange-700">{data.weekdayPattern.weekend.eatingOut}%</div>
+                  <div className="text-xs text-gray-600">외식</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -165,12 +189,12 @@ export default function PatternAnalysisCard({ data }: PatternAnalysisCardProps) 
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 bg-gray-50 rounded-lg text-center">
             <div className="text-2xl mb-1">🧍</div>
-            <div className="text-xl font-bold text-gray-900">{data.diningMode.alone}</div>
+            <div className="text-xl font-bold text-gray-900">{data.diningMode.solo}</div>
             <div className="text-xs text-gray-600">혼자</div>
           </div>
           <div className="p-3 bg-gray-50 rounded-lg text-center">
             <div className="text-2xl mb-1">👥</div>
-            <div className="text-xl font-bold text-gray-900">{data.diningMode.withFriends}</div>
+            <div className="text-xl font-bold text-gray-900">{data.diningMode.group}</div>
             <div className="text-xs text-gray-600">친구와 함께</div>
           </div>
         </div>

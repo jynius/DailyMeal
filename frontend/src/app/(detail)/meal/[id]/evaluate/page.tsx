@@ -38,9 +38,16 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function EvaluatePage(props: PageProps) {
-  const params = await props.params
-  const { id } = params
+export default function EvaluatePage({ params }: PageProps) {
+  const [id, setId] = useState<string | null>(null)
+
+  useEffect(() => {
+    params.then(p => setId(p.id))
+  }, [params])
+
+  if (!id) {
+    return <Spinner container="page" text="로딩 중..." />
+  }
 
   return <EvaluatePageContent id={id} />
 }

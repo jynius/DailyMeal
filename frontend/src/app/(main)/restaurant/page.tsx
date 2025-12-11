@@ -1,14 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MapPin, Star, Map as MapIcon, List, Sparkles, RefreshCw } from 'lucide-react'
+import { MapPin, Star, Map as MapIcon, List, Sparkles, RefreshCw, Users, ChevronDown } from 'lucide-react'
 import { KakaoMap } from '@/components/kakao-map'
 import { useLocationPermission } from '@/hooks/use-location-permission'
 import { useAlert } from '@/components/ui/alert'
 import Link from 'next/link'
 import Spinner from '@/components/ui/spinner'
-import { aiApi, RecommendationType, profileApi } from '@/lib/api'
+import { aiApi, RecommendationType, profileApi, locationsApi } from '@/lib/api'
 import type { RecommendationItem } from '@/lib/api'
+
+type RecommendationTab = 'friends' | 'kakao-restaurant'
 
 interface Restaurant {
   id: string
@@ -30,6 +32,9 @@ export default function RestaurantsPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [popularRestaurants, setPopularRestaurants] = useState<Restaurant[]>([])
   const [aiRecommendations, setAiRecommendations] = useState<RecommendationItem[]>([])
+  const [friendRecommendations, setFriendRecommendations] = useState<any[]>([])
+  const [activeTab, setActiveTab] = useState<RecommendationTab>('kakao-restaurant')
+  const [showDropdown, setShowDropdown] = useState(false)
   const [loading, setLoading] = useState(true)
   const [aiLoading, setAiLoading] = useState(false)
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
@@ -48,8 +53,25 @@ export default function RestaurantsPage() {
 
   useEffect(() => {
     fetchRestaurants()
-    fetchAiRecommendations()
-  }, [latitude, longitude])
+    fetchFriendRecommendations()
+    if (activeTab === 'kakao-restaurant') {
+      fetchAiRecommendations()
+    }
+  }, [latitude, longitude, activeTab])
+
+  const fetchFriendRecommendations = async () => {
+    try {
+      const data = await locationsApi.getFriendRecommendations()
+      setFriendRecommendations(data)
+      
+      // 친구 추천이 있으면 기본 탭을 친구 추천으로 설정
+      if (data.length > 0) {
+        setActiveTab('friends')
+      }
+    } catch (error) {
+      console.error('친구 추천 로딩 실패:', error)
+    }
+  }
 
   const fetchAiRecommendations = async () => {
     try {
@@ -130,29 +152,145 @@ export default function RestaurantsPage() {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-20">
-      {/* AI 추천 맛집 */}
+      {/* 맛집 추천 */}
       <div className="p-4 bg-gradient-to-br from-purple-50 to-blue-50 border-b">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1">
             <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
               <Sparkles size={18} className="text-white" />
             </div>
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900">AI 추천 맛집</h4>
-              <p className="text-xs text-gray-600">개인화된 맛집 추천</p>
+            <div className="flex-1">
+              <div className="relative">
+                <button
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="flex items-center gap-2 text-sm font-semibold text-gray-900 hover:text-gray-700 transition-colors"
+                >
+                  {activeTab === 'friends' ? (
+                    <>
+                      <Users size={16} className="text-blue-500" />
+                      <span>친구 추천</span>
+                    </>
+                  ) : (
+                    <>
+                      <MapPin size={16} className="text-purple-500" />
+                      <span>Kakao 맛집</span>
+                    </>
+                  )}
+                  <ChevronDown size={14} className={`transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {/* 드롭다운 메뉴 */}
+                {showDropdown && (
+                  <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[180px]">
+                    {friendRecommendations.length > 0 && (
+                      <button
+                        onClick={() => {
+                          setActiveTab('friends')
+                          setShowDropdown(false)
+                        }}
+                        className={`w-full flex items-center gap-2 px-4 py-2.5 hover:bg-gray-50 transition-colors text-sm ${
+                          activeTab === 'friends' ? 'bg-blue-50' : ''
+                        }`}
+                      >
+                        <Users size={14} className="text-blue-500" />
+                        <span className="font-medium">친구 추천</span>
+                        <span className="ml-auto px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded-full text-xs">
+                          {friendRecommendations.length}
+                        </span>
+                      </button>
+                    )}
+                    
+                    <button
+                      onClick={() => {
+                        setActiveTab('kakao-restaurant')
+                        setShowDropdown(false)
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2.5 hover:bg-gray-50 transition-colors text-sm ${
+                        activeTab === 'kakao-restaurant' ? 'bg-purple-50' : ''
+                      } ${friendRecommendations.length > 0 ? 'border-t border-gray-100' : ''}`}
+                    >
+                      <MapPin size={14} className="text-purple-500" />
+                      <span className="font-medium">Kakao 맛집</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-600 mt-0.5">
+                {activeTab === 'friends' ? '친구들이 방문한 맛집' : '지역 기반 추천 맛집'}
+              </p>
             </div>
           </div>
-          <button
-            onClick={fetchAiRecommendations}
-            disabled={aiLoading}
-            className="p-2 hover:bg-white/50 rounded-lg transition-colors"
-            title="새로고침"
-          >
-            <RefreshCw size={16} className={`text-purple-600 ${aiLoading ? 'animate-spin' : ''}`} />
-          </button>
+          
+          {activeTab === 'kakao-restaurant' && (
+            <button
+              onClick={fetchAiRecommendations}
+              disabled={aiLoading}
+              className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+              title="새로고침"
+            >
+              <RefreshCw size={16} className={`text-purple-600 ${aiLoading ? 'animate-spin' : ''}`} />
+            </button>
+          )}
         </div>
         
-        {aiLoading ? (
+        {/* 친구 추천 탭 */}
+        {activeTab === 'friends' && (
+          <div className="space-y-2">
+            {friendRecommendations.length === 0 ? (
+              <div className="bg-white/70 rounded-lg p-4 text-center">
+                <Users size={32} className="mx-auto text-gray-300 mb-2" />
+                <p className="text-sm text-gray-500">친구 추천이 없습니다</p>
+                <p className="text-xs text-gray-400 mt-1">친구들이 방문한 맛집이 표시됩니다</p>
+              </div>
+            ) : (
+              friendRecommendations.slice(0, 4).map((rec, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-lg p-3 border border-blue-100"
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <h5 className="text-sm font-medium text-gray-900 flex-1">
+                      {rec.locationGroup?.name || '맛집'}
+                    </h5>
+                  </div>
+                  
+                  {rec.locationGroup?.address && (
+                    <p className="text-xs text-gray-500 mb-2 truncate">
+                      📍 {rec.locationGroup.address}
+                    </p>
+                  )}
+                  
+                  <div className="flex items-center gap-2">
+                    <Users size={12} className="text-blue-500" />
+                    <span className="text-xs text-gray-700">
+                      <span className="font-semibold text-blue-600">{rec.friendCount}명</span>의 친구가 방문
+                    </span>
+                  </div>
+                  
+                  {rec.friendNames && rec.friendNames.length > 0 && (
+                    <div className="flex gap-1 mt-2 flex-wrap">
+                      {rec.friendNames.slice(0, 2).map((name: string, idx: number) => (
+                        <span key={idx} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                          {name}
+                        </span>
+                      ))}
+                      {rec.friendNames.length > 2 && (
+                        <span className="text-xs text-gray-500">
+                          외 {rec.friendNames.length - 2}명
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Kakao 맛집 탭 */}
+        {activeTab === 'kakao-restaurant' && (
+          <>
+            {aiLoading ? (
           <div className="grid grid-cols-2 gap-2">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="bg-white/70 rounded-lg p-3 animate-pulse">
@@ -219,10 +357,12 @@ export default function RestaurantsPage() {
               )
             })}
           </div>
-        ) : (
-          <div className="bg-white/70 rounded-lg p-4 text-center text-sm text-gray-500">
-            추천할 맛집이 없습니다
-          </div>
+            ) : (
+              <div className="bg-white/70 rounded-lg p-4 text-center text-sm text-gray-500">
+                추천할 맛집이 없습니다
+              </div>
+            )}
+          </>
         )}
       </div>
 

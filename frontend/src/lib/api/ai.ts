@@ -8,10 +8,9 @@ import { apiRequest } from './client'
 
 // Pattern Analysis
 export enum AnalysisPeriod {
-  WEEK = 'week',
-  MONTH = 'month',
-  QUARTER = 'quarter',
-  YEAR = 'year',
+  WEEK = '7d',
+  MONTH = '30d',
+  QUARTER = '90d',
 }
 
 export interface TimeDistribution {
@@ -22,35 +21,38 @@ export interface TimeDistribution {
 }
 
 export interface WeekdayPattern {
-  weekday: number
-  count: number
+  weekday: { homeCooked: number; eatingOut: number }
+  weekend: { homeCooked: number; eatingOut: number }
 }
 
 export interface FoodCategory {
-  category: 'home' | 'delivery' | 'restaurant'
-  count: number
+  category: string
   percentage: number
+  count: number
 }
 
 export interface DiningMode {
-  alone: number
-  withFriends: number
+  solo: number
+  group: number
 }
 
 export interface PatternAnalysisResponse {
-  period: AnalysisPeriod
+  hasEnoughData: boolean
+  message?: string
   totalMeals: number
+  confidence: number
   timeDistribution: TimeDistribution
-  weekdayPattern: WeekdayPattern[]
+  weekdayPattern: WeekdayPattern
   preferredCategories: FoodCategory[]
   diningMode: DiningMode
+  analyzedAt: Date
 }
 
 // Spending Analysis
 export enum SpendingPeriod {
-  MONTH = 'month',
-  QUARTER = 'quarter',
-  YEAR = 'year',
+  MONTH = '30d',
+  QUARTER = '90d',
+  YEAR = '1y',
 }
 
 export interface MonthlySpending {
