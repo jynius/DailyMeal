@@ -139,6 +139,16 @@ async function migrateMealRecordLocations(dataSource: DataSource) {
 
   console.log(`Found ${locationGroups.length} unique user-location combinations`)
 
+  // 임시 매핑 테이블 생성 (루프 시작 전)
+  await dataSource.query(`
+    CREATE TEMP TABLE IF NOT EXISTS temp_meal_location_mapping (
+      "userId" uuid,
+      location text,
+      "userLocationId" uuid,
+      PRIMARY KEY ("userId", location)
+    )
+  `)
+
   let created = 0
   for (const group of locationGroups) {
     try {
@@ -167,6 +177,10 @@ async function migrateMealRecordLocations(dataSource: DataSource) {
 
       // 2. location_group이 없으면 새로 생성
       if (!locationGroupId) {
+        // latitude/longitude가 null이면 기본값 사용 (서울 시청)
+        const lat = group.latitude || 37.5665
+        const lng = group.longitude || 126.9780
+        
         const [newGroup] = await dataSource.query(`
           INSERT INTO location_groups (
             "canonicalName", latitude, longitude, address, "createdAt", "updatedAt"
@@ -175,14 +189,17 @@ async function migrateMealRecordLocations(dataSource: DataSource) {
           RETURNING id
         `, [
           group.location,
-          group.latitude,
-          group.longitude,
+          lat,
+          lng,
           group.address,
         ])
         locationGroupId = newGroup.id
       }
 
       // 3. user_location 생성
+      const lat = group.latitude || 37.5665
+      const lng = group.longitude || 126.9780
+      
       const [userLocation] = await dataSource.query(`
         INSERT INTO user_locations (
           "userId", "locationGroupId", name, address, latitude, longitude,
@@ -195,21 +212,12 @@ async function migrateMealRecordLocations(dataSource: DataSource) {
         locationGroupId,
         group.location, // 사용자가 입력한 이름 그대로 유지
         group.address,
-        group.latitude,
-        group.longitude,
+        lat,
+        lng,
         true, // 사용자가 직접 입력한 것으로 간주
       ])
 
       // 4. meal_records 업데이트 (임시 매핑 테이블에 저장)
-      await dataSource.query(`
-        CREATE TEMP TABLE IF NOT EXISTS temp_meal_location_mapping (
-          "userId" uuid,
-          location text,
-          "userLocationId" uuid,
-          PRIMARY KEY ("userId", location)
-        )
-      `)
-
       await dataSource.query(`
         INSERT INTO temp_meal_location_mapping ("userId", location, "userLocationId")
         VALUES ($1, $2, $3)
