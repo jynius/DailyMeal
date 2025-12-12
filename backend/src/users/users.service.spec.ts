@@ -12,8 +12,6 @@ import { ConfigService } from '../config/config.service'
 
 describe('UsersService', () => {
   let service: UsersService
-  let userRepository: Repository<User>
-  let userSettingsRepository: Repository<UserSettings>
 
   const mockUserId = '123e4567-e89b-12d3-a456-426614174000'
 

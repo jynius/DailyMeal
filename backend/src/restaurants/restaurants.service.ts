@@ -6,8 +6,7 @@ import { KakaoPlace } from '../entities/kakao-place.entity'
 import { AppLoggerService } from '../common/logger.service'
 import { LocationsService } from '../locations/locations.service'
 import { UserLocation } from '../entities/user-location.entity'
-import { LocationGroup } from '../entities/location-group.entity'
-import { ExternalPlaceMapping, ExternalPlatform } from '../entities/external-place-mapping.entity'
+import { ExternalPlatform } from '../entities/external-place-mapping.entity'
 
 export interface RestaurantSummary {
   id: string
@@ -240,7 +239,7 @@ export class RestaurantsService {
       try {
         const userLocation = await this.locationsService.getUserLocation(userId, placeIdOrName)
         return this.getRestaurantDetailByUserLocation(userId, userLocation)
-      } catch (error) {
+      } catch {
         // UserLocation이 없으면 다음 단계로
       }
     }
@@ -458,7 +457,7 @@ export class RestaurantsService {
   }
 
   // ExternalPlaceMapping 기반 상세 정보 (방문 안 한 식당)
-  private async getRestaurantDetailByExternalMapping(mapping: any) {
+  private getRestaurantDetailByExternalMapping(mapping: any) {
     return {
       placeId: mapping.externalId,
       id: mapping.externalId,

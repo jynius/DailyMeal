@@ -1,4 +1,3 @@
-import sharp from 'sharp'
 import * as ExifReader from 'exifreader'
 import * as fs from 'fs'
 import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common'
@@ -128,11 +127,11 @@ export class MealRecordsService {
   /**
    * 사진에서 EXIF 메타데이터 추출 (촬영 시간, GPS 위치)
    */
-  private async extractPhotoMetadata(filePath: string): Promise<{
+  private extractPhotoMetadata(filePath: string): {
     photoTakenAt?: Date
     latitude?: number
     longitude?: number
-  }> {
+  } {
     try {
       const fileBuffer = fs.readFileSync(filePath)
       const tags = ExifReader.load(fileBuffer)
@@ -209,7 +208,7 @@ export class MealRecordsService {
     if (fullPhotoPaths && fullPhotoPaths.length > 0) {
       // 각 사진의 메타데이터 추출
       for (const filePath of fullPhotoPaths) {
-        const metadata = await this.extractPhotoMetadata(filePath)
+        const metadata = this.extractPhotoMetadata(filePath)
         allMetadata.push(metadata)
       }
 

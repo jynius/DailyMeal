@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { NotFoundException, ForbiddenException } from '@nestjs/common'
+import { NotFoundException } from '@nestjs/common'
 import { MealRecordsService } from './meal-records.service'
 import { MealRecord } from '../entities/meal-record.entity'
 import { RealTimeService } from '../realtime/realtime.service'
@@ -10,10 +10,6 @@ import { LocationsService } from '../locations/locations.service'
 
 describe('MealRecordsService', () => {
   let service: MealRecordsService
-  let repository: Repository<MealRecord>
-  let realTimeService: RealTimeService
-  let configService: ConfigService
-  let locationsService: LocationsService
 
   const mockUserId = '123e4567-e89b-12d3-a456-426614174000'
   const mockMealId = '987e6543-e21b-12d3-a456-426614174111'

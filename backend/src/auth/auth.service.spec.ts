@@ -6,7 +6,7 @@ import { AuthService } from './auth.service'
 import { UsersService } from '../users/users.service'
 import { User } from '../entities/user.entity'
 import { UserSettings } from '../entities/user-settings.entity'
-import { UnauthorizedException, ConflictException } from '@nestjs/common'
+import { UnauthorizedException } from '@nestjs/common'
 
 // Mock bcrypt module
 jest.mock('bcryptjs', () => ({
@@ -18,9 +18,6 @@ import * as bcrypt from 'bcryptjs'
 
 describe('AuthService', () => {
   let service: AuthService
-  let usersService: UsersService
-  let jwtService: JwtService
-  let userRepository: Repository<User>
 
   const mockUser = {
     id: '123e4567-e89b-12d3-a456-426614174000',
