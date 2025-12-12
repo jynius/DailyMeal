@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
 
 interface NominatimAddress {
-  display_name: string;
-  address: Record<string, string>;
+  display_name: string
+  address: Record<string, string>
 }
 
 @Injectable()
 export class AppService {
   getHello(): string {
-    return 'Hello World!';
+    return 'Hello World!'
   }
 
   async reverseGeocode(lat: number, lon: number) {
@@ -19,25 +19,25 @@ export class AppService {
           headers: {
             'User-Agent': 'DailyMeal/1.0',
           },
-        },
-      );
+        }
+      )
 
       if (!response.ok) {
-        throw new Error(`Nominatim API error: ${response.status}`);
+        throw new Error(`Nominatim API error: ${response.status}`)
       }
 
-      const data = (await response.json()) as NominatimAddress;
+      const data = (await response.json()) as NominatimAddress
       return {
         success: true,
         address: data.display_name,
         details: data.address,
-      };
+      }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = error instanceof Error ? error.message : 'Unknown error'
       return {
         success: false,
         error: message,
-      };
+      }
     }
   }
 }

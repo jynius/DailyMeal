@@ -1,16 +1,13 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { RestaurantsController } from './restaurants.controller';
-import { RestaurantsService } from './restaurants.service';
-import { MealRecord } from '../entities/meal-record.entity';
-import { KakaoPlace } from '../entities/kakao-place.entity';
-import { LocationsModule } from '../locations/locations.module';
+import { Module } from '@nestjs/common'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { RestaurantsController } from './restaurants.controller'
+import { RestaurantsService } from './restaurants.service'
+import { MealRecord } from '../entities/meal-record.entity'
+import { KakaoPlace } from '../entities/kakao-place.entity'
+import { LocationsModule } from '../locations/locations.module'
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([MealRecord, KakaoPlace]),
-    LocationsModule,
-  ],
+  imports: [TypeOrmModule.forFeature([MealRecord, KakaoPlace]), LocationsModule],
   controllers: [RestaurantsController],
   providers: [RestaurantsService],
   exports: [RestaurantsService],

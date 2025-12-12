@@ -6,46 +6,46 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-} from 'typeorm';
-import { User } from './user.entity';
+} from 'typeorm'
+import { User } from './user.entity'
 
-export type FriendshipStatus = 'pending' | 'accepted' | 'rejected' | 'blocked';
+export type FriendshipStatus = 'pending' | 'accepted' | 'rejected' | 'blocked'
 
 @Entity('friendships')
 export class Friendship {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string
 
   @Column()
-  userId: string;
+  userId: string
 
   @Column()
-  friendId: string;
+  friendId: string
 
   @Column({
     type: 'varchar',
     default: 'pending',
   })
-  status: FriendshipStatus;
+  status: FriendshipStatus
 
   @Column({
     type: 'boolean',
     default: false,
   })
-  notificationEnabled: boolean;
+  notificationEnabled: boolean
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt: Date
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt: Date
 
   // Relations
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
-  user: User;
+  user: User
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'friendId' })
-  friend: User;
+  friend: User
 }

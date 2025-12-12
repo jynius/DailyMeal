@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { LocationGroup } from '../entities/location-group.entity'
@@ -13,7 +13,7 @@ export class LocationsService {
     @InjectRepository(UserLocation)
     private userLocationRepository: Repository<UserLocation>,
     @InjectRepository(ExternalPlaceMapping)
-    private externalPlaceMappingRepository: Repository<ExternalPlaceMapping>,
+    private externalPlaceMappingRepository: Repository<ExternalPlaceMapping>
   ) {}
 
   /**
@@ -152,7 +152,7 @@ export class LocationsService {
     updates: {
       name?: string
       notes?: string
-    },
+    }
   ): Promise<UserLocation> {
     const location = await this.getUserLocation(userId, locationId)
 
@@ -180,7 +180,7 @@ export class LocationsService {
   async findNearbyLocationGroups(
     latitude: number,
     longitude: number,
-    radiusInMeters: number = 50,
+    radiusInMeters: number = 50
   ): Promise<LocationGroup[]> {
     const result = await this.locationGroupRepository.query(
       `
@@ -195,7 +195,7 @@ export class LocationsService {
       ORDER BY distance
       LIMIT 10
       `,
-      [latitude, longitude],
+      [latitude, longitude]
     )
 
     return result
@@ -217,7 +217,7 @@ export class LocationsService {
    */
   async getFriendRecommendations(
     userId: string,
-    friendIds: string[],
+    friendIds: string[]
   ): Promise<
     Array<{
       locationGroup: LocationGroup
@@ -244,7 +244,10 @@ export class LocationsService {
       .leftJoinAndSelect('ul.user', 'user')
       .where('ul.userId IN (:...friendIds)', { friendIds })
       .andWhere('ul.locationGroupId NOT IN (:...myLocationGroupIds)', {
-        myLocationGroupIds: myLocationGroupIds.length > 0 ? myLocationGroupIds : ['00000000-0000-0000-0000-000000000000'],
+        myLocationGroupIds:
+          myLocationGroupIds.length > 0
+            ? myLocationGroupIds
+            : ['00000000-0000-0000-0000-000000000000'],
       })
       .getMany()
 
@@ -288,7 +291,7 @@ export class LocationsService {
    */
   async getExternalPlaceMapping(
     platform: ExternalPlatform,
-    externalId: string,
+    externalId: string
   ): Promise<ExternalPlaceMapping | null> {
     return this.externalPlaceMappingRepository.findOne({
       where: { platform, externalId },

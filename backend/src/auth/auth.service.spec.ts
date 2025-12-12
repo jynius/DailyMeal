@@ -112,9 +112,7 @@ describe('AuthService', () => {
     it('회원가입 실패 - 이메일 중복', async () => {
       mockUserRepository.findOne.mockResolvedValue(mockUser)
 
-      await expect(service.register(createUserDto)).rejects.toThrow(
-        UnauthorizedException,
-      )
+      await expect(service.register(createUserDto)).rejects.toThrow(UnauthorizedException)
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
         where: { email: createUserDto.email },
       })
@@ -146,9 +144,7 @@ describe('AuthService', () => {
     it('로그인 실패 - 존재하지 않는 이메일', async () => {
       mockUserRepository.findOne.mockResolvedValue(null)
 
-      await expect(service.login(loginDto)).rejects.toThrow(
-        UnauthorizedException,
-      )
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException)
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
         where: { email: loginDto.email },
       })
@@ -158,9 +154,7 @@ describe('AuthService', () => {
       mockUserRepository.findOne.mockResolvedValue(mockUser)
       ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
 
-      await expect(service.login(loginDto)).rejects.toThrow(
-        UnauthorizedException,
-      )
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException)
     })
   })
 
@@ -183,9 +177,7 @@ describe('AuthService', () => {
     it('유효하지 않은 사용자 ID', async () => {
       mockUserRepository.findOne.mockResolvedValue(null)
 
-      await expect(service.validateUser('invalid-id')).rejects.toThrow(
-        UnauthorizedException
-      )
+      await expect(service.validateUser('invalid-id')).rejects.toThrow(UnauthorizedException)
     })
   })
 })

@@ -8,8 +8,8 @@
 /* eslint-disable @typescript-eslint/no-base-to-string */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
-import { Injectable } from '@nestjs/common';
-import * as winston from 'winston';
+import { Injectable } from '@nestjs/common'
+import * as winston from 'winston'
 
 export enum AppLogLevel {
   ERROR = 'error',
@@ -20,17 +20,17 @@ export enum AppLogLevel {
 }
 
 export interface LoggerConfig {
-  level: AppLogLevel;
-  enableConsole: boolean;
-  enableFile: boolean;
-  logDir: string;
-  packageLevels: Record<string, AppLogLevel>;
+  level: AppLogLevel
+  enableConsole: boolean
+  enableFile: boolean
+  logDir: string
+  packageLevels: Record<string, AppLogLevel>
 }
 
 @Injectable()
 export class AppLoggerService {
-  private logger: winston.Logger;
-  private config: LoggerConfig;
+  private logger: winston.Logger
+  private config: LoggerConfig
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = {
@@ -45,13 +45,13 @@ export class AppLoggerService {
         ...config.packageLevels,
       },
       ...config,
-    };
+    }
 
-    this.initializeLogger();
+    this.initializeLogger()
   }
 
   private initializeLogger() {
-    const transports: winston.transport[] = [];
+    const transports: winston.transport[] = []
 
     // 콘솔 출력
     if (this.config.enableConsole) {
@@ -60,16 +60,14 @@ export class AppLoggerService {
           format: winston.format.combine(
             winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
             winston.format.colorize(),
-            winston.format.printf(
-              ({ timestamp, level, message, context, trace }) => {
-                const contextStr = context ? `[${context}]` : '';
-                const traceStr = trace ? `\n${trace}` : '';
-                return `${timestamp} ${level.toUpperCase().padEnd(7)} ${contextStr} ${message}${traceStr}`;
-              },
-            ),
+            winston.format.printf(({ timestamp, level, message, context, trace }) => {
+              const contextStr = context ? `[${context}]` : ''
+              const traceStr = trace ? `\n${trace}` : ''
+              return `${timestamp} ${level.toUpperCase().padEnd(7)} ${contextStr} ${message}${traceStr}`
+            })
           ),
-        }),
-      );
+        })
+      )
     }
 
     // 파일 출력
@@ -78,74 +76,67 @@ export class AppLoggerService {
       transports.push(
         new winston.transports.File({
           filename: `${this.config.logDir}/app.log`,
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json(),
-          ),
-        }),
-      );
+          format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+        })
+      )
 
       // 에러 로그만
       transports.push(
         new winston.transports.File({
           filename: `${this.config.logDir}/error.log`,
           level: 'error',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json(),
-          ),
-        }),
-      );
+          format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+        })
+      )
     }
 
     this.logger = winston.createLogger({
       level: this.config.level,
       transports,
-    });
+    })
   }
 
   /**
    * 패키지별 로그 레벨 확인
    */
   private shouldLog(level: AppLogLevel, context?: string): boolean {
-    if (!context) return true;
+    if (!context) return true
 
-    const packageLevel =
-      this.config.packageLevels[context] || this.config.level;
-    const levels = Object.values(AppLogLevel);
-    const currentLevelIndex = levels.indexOf(packageLevel);
-    const messageLevelIndex = levels.indexOf(level);
+    const packageLevel = this.config.packageLevels[context] || this.config.level
+    const levels = Object.values(AppLogLevel)
+    const currentLevelIndex = levels.indexOf(packageLevel)
+    const messageLevelIndex = levels.indexOf(level)
 
-    return messageLevelIndex <= currentLevelIndex;
+    return messageLevelIndex <= currentLevelIndex
   }
 
   error(message: string, trace?: string, context?: string) {
     if (this.shouldLog(AppLogLevel.ERROR, context)) {
-      this.logger.error(message, { context, trace });
+      this.logger.error(message, { context, trace })
     }
   }
 
   warn(message: string, context?: string) {
     if (this.shouldLog(AppLogLevel.WARN, context)) {
-      this.logger.warn(message, { context });
+      this.logger.warn(message, { context })
     }
   }
 
   info(message: string, context?: string) {
     if (this.shouldLog(AppLogLevel.INFO, context)) {
-      this.logger.info(message, { context });
+      this.logger.info(message, { context })
     }
   }
 
   debug(message: string, context?: string) {
     if (this.shouldLog(AppLogLevel.DEBUG, context)) {
-      this.logger.debug(message, { context });
+      this.logger.debug(message, { context })
     }
   }
 
   trace(message: string, context?: string) {
     if (this.shouldLog(AppLogLevel.TRACE, context)) {
-      this.logger.verbose(message, { context });
+      this.logger.verbose(message, { context })
     }
   }
 
@@ -153,18 +144,18 @@ export class AppLoggerService {
    * 패키지별 로거 팩토리 (Java Logger.getLogger() 스타일)
    */
   static getLogger(context: string): PackageLogger {
-    return new PackageLogger(context);
+    return new PackageLogger(context)
   }
 
   /**
    * 설정 업데이트
    */
   setLevel(packageName: string, level: AppLogLevel) {
-    this.config.packageLevels[packageName] = level;
+    this.config.packageLevels[packageName] = level
   }
 
   getLevel(packageName: string): AppLogLevel {
-    return this.config.packageLevels[packageName] || this.config.level;
+    return this.config.packageLevels[packageName] || this.config.level
   }
 }
 
@@ -172,101 +163,94 @@ export class AppLoggerService {
  * 패키지별 로거 (Java 스타일)
  */
 export class PackageLogger {
-  private static globalLogger: AppLoggerService;
+  private static globalLogger: AppLoggerService
 
   constructor(private readonly context: string) {
     if (!PackageLogger.globalLogger) {
-      PackageLogger.globalLogger = new AppLoggerService();
+      PackageLogger.globalLogger = new AppLoggerService()
     }
   }
 
   static setGlobalLogger(logger: AppLoggerService) {
-    PackageLogger.globalLogger = logger;
+    PackageLogger.globalLogger = logger
   }
 
   error(message: string, error?: Error) {
-    const trace = error?.stack;
-    PackageLogger.globalLogger.error(message, trace, this.context);
+    const trace = error?.stack
+    PackageLogger.globalLogger.error(message, trace, this.context)
   }
 
   warn(message: string) {
-    PackageLogger.globalLogger.warn(message, this.context);
+    PackageLogger.globalLogger.warn(message, this.context)
   }
 
   info(message: string) {
-    PackageLogger.globalLogger.info(message, this.context);
+    PackageLogger.globalLogger.info(message, this.context)
   }
 
   debug(message: string) {
-    PackageLogger.globalLogger.debug(message, this.context);
+    PackageLogger.globalLogger.debug(message, this.context)
   }
 
   trace(message: string) {
-    PackageLogger.globalLogger.trace(message, this.context);
+    PackageLogger.globalLogger.trace(message, this.context)
   }
 
   // Java 스타일 별칭
-  log = this.info;
+  log = this.info
 }
 
 /**
  * 데코레이터로 자동 로깅 (AOP 스타일)
  */
 export function LogMethod(level: AppLogLevel = AppLogLevel.DEBUG) {
-  return function (
-    target: any,
-    propertyName: string,
-    descriptor: PropertyDescriptor,
-  ) {
-    const method = descriptor.value;
-    const logger = AppLoggerService.getLogger(target.constructor.name);
+  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+    const method = descriptor.value
+    const logger = AppLoggerService.getLogger(target.constructor.name)
 
     descriptor.value = function (...args: any[]) {
       // 순환 참조 안전한 stringify 함수
       const safeStringify = (obj: any): string => {
-        const seen = new WeakSet();
+        const seen = new WeakSet()
         return JSON.stringify(obj, (key, val) => {
           if (val != null && typeof val === 'object') {
-            if (seen.has(val)) return '[Circular]';
-            seen.add(val);
+            if (seen.has(val)) return '[Circular]'
+            seen.add(val)
           }
           // Request 객체나 복잡한 객체들은 간단히 표현
           if (val && typeof val === 'object' && val.constructor) {
-            if (val.constructor.name === 'IncomingMessage') return '[Request]';
-            if (val.constructor.name === 'Socket') return '[Socket]';
-            if (val.constructor.name === 'Buffer')
-              return `[Buffer ${val.length}]`;
+            if (val.constructor.name === 'IncomingMessage') return '[Request]'
+            if (val.constructor.name === 'Socket') return '[Socket]'
+            if (val.constructor.name === 'Buffer') return `[Buffer ${val.length}]`
           }
-          return val;
-        });
-      };
+          return val
+        })
+      }
 
-      logger.debug(
-        `🔄 ${propertyName}() called with args: ${safeStringify(args)}`,
-      );
+      logger.debug(`🔄 ${propertyName}() called with args: ${safeStringify(args)}`)
 
       try {
-        const result = method.apply(this, args);
+        const result = method.apply(this, args)
 
         // Promise 처리
         if (result instanceof Promise) {
           return result
             .then((res) => {
-              logger.debug(`✅ ${propertyName}() completed successfully`);
-              return res;
+              logger.debug(`✅ ${propertyName}() completed successfully`)
+              return res
             })
             .catch((error) => {
-              logger.error(`❌ ${propertyName}() failed`, error);
-              throw error;
-            });
+              logger.error(`❌ ${propertyName}() failed`, error)
+              throw error
+            })
         }
 
-        logger.debug(`✅ ${propertyName}() completed successfully`);
-        return result;
+        logger.debug(`✅ ${propertyName}() completed successfully`)
+        return result
       } catch (error) {
-        logger.error(`❌ ${propertyName}() failed`, error as Error);
-        throw error;
+        logger.error(`❌ ${propertyName}() failed`, error as Error)
+        throw error
       }
-    };
-  };
+    }
+  }
 }

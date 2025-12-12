@@ -41,7 +41,7 @@ export class AddLocationGroupSystem1736000000000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TYPE "external_place_mappings_platform_enum" AS ENUM('kakao', 'naver', 'google', 'instagram')
     `)
-    
+
     await queryRunner.query(`
       CREATE TABLE "external_place_mappings" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),

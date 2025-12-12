@@ -202,8 +202,10 @@ export class RecommendationService {
             .limit(3)
             .getRawMany()
 
-          const popularMenus = popularMeals.map(m => m.name)
-          const menuCategory = place.categoryName ? place.categoryName.split(' > ').pop() : undefined
+          const popularMenus = popularMeals.map((m) => m.name)
+          const menuCategory = place.categoryName
+            ? place.categoryName.split(' > ').pop()
+            : undefined
 
           return {
             restaurantId: index + 1,
@@ -271,8 +273,10 @@ export class RecommendationService {
         .filter((place: any) => !visitedNames.has(place.place_name))
         .slice(0, 10)
         .map((place: any, index: number) => {
-          const menuCategory = place.category_name ? place.category_name.split(' > ').pop() : undefined
-          
+          const menuCategory = place.category_name
+            ? place.category_name.split(' > ').pop()
+            : undefined
+
           return {
             restaurantId: index + 1,
             placeId: place.id,

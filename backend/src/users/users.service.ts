@@ -1,25 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
-import { MealRecord } from '../entities/meal-record.entity';
-import { Friendship } from '../entities/friendship.entity';
-import { UserSettings } from '../entities/user-settings.entity';
-import * as bcrypt from 'bcryptjs';
-import * as fs from 'fs';
-import * as path from 'path';
-import {
-  createUploadPath,
-  ensureDirectoryExists,
-} from '../common/upload.utils';
-import { EmailService } from '../email/email.service';
-import * as crypto from 'crypto';
-import { ConfigService } from '../config/config.service';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
+import { User } from '../entities/user.entity'
+import { MealRecord } from '../entities/meal-record.entity'
+import { Friendship } from '../entities/friendship.entity'
+import { UserSettings } from '../entities/user-settings.entity'
+import * as bcrypt from 'bcryptjs'
+import * as fs from 'fs'
+import * as path from 'path'
+import { createUploadPath, ensureDirectoryExists } from '../common/upload.utils'
+import { EmailService } from '../email/email.service'
+import * as crypto from 'crypto'
+import { ConfigService } from '../config/config.service'
 
 @Injectable()
 export class UsersService {
@@ -33,113 +26,104 @@ export class UsersService {
     @InjectRepository(UserSettings)
     private userSettingsRepository: Repository<UserSettings>,
     private readonly emailService: EmailService,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {}
 
   // 아이디 찾기 (이름으로)
   async findUserIdByName(name: string): Promise<{ email: string }> {
-    const user = await this.userRepository.findOne({ where: { name } });
+    const user = await this.userRepository.findOne({ where: { name } })
 
     if (!user) {
-      throw new NotFoundException('해당 이름의 사용자를 찾을 수 없습니다.');
+      throw new NotFoundException('해당 이름의 사용자를 찾을 수 없습니다.')
     }
 
     // 이메일 마스킹 (e.g., user@example.com -> us**@e******.com)
-    const [localPart, domain] = user.email.split('@');
-    const [domainName, domainTld] = domain.split('.');
+    const [localPart, domain] = user.email.split('@')
+    const [domainName, domainTld] = domain.split('.')
     const maskedLocal =
       localPart.length > 2
         ? `${localPart.slice(0, 2)}${'*'.repeat(localPart.length - 2)}`
-        : `${localPart.slice(0, 1)}*`;
+        : `${localPart.slice(0, 1)}*`
     const maskedDomain =
-      domainName.length > 1
-        ? `${domainName.slice(0, 1)}${'*'.repeat(domainName.length - 1)}`
-        : '*';
+      domainName.length > 1 ? `${domainName.slice(0, 1)}${'*'.repeat(domainName.length - 1)}` : '*'
 
-    return { email: `${maskedLocal}@${maskedDomain}.${domainTld}` };
+    return { email: `${maskedLocal}@${maskedDomain}.${domainTld}` }
   }
 
   // 비밀번호 재설정 요청
   async requestPasswordReset(email: string): Promise<{ message: string }> {
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({ where: { email } })
 
     if (!user) {
       // 존재하지 않는 이메일이라도 성공 메시지를 보내 보안 강화
-      return { message: '비밀번호 재설정 이메일이 전송되었습니다.' };
+      return { message: '비밀번호 재설정 이메일이 전송되었습니다.' }
     }
 
-    const token = crypto.randomBytes(32).toString('hex');
-    const expires = new Date();
-    expires.setHours(expires.getHours() + 1); // 1시간 후 만료
+    const token = crypto.randomBytes(32).toString('hex')
+    const expires = new Date()
+    expires.setHours(expires.getHours() + 1) // 1시간 후 만료
 
-    user.passwordResetToken = token;
-    user.passwordResetExpires = expires;
+    user.passwordResetToken = token
+    user.passwordResetExpires = expires
 
-    await this.userRepository.save(user);
+    await this.userRepository.save(user)
 
-    const frontendUrl = this.configService.getFrontendUrl();
-    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
-    await this.emailService.sendPasswordResetEmail(
-      user.email,
-      user.name,
-      resetLink,
-    );
+    const frontendUrl = this.configService.getFrontendUrl()
+    const resetLink = `${frontendUrl}/reset-password?token=${token}`
+    await this.emailService.sendPasswordResetEmail(user.email, user.name, resetLink)
 
-    return { message: '비밀번호 재설정 이메일이 전송되었습니다.' };
+    return { message: '비밀번호 재설정 이메일이 전송되었습니다.' }
   }
 
   // 비밀번호 재설정
-  async resetPassword(
-    token: string,
-    newPassword: string,
-  ): Promise<{ message: string }> {
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({
       where: {
         passwordResetToken: token,
       },
-    });
+    })
 
     if (!user || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
-      throw new UnauthorizedException('토큰이 유효하지 않거나 만료되었습니다.');
+      throw new UnauthorizedException('토큰이 유효하지 않거나 만료되었습니다.')
     }
 
-    user.password = await bcrypt.hash(newPassword, 10);
-    user.passwordResetToken = null;
-    user.passwordResetExpires = null;
+    user.password = await bcrypt.hash(newPassword, 10)
+    user.passwordResetToken = null
+    user.passwordResetExpires = null
 
-    await this.userRepository.save(user);
+    await this.userRepository.save(user)
 
-    return { message: '비밀번호가 성공적으로 재설정되었습니다.' };
+    return { message: '비밀번호가 성공적으로 재설정되었습니다.' }
   }
 
   // 사용자 프로필 조회
   async getUserProfile(userId: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-    });
+    })
 
     if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+      throw new NotFoundException('사용자를 찾을 수 없습니다.')
     }
 
     // 통계 계산
     const totalReviews = await this.mealRecordRepository.count({
       where: { userId },
-    });
+    })
 
     const restaurantCount = await this.mealRecordRepository
       .createQueryBuilder('meal')
       .where('meal.userId = :userId', { userId })
       .select('COUNT(DISTINCT meal.name)', 'count')
       .getRawOne()
-      .then((result) => parseInt(result.count) || 0);
+      .then((result) => parseInt(result.count) || 0)
 
     const friendCount = await this.friendshipRepository.count({
       where: [
         { userId, status: 'accepted' },
         { friendId: userId, status: 'accepted' },
       ],
-    });
+    })
 
     return {
       id: user.id,
@@ -152,123 +136,121 @@ export class UsersService {
         restaurantCount,
         friendCount,
       },
-    };
+    }
   }
 
   // 프로필 업데이트
   async updateProfile(
     userId: string,
-    updateData: { username?: string; email?: string; bio?: string },
+    updateData: { username?: string; email?: string; bio?: string }
   ) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-    });
+    })
 
     if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+      throw new NotFoundException('사용자를 찾을 수 없습니다.')
     }
 
     if (updateData.username) {
-      user.name = updateData.username;
+      user.name = updateData.username
     }
 
     if (updateData.email) {
       // 이메일 중복 확인
       const existingUser = await this.userRepository.findOne({
         where: { email: updateData.email },
-      });
+      })
 
       if (existingUser && existingUser.id !== userId) {
-        throw new UnauthorizedException('이미 사용 중인 이메일입니다.');
+        throw new UnauthorizedException('이미 사용 중인 이메일입니다.')
       }
 
-      user.email = updateData.email;
+      user.email = updateData.email
     }
 
     if (updateData.bio !== undefined) {
-      user.bio = updateData.bio;
+      user.bio = updateData.bio
     }
 
-    await this.userRepository.save(user);
+    await this.userRepository.save(user)
 
-    return this.getUserProfile(userId);
+    return this.getUserProfile(userId)
   }
 
   // 프로필 이미지 업로드
   async uploadProfileImage(userId: string, file: Express.Multer.File) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({ where: { id: userId } })
     if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+      throw new NotFoundException('사용자를 찾을 수 없습니다.')
     }
 
-    const uploadDir = this.configService.get('UPLOAD_DIR');
+    const uploadDir = this.configService.get('UPLOAD_DIR')
     if (!uploadDir) {
-      throw new Error('UPLOAD_DIR must be defined in the environment.');
+      throw new Error('UPLOAD_DIR must be defined in the environment.')
     }
 
     // 기존 이미지 삭제
     if (user.profileImage) {
       // profileImageUrl -> profileImage 로 수정
-      const oldImagePath = path.join(process.cwd(), user.profileImage);
+      const oldImagePath = path.join(process.cwd(), user.profileImage)
       if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
+        fs.unlinkSync(oldImagePath)
       }
     }
 
     // 새 이미지 저장 (사용자 해시 기반 분산)
-    const filename = `${userId}-${Date.now()}${path.extname(
-      file.originalname,
-    )}`;
+    const filename = `${userId}-${Date.now()}${path.extname(file.originalname)}`
     const { dirPath, urlPath } = createUploadPath(filename, {
       uploadDir: uploadDir,
       category: 'profiles',
       userId,
       useUserHash: true,
-    });
+    })
 
-    ensureDirectoryExists(dirPath);
-    const filepath = path.join(dirPath, filename);
-    fs.writeFileSync(file.buffer, filepath);
+    ensureDirectoryExists(dirPath)
+    const filepath = path.join(dirPath, filename)
+    fs.writeFileSync(file.buffer, filepath)
 
-    user.profileImage = urlPath; // profileImageUrl -> profileImage 로 수정
-    await this.userRepository.save(user);
+    user.profileImage = urlPath // profileImageUrl -> profileImage 로 수정
+    await this.userRepository.save(user)
 
-    return { profileImage: urlPath };
+    return { profileImage: urlPath }
   }
 
   // 프로필 이미지 삭제
   async deleteProfileImage(userId: string) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({ where: { id: userId } })
     if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+      throw new NotFoundException('사용자를 찾을 수 없습니다.')
     }
 
     if (user.profileImage) {
-      const imagePath = path.join(process.cwd(), user.profileImage);
+      const imagePath = path.join(process.cwd(), user.profileImage)
       if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
+        fs.unlinkSync(imagePath)
       }
-      user.profileImage = null; // profileImage는 nullable이므로 null 할당 가능
-      await this.userRepository.save(user);
+      user.profileImage = null // profileImage는 nullable이므로 null 할당 가능
+      await this.userRepository.save(user)
     }
 
-    return { message: '프로필 이미지가 삭제되었습니다.' };
+    return { message: '프로필 이미지가 삭제되었습니다.' }
   }
 
   // 사용자 통계 조회
   async getUserStatistics(userId: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-    });
+    })
 
     if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+      throw new NotFoundException('사용자를 찾을 수 없습니다.')
     }
 
     // 전체 리뷰 수
     const totalReviews = await this.mealRecordRepository.count({
       where: { userId },
-    });
+    })
 
     // 방문한 레스토랑 수
     const totalRestaurants = await this.mealRecordRepository
@@ -276,7 +258,7 @@ export class UsersService {
       .where('meal.userId = :userId', { userId })
       .select('COUNT(DISTINCT meal.name)', 'count')
       .getRawOne()
-      .then((result) => parseInt(result.count) || 0);
+      .then((result) => parseInt(result.count) || 0)
 
     // 평균 평점
     const avgRating = await this.mealRecordRepository
@@ -285,11 +267,11 @@ export class UsersService {
       .andWhere('meal.rating IS NOT NULL')
       .select('AVG(meal.rating)', 'avg')
       .getRawOne()
-      .then((result) => parseFloat(result.avg) || 0);
+      .then((result) => parseFloat(result.avg) || 0)
 
     // 월별 통계 (최근 6개월)
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
     const monthlyStats = await this.mealRecordRepository
       .createQueryBuilder('meal')
@@ -303,7 +285,7 @@ export class UsersService {
       ])
       .groupBy('month')
       .orderBy('month', 'ASC')
-      .getRawMany();
+      .getRawMany()
 
     // 최고 평점 레스토랑
     const topRatedRestaurants = await this.mealRecordRepository
@@ -320,7 +302,7 @@ export class UsersService {
       .addGroupBy('meal.location')
       .orderBy('rating', 'DESC')
       .limit(5)
-      .getRawMany();
+      .getRawMany()
 
     // 최근 활동
     const recentActivity = await this.mealRecordRepository
@@ -335,8 +317,8 @@ export class UsersService {
           type: 'review' as const,
           restaurantName: record.name || '알 수 없음',
           rating: record.rating,
-        })),
-      );
+        }))
+      )
 
     return {
       totalReviews,
@@ -346,8 +328,7 @@ export class UsersService {
         month: stat.month,
         reviewCount: parseInt(stat.reviewCount) || 0,
         restaurantCount: parseInt(stat.restaurantCount) || 0,
-        averageRating:
-          Math.round(parseFloat(stat.averageRating) * 10) / 10 || 0,
+        averageRating: Math.round(parseFloat(stat.averageRating) * 10) / 10 || 0,
       })),
       topRatedRestaurants: topRatedRestaurants.map((restaurant) => ({
         id: restaurant.name, // name을 id로 사용
@@ -357,76 +338,69 @@ export class UsersService {
         visitCount: parseInt(restaurant.visitCount) || 0,
       })),
       recentActivity,
-    };
+    }
   }
 
   // 비밀번호 변경
-  async changePassword(
-    userId: string,
-    currentPassword: string,
-    newPassword: string,
-  ) {
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-    });
+    })
 
     if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+      throw new NotFoundException('사용자를 찾을 수 없습니다.')
     }
 
     // 현재 비밀번호 확인
-    const isPasswordValid = await bcrypt.compare(
-      currentPassword,
-      user.password,
-    );
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password)
     if (!isPasswordValid) {
-      throw new UnauthorizedException('현재 비밀번호가 일치하지 않습니다.');
+      throw new UnauthorizedException('현재 비밀번호가 일치하지 않습니다.')
     }
 
     // 새 비밀번호 해시화
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    user.password = hashedPassword
 
-    await this.userRepository.save(user);
+    await this.userRepository.save(user)
 
-    return { message: '비밀번호가 변경되었습니다.' };
+    return { message: '비밀번호가 변경되었습니다.' }
   }
 
   // 계정 삭제
   async deleteAccount(userId: string, password: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-    });
+    })
 
     if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+      throw new NotFoundException('사용자를 찾을 수 없습니다.')
     }
 
     // 비밀번호 확인
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
-      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
+      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.')
     }
 
     // 프로필 이미지 삭제
     if (user.profileImage) {
-      const imagePath = path.join(process.cwd(), user.profileImage);
+      const imagePath = path.join(process.cwd(), user.profileImage)
       if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
+        fs.unlinkSync(imagePath)
       }
     }
 
     // 사용자 삭제 (관련 데이터는 cascade로 삭제됨)
-    await this.userRepository.remove(user);
+    await this.userRepository.remove(user)
 
-    return { message: '계정이 삭제되었습니다.' };
+    return { message: '계정이 삭제되었습니다.' }
   }
 
   // 사용자 설정 조회
   async getUserSettings(userId: string) {
     let settings = await this.userSettingsRepository.findOne({
       where: { userId },
-    });
+    })
 
     // 설정이 없으면 기본값으로 생성
     if (!settings) {
@@ -444,9 +418,9 @@ export class UsersService {
         locationHomeLongitude: 0,
         locationOfficeLatitude: 0,
         locationOfficeLongitude: 0,
-      });
+      })
 
-      settings = await this.userSettingsRepository.save(settings);
+      settings = await this.userSettingsRepository.save(settings)
     }
 
     // 프론트엔드 형식으로 변환
@@ -473,14 +447,14 @@ export class UsersService {
           lng: settings.locationOfficeLongitude || 0,
         },
       },
-    };
+    }
   }
 
   // 사용자 설정 업데이트
   async updateUserSettings(userId: string, settingsData: any) {
     let settings = await this.userSettingsRepository.findOne({
       where: { userId },
-    });
+    })
 
     if (!settings) {
       settings = this.userSettingsRepository.create({
@@ -497,59 +471,51 @@ export class UsersService {
         locationHomeLongitude: 0,
         locationOfficeLatitude: 0,
         locationOfficeLongitude: 0,
-      });
+      })
     }
 
     // 알림 설정
     if (settingsData.notifications) {
       settings.notificationFriendRequest =
-        settingsData.notifications.friendRequest ??
-        settings.notificationFriendRequest;
+        settingsData.notifications.friendRequest ?? settings.notificationFriendRequest
       settings.notificationNewReview =
-        settingsData.notifications.newReview ?? settings.notificationNewReview;
+        settingsData.notifications.newReview ?? settings.notificationNewReview
       settings.notificationNearbyFriend =
-        settingsData.notifications.nearbyFriend ??
-        settings.notificationNearbyFriend;
+        settingsData.notifications.nearbyFriend ?? settings.notificationNearbyFriend
     }
 
     // 프라이버시 설정
     if (settingsData.privacy) {
       settings.privacyProfilePublic =
-        settingsData.privacy.profilePublic ?? settings.privacyProfilePublic;
+        settingsData.privacy.profilePublic ?? settings.privacyProfilePublic
       settings.privacyShowLocation =
-        settingsData.privacy.showLocation ?? settings.privacyShowLocation;
+        settingsData.privacy.showLocation ?? settings.privacyShowLocation
       settings.privacyShowMealDetails =
-        settingsData.privacy.showMealDetails ?? settings.privacyShowMealDetails;
+        settingsData.privacy.showMealDetails ?? settings.privacyShowMealDetails
     }
 
     // 장소 설정
     if (settingsData.locations) {
-      settings.locationHome =
-        settingsData.locations.home ?? settings.locationHome;
-      settings.locationOffice =
-        settingsData.locations.office ?? settings.locationOffice;
+      settings.locationHome = settingsData.locations.home ?? settings.locationHome
+      settings.locationOffice = settingsData.locations.office ?? settings.locationOffice
 
       if (settingsData.locations.homeCoords) {
         settings.locationHomeLatitude =
-          settingsData.locations.homeCoords.lat ??
-          settings.locationHomeLatitude;
+          settingsData.locations.homeCoords.lat ?? settings.locationHomeLatitude
         settings.locationHomeLongitude =
-          settingsData.locations.homeCoords.lng ??
-          settings.locationHomeLongitude;
+          settingsData.locations.homeCoords.lng ?? settings.locationHomeLongitude
       }
 
       if (settingsData.locations.officeCoords) {
         settings.locationOfficeLatitude =
-          settingsData.locations.officeCoords.lat ??
-          settings.locationOfficeLatitude;
+          settingsData.locations.officeCoords.lat ?? settings.locationOfficeLatitude
         settings.locationOfficeLongitude =
-          settingsData.locations.officeCoords.lng ??
-          settings.locationOfficeLongitude;
+          settingsData.locations.officeCoords.lng ?? settings.locationOfficeLongitude
       }
     }
 
-    await this.userSettingsRepository.save(settings);
+    await this.userSettingsRepository.save(settings)
 
-    return { message: '설정이 저장되었습니다.' };
+    return { message: '설정이 저장되었습니다.' }
   }
 }

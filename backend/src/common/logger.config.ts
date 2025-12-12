@@ -1,4 +1,4 @@
-import { AppLogLevel, LoggerConfig } from './logger.service';
+import { AppLogLevel, LoggerConfig } from './logger.service'
 
 export const loggerConfig: LoggerConfig = {
   level: AppLogLevel.DEBUG,
@@ -20,4 +20,4 @@ export const loggerConfig: LoggerConfig = {
     DatabaseLogger: AppLogLevel.ERROR,
     PassportModule: AppLogLevel.WARN,
   },
-};
+}

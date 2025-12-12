@@ -20,7 +20,7 @@ export class MealRecordsService {
     private readonly mealRecordRepository: Repository<MealRecord>,
     private readonly realTimeService: RealTimeService,
     private readonly configService: ConfigService,
-    private readonly locationsService: LocationsService,
+    private readonly locationsService: LocationsService
   ) {}
 
   /**
@@ -53,19 +53,16 @@ export class MealRecordsService {
   /**
    * 두 GPS 좌표 간 거리 계산 (Haversine formula, km 단위)
    */
-  private calculateDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number {
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371 // 지구 반경 (km)
-    const dLat = (lat2 - lat1) * Math.PI / 180
-    const dLon = (lon2 - lon1) * Math.PI / 180
+    const dLat = ((lat2 - lat1) * Math.PI) / 180
+    const dLon = ((lon2 - lon1) * Math.PI) / 180
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2)
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     return R * c
   }
@@ -78,13 +75,14 @@ export class MealRecordsService {
     metadata: Array<{ photoTakenAt?: Date; latitude?: number; longitude?: number }>
   ): string[] {
     const warnings: string[] = []
-    const validTimes = metadata.filter(m => m.photoTakenAt).map(m => m.photoTakenAt!)
-    const validLocations = metadata.filter(m => m.latitude && m.longitude)
+    const validTimes = metadata.filter((m) => m.photoTakenAt).map((m) => m.photoTakenAt!)
+    const validLocations = metadata.filter((m) => m.latitude && m.longitude)
 
     // 촬영 시간 일관성 (30분 이내)
     if (validTimes.length > 1) {
-      const timeSpan = Math.max(...validTimes.map(t => t.getTime())) - 
-                       Math.min(...validTimes.map(t => t.getTime()))
+      const timeSpan =
+        Math.max(...validTimes.map((t) => t.getTime())) -
+        Math.min(...validTimes.map((t) => t.getTime()))
       const timeSpanMinutes = timeSpan / (1000 * 60)
 
       if (timeSpanMinutes > 30) {
@@ -112,10 +110,10 @@ export class MealRecordsService {
       }
 
       const maxDistance = Math.max(...distances)
-      if (maxDistance > 0.5) { // 500m 이상
-        const distanceText = maxDistance > 1 
-          ? `${maxDistance.toFixed(1)}km` 
-          : `${(maxDistance * 1000).toFixed(0)}m`
+      if (maxDistance > 0.5) {
+        // 500m 이상
+        const distanceText =
+          maxDistance > 1 ? `${maxDistance.toFixed(1)}km` : `${(maxDistance * 1000).toFixed(0)}m`
         const message = `사진 촬영 위치가 최대 ${distanceText} 떨어져 있습니다. 다른 장소의 사진이 섞여있을 수 있습니다.`
         this.logger.warn(`⚠️  ${message}`)
         warnings.push(message)
@@ -216,7 +214,7 @@ export class MealRecordsService {
       }
 
       // 첫 번째 유효한 데이터를 기본값으로 사용
-      const firstValidMetadata = allMetadata.find(m => m.photoTakenAt || m.latitude)
+      const firstValidMetadata = allMetadata.find((m) => m.photoTakenAt || m.latitude)
       if (firstValidMetadata) {
         photoTakenAt = firstValidMetadata.photoTakenAt
         extractedLatitude = firstValidMetadata.latitude
@@ -230,20 +228,25 @@ export class MealRecordsService {
       }
 
       // 사용자 입력 vs EXIF 불일치 경고
-      if (createMealRecordDto.latitude && createMealRecordDto.longitude && 
-          extractedLatitude && extractedLongitude) {
+      if (
+        createMealRecordDto.latitude &&
+        createMealRecordDto.longitude &&
+        extractedLatitude &&
+        extractedLongitude
+      ) {
         const distance = this.calculateDistance(
           createMealRecordDto.latitude,
           createMealRecordDto.longitude,
           extractedLatitude,
           extractedLongitude
         )
-        if (distance > 10) { // 10km 이상 차이
+        if (distance > 10) {
+          // 10km 이상 차이
           const message = `입력하신 위치와 사진 촬영 위치가 ${distance.toFixed(1)}km 떨어져 있습니다.`
           this.logger.warn(
             `⚠️  ${message} ` +
-            `사용자: (${createMealRecordDto.latitude}, ${createMealRecordDto.longitude}), ` +
-            `EXIF: (${extractedLatitude}, ${extractedLongitude})`
+              `사용자: (${createMealRecordDto.latitude}, ${createMealRecordDto.longitude}), ` +
+              `EXIF: (${extractedLatitude}, ${extractedLongitude})`
           )
           warnings.push(message)
         }
@@ -251,7 +254,9 @@ export class MealRecordsService {
 
       // EXIF에서 GPS 추출 성공 시 알림
       if (extractedLatitude && extractedLongitude && !createMealRecordDto.latitude) {
-        this.logger.log(`✅ 사진에서 GPS 위치 자동 추출: (${extractedLatitude}, ${extractedLongitude})`)
+        this.logger.log(
+          `✅ 사진에서 GPS 위치 자동 추출: (${extractedLatitude}, ${extractedLongitude})`
+        )
       }
 
       // EXIF에서 촬영 시간 추출 성공 시 알림

@@ -7,9 +7,7 @@ import { UserLocation } from '../entities/user-location.entity'
 import { ExternalPlaceMapping } from '../entities/external-place-mapping.entity'
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([LocationGroup, UserLocation, ExternalPlaceMapping]),
-  ],
+  imports: [TypeOrmModule.forFeature([LocationGroup, UserLocation, ExternalPlaceMapping])],
   controllers: [LocationsController],
   providers: [LocationsService],
   exports: [LocationsService],

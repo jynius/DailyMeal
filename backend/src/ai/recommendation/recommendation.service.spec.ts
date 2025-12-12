@@ -14,7 +14,6 @@ describe('RecommendationService', () => {
   let mealRepository: Repository<MealRecord>
   let friendshipRepository: Repository<Friendship>
   let userRepository: Repository<User>
-  let kakaoPlaceRepository: Repository<KakaoPlace>
 
   const mockUserId = 'test-user-id'
   const mockFriendId = 'friend-user-id'

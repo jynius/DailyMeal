@@ -1,19 +1,11 @@
-import {
-  IsString,
-  IsOptional,
-  IsNumber,
-  Min,
-  Max,
-  IsArray,
-  IsIn,
-} from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { IsString, IsOptional, IsNumber, Min, Max, IsArray, IsIn } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger'
+import { Transform } from 'class-transformer'
 
 export class CreateMealRecordDto {
   @ApiProperty({ example: '크림파스타', description: '메뉴 이름' })
   @IsString()
-  name: string;
+  name: string
 
   @ApiProperty({
     example: '홍대 이탈리안 레스토랑',
@@ -22,7 +14,7 @@ export class CreateMealRecordDto {
   })
   @IsOptional()
   @IsString()
-  location?: string;
+  location?: string
 
   @ApiProperty({
     example: 4,
@@ -36,9 +28,9 @@ export class CreateMealRecordDto {
   @Min(1)
   @Max(5)
   @Transform(({ value }: { value: number | string | undefined }) =>
-    value !== undefined ? parseInt(String(value)) : undefined,
+    value !== undefined ? parseInt(String(value)) : undefined
   )
-  rating?: number;
+  rating?: number
 
   @ApiProperty({
     example: '정말 맛있었어요!',
@@ -47,7 +39,7 @@ export class CreateMealRecordDto {
   })
   @IsOptional()
   @IsString()
-  memo?: string;
+  memo?: string
 
   @ApiProperty({
     example: 18000,
@@ -57,9 +49,9 @@ export class CreateMealRecordDto {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }: { value: number | string | undefined }) =>
-    value ? parseFloat(String(value)) : undefined,
+    value ? parseFloat(String(value)) : undefined
   )
-  price?: number;
+  price?: number
 
   @ApiProperty({
     example: 37.5665,
@@ -69,9 +61,9 @@ export class CreateMealRecordDto {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }: { value: number | string | undefined }) =>
-    value ? parseFloat(String(value)) : undefined,
+    value ? parseFloat(String(value)) : undefined
   )
-  latitude?: number;
+  latitude?: number
 
   @ApiProperty({
     example: 126.978,
@@ -81,9 +73,9 @@ export class CreateMealRecordDto {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }: { value: number | string | undefined }) =>
-    value ? parseFloat(String(value)) : undefined,
+    value ? parseFloat(String(value)) : undefined
   )
-  longitude?: number;
+  longitude?: number
 
   @ApiProperty({
     example: '서울특별시 마포구 홍익로 39',
@@ -92,7 +84,7 @@ export class CreateMealRecordDto {
   })
   @IsOptional()
   @IsString()
-  address?: string;
+  address?: string
 
   @ApiProperty({
     example: 'restaurant',
@@ -102,7 +94,7 @@ export class CreateMealRecordDto {
   })
   @IsOptional()
   @IsIn(['home', 'delivery', 'restaurant'])
-  category?: 'home' | 'delivery' | 'restaurant';
+  category?: 'home' | 'delivery' | 'restaurant'
 
   @ApiProperty({
     example: ['uuid-1', 'uuid-2'],
@@ -115,14 +107,14 @@ export class CreateMealRecordDto {
   @Transform(({ value }: { value: string | string[] | undefined }) => {
     if (typeof value === 'string') {
       try {
-        return JSON.parse(value) as string[];
+        return JSON.parse(value) as string[]
       } catch {
-        return [];
+        return []
       }
     }
-    return (value as string[]) || [];
+    return (value as string[]) || []
   })
-  companionIds?: string[];
+  companionIds?: string[]
 
   @ApiProperty({
     example: '철수, 영희',
@@ -131,7 +123,7 @@ export class CreateMealRecordDto {
   })
   @IsOptional()
   @IsString()
-  companionNames?: string;
+  companionNames?: string
 }
 
 export class UpdateMealRecordDto {
@@ -142,7 +134,7 @@ export class UpdateMealRecordDto {
   })
   @IsOptional()
   @IsString()
-  name?: string;
+  name?: string
 
   @ApiProperty({
     example: '홍대 이탈리안 레스토랑',
@@ -151,7 +143,7 @@ export class UpdateMealRecordDto {
   })
   @IsOptional()
   @IsString()
-  location?: string;
+  location?: string
 
   @ApiProperty({
     example: 4,
@@ -164,10 +156,8 @@ export class UpdateMealRecordDto {
   @IsNumber()
   @Min(1)
   @Max(5)
-  @Transform(({ value }: { value: number | string | undefined }) =>
-    parseInt(String(value)),
-  )
-  rating?: number;
+  @Transform(({ value }: { value: number | string | undefined }) => parseInt(String(value)))
+  rating?: number
 
   @ApiProperty({
     example: '정말 맛있었어요!',
@@ -176,7 +166,7 @@ export class UpdateMealRecordDto {
   })
   @IsOptional()
   @IsString()
-  memo?: string;
+  memo?: string
 
   @ApiProperty({
     example: 18000,
@@ -186,9 +176,9 @@ export class UpdateMealRecordDto {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }: { value: number | string | undefined }) =>
-    value ? parseFloat(String(value)) : undefined,
+    value ? parseFloat(String(value)) : undefined
   )
-  price?: number;
+  price?: number
 
   @ApiProperty({
     example: 37.5665,
@@ -198,9 +188,9 @@ export class UpdateMealRecordDto {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }: { value: number | string | undefined }) =>
-    value ? parseFloat(String(value)) : undefined,
+    value ? parseFloat(String(value)) : undefined
   )
-  latitude?: number;
+  latitude?: number
 
   @ApiProperty({
     example: 126.978,
@@ -210,9 +200,9 @@ export class UpdateMealRecordDto {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }: { value: number | string | undefined }) =>
-    value ? parseFloat(String(value)) : undefined,
+    value ? parseFloat(String(value)) : undefined
   )
-  longitude?: number;
+  longitude?: number
 
   @ApiProperty({
     example: '서울특별시 마포구 홍익로 39',
@@ -221,7 +211,7 @@ export class UpdateMealRecordDto {
   })
   @IsOptional()
   @IsString()
-  address?: string;
+  address?: string
 
   @ApiProperty({
     example: 'restaurant',
@@ -231,7 +221,7 @@ export class UpdateMealRecordDto {
   })
   @IsOptional()
   @IsIn(['home', 'delivery', 'restaurant'])
-  category?: 'home' | 'delivery' | 'restaurant';
+  category?: 'home' | 'delivery' | 'restaurant'
 
   @ApiProperty({
     example: ['uuid-1', 'uuid-2'],
@@ -241,7 +231,7 @@ export class UpdateMealRecordDto {
   })
   @IsOptional()
   @IsArray()
-  companionIds?: string[];
+  companionIds?: string[]
 
   @ApiProperty({
     example: '철수, 영희',
@@ -250,5 +240,5 @@ export class UpdateMealRecordDto {
   })
   @IsOptional()
   @IsString()
-  companionNames?: string;
+  companionNames?: string
 }

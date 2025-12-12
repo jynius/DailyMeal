@@ -27,7 +27,7 @@ describe('MealRecordsService', () => {
     location: '강남역 맛집',
     userLocationId: null,
     latitude: 37.498095,
-    longitude: 127.027610,
+    longitude: 127.02761,
     address: '서울 강남구',
     rating: 5,
     memo: '맛있었어요',
@@ -187,17 +187,13 @@ describe('MealRecordsService', () => {
     it('존재하지 않는 ID - NotFoundException', async () => {
       mockRepository.findOne.mockResolvedValue(null)
 
-      await expect(service.findOne('invalid-id', mockUserId)).rejects.toThrow(
-        NotFoundException,
-      )
+      await expect(service.findOne('invalid-id', mockUserId)).rejects.toThrow(NotFoundException)
     })
 
     it('다른 사용자의 식사 기록 접근 - ForbiddenException', async () => {
       mockRepository.findOne.mockResolvedValue(null)
 
-      await expect(
-        service.findOne(mockMealId, 'other-user-id'),
-      ).rejects.toThrow(NotFoundException)
+      await expect(service.findOne(mockMealId, 'other-user-id')).rejects.toThrow(NotFoundException)
     })
   })
 
@@ -211,10 +207,9 @@ describe('MealRecordsService', () => {
       // findOne 내부에서 repository.findOne 호출
       const mealToUpdate = { ...mockMealRecord, userId: mockUserId }
       const updatedMeal = { ...mealToUpdate, ...updateDto }
-      
+
       // update 메서드는 내부적으로 findOne을 호출하므로, repository.findOne을 두 번 호출
-      mockRepository.findOne
-        .mockResolvedValueOnce(mealToUpdate) // findOne 메서드에서 호출
+      mockRepository.findOne.mockResolvedValueOnce(mealToUpdate) // findOne 메서드에서 호출
       mockRepository.save.mockResolvedValue(updatedMeal)
 
       const result = await service.update(mockMealId, updateDto, mockUserId)
@@ -227,9 +222,9 @@ describe('MealRecordsService', () => {
     it('존재하지 않는 기록 업데이트 - NotFoundException', async () => {
       mockRepository.findOne.mockResolvedValue(null)
 
-      await expect(
-        service.update('invalid-id', updateDto, mockUserId),
-      ).rejects.toThrow(NotFoundException)
+      await expect(service.update('invalid-id', updateDto, mockUserId)).rejects.toThrow(
+        NotFoundException
+      )
     })
   })
 
@@ -249,9 +244,7 @@ describe('MealRecordsService', () => {
     it('존재하지 않는 기록 삭제 - NotFoundException', async () => {
       mockRepository.findOne.mockResolvedValue(null)
 
-      await expect(service.remove('invalid-id', mockUserId)).rejects.toThrow(
-        NotFoundException,
-      )
+      await expect(service.remove('invalid-id', mockUserId)).rejects.toThrow(NotFoundException)
     })
   })
 })

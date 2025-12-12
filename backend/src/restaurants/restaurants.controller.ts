@@ -10,10 +10,10 @@ import {
   Param,
   ParseFloatPipe,
   DefaultValuePipe,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RestaurantsService } from './restaurants.service';
+} from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger'
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import { RestaurantsService } from './restaurants.service'
 
 @ApiTags('Restaurants')
 @Controller('restaurants')
@@ -24,13 +24,10 @@ export class RestaurantsController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '음식점 상세 정보 조회 (Kakao Place ID 또는 식당명으로)' })
   @ApiResponse({ status: 200, description: '음식점 상세 정보 조회 성공' })
-  async getRestaurantByPlaceId(
-    @Request() req: any,
-    @Param('placeIdOrName') placeIdOrName: string,
-  ) {
+  async getRestaurantByPlaceId(@Request() req: any, @Param('placeIdOrName') placeIdOrName: string) {
     // URL 디코딩
-    const decoded = decodeURIComponent(placeIdOrName);
-    return this.restaurantsService.getRestaurantDetailByPlaceIdOrName(req.user.id, decoded);
+    const decoded = decodeURIComponent(placeIdOrName)
+    return this.restaurantsService.getRestaurantDetailByPlaceIdOrName(req.user.id, decoded)
   }
 
   @Get()
@@ -44,11 +41,16 @@ export class RestaurantsController {
     @Request() req: any,
     @Query('lat', new DefaultValuePipe(0), ParseFloatPipe) lat: number,
     @Query('lon', new DefaultValuePipe(0), ParseFloatPipe) lon: number,
-    @Query('radius', new DefaultValuePipe(5), ParseFloatPipe) radius: number,
+    @Query('radius', new DefaultValuePipe(5), ParseFloatPipe) radius: number
   ) {
-    const currentLat = lat !== 0 ? lat : undefined;
-    const currentLon = lon !== 0 ? lon : undefined;
-    return this.restaurantsService.getRestaurantsFromMeals(req.user.id, currentLat, currentLon, radius);
+    const currentLat = lat !== 0 ? lat : undefined
+    const currentLon = lon !== 0 ? lon : undefined
+    return this.restaurantsService.getRestaurantsFromMeals(
+      req.user.id,
+      currentLat,
+      currentLon,
+      radius
+    )
   }
 
   @Post('maps')
@@ -61,18 +63,18 @@ export class RestaurantsController {
   async createMap(
     @Body()
     createMapDto: {
-      title: string;
-      description?: string;
-      restaurantIds: string[];
-      isPublic: boolean;
+      title: string
+      description?: string
+      restaurantIds: string[]
+      isPublic: boolean
     },
     @Request() req: any,
     @Query('lat', new DefaultValuePipe(0), ParseFloatPipe) lat: number,
     @Query('lon', new DefaultValuePipe(0), ParseFloatPipe) lon: number,
-    @Query('radius', new DefaultValuePipe(5), ParseFloatPipe) radius: number,
+    @Query('radius', new DefaultValuePipe(5), ParseFloatPipe) radius: number
   ) {
-    const currentLat = lat !== 0 ? lat : undefined;
-    const currentLon = lon !== 0 ? lon : undefined;
+    const currentLat = lat !== 0 ? lat : undefined
+    const currentLon = lon !== 0 ? lon : undefined
 
     return this.restaurantsService.createRestaurantMap(
       req.user.id,
@@ -82,7 +84,7 @@ export class RestaurantsController {
       createMapDto.isPublic,
       currentLat,
       currentLon,
-      radius,
-    );
+      radius
+    )
   }
 }

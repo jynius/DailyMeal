@@ -6,45 +6,45 @@ import {
   UpdateDateColumn,
   OneToMany,
   OneToOne,
-} from 'typeorm';
-import { MealRecord } from './meal-record.entity';
-import { UserSettings } from './user-settings.entity';
+} from 'typeorm'
+import { MealRecord } from './meal-record.entity'
+import { UserSettings } from './user-settings.entity'
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string
 
   @Column({ unique: true })
-  email: string;
+  email: string
 
   @Column()
-  password: string;
+  password: string
 
   @Column({ type: 'varchar', nullable: true })
-  name: string;
+  name: string
 
   @Column({ type: 'varchar', nullable: true })
-  profileImage: string | null;
+  profileImage: string | null
 
   @Column({ type: 'text', nullable: true })
-  bio: string;
+  bio: string
 
   @Column({ type: 'varchar', nullable: true })
-  passwordResetToken: string | null;
+  passwordResetToken: string | null
 
   @Column({ type: 'timestamp', nullable: true })
-  passwordResetExpires: Date | null;
+  passwordResetExpires: Date | null
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt: Date
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt: Date
 
   @OneToMany(() => MealRecord, (mealRecord) => mealRecord.user)
-  mealRecords: MealRecord[];
+  mealRecords: MealRecord[]
 
   @OneToOne('UserSettings', 'user', { cascade: true })
-  settings: UserSettings;
+  settings: UserSettings
 }

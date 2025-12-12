@@ -55,7 +55,7 @@ export class MealRecord {
     nullable: true,
     transformer: {
       to: (value: number | null) => value,
-      from: (value: string | null) => value ? parseFloat(value) : null,
+      from: (value: string | null) => (value ? parseFloat(value) : null),
     },
   })
   price: number | null

@@ -1,5 +1,5 @@
-import { IsOptional, IsString, IsEnum } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString, IsEnum } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger'
 
 export enum SharePlatform {
   NATIVE = 'native',
@@ -18,14 +18,14 @@ export class ShareEventDto {
     enum: SharePlatform,
   })
   @IsEnum(SharePlatform)
-  platform: SharePlatform;
+  platform: SharePlatform
 
   @ApiProperty({
     example: '12345',
     description: '공유된 식사 기록 ID',
   })
   @IsString()
-  mealRecordId: string;
+  mealRecordId: string
 
   @ApiProperty({
     example: 'meal_detail',
@@ -34,5 +34,5 @@ export class ShareEventDto {
   })
   @IsOptional()
   @IsString()
-  source?: string;
+  source?: string
 }

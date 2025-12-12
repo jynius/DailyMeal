@@ -119,9 +119,7 @@ describe('UsersService', () => {
 
     service = module.get<UsersService>(UsersService)
     userRepository = module.get<Repository<User>>(getRepositoryToken(User))
-    userSettingsRepository = module.get<Repository<UserSettings>>(
-      getRepositoryToken(UserSettings),
-    )
+    userSettingsRepository = module.get<Repository<UserSettings>>(getRepositoryToken(UserSettings))
   })
 
   afterEach(() => {
@@ -139,7 +137,7 @@ describe('UsersService', () => {
         select: jest.fn().mockReturnThis(),
         getRawOne: jest.fn().mockResolvedValue({ count: '5' }),
       }
-      
+
       mockUserRepository.findOne.mockResolvedValue(mockUser)
       mockMealRecordRepository.count.mockResolvedValue(10)
       mockMealRecordRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder)
@@ -157,9 +155,7 @@ describe('UsersService', () => {
     it('존재하지 않는 사용자 - NotFoundException', async () => {
       mockUserRepository.findOne.mockResolvedValue(null)
 
-      await expect(service.getUserProfile('invalid-id')).rejects.toThrow(
-        NotFoundException,
-      )
+      await expect(service.getUserProfile('invalid-id')).rejects.toThrow(NotFoundException)
     })
   })
 
@@ -195,9 +191,9 @@ describe('UsersService', () => {
     it('존재하지 않는 사용자 업데이트 - NotFoundException', async () => {
       mockUserRepository.findOne.mockResolvedValue(null)
 
-      await expect(
-        service.updateProfile('invalid-id', { name: 'Test' }),
-      ).rejects.toThrow(NotFoundException)
+      await expect(service.updateProfile('invalid-id', { name: 'Test' })).rejects.toThrow(
+        NotFoundException
+      )
     })
   })
 
@@ -272,25 +268,27 @@ describe('UsersService', () => {
         select: jest.fn().mockReturnThis(),
         getRawOne: jest.fn().mockResolvedValue({ count: '5' }),
       }
-      
+
       const mockQueryBuilder2 = {
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         getRawOne: jest.fn().mockResolvedValue({ avg: '4.5' }),
       }
-      
+
       const mockQueryBuilder3 = {
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         groupBy: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
-        getRawMany: jest.fn().mockResolvedValue([
-          { month: '2025-12', reviewCount: '10', restaurantCount: '5', averageRating: '4.5' }
-        ]),
+        getRawMany: jest
+          .fn()
+          .mockResolvedValue([
+            { month: '2025-12', reviewCount: '10', restaurantCount: '5', averageRating: '4.5' },
+          ]),
       }
-      
+
       const mockQueryBuilder4 = {
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -299,18 +297,18 @@ describe('UsersService', () => {
         addGroupBy: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
-        getRawMany: jest.fn().mockResolvedValue([
-          { name: '맛집', rating: '5.0', category: '한식', visitCount: '3' }
-        ]),
+        getRawMany: jest
+          .fn()
+          .mockResolvedValue([{ name: '맛집', rating: '5.0', category: '한식', visitCount: '3' }]),
       }
-      
+
       const mockQueryBuilder5 = {
         where: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue([
-          { createdAt: new Date(), name: '최근 맛집', rating: 4.5 }
-        ]),
+        getMany: jest
+          .fn()
+          .mockResolvedValue([{ createdAt: new Date(), name: '최근 맛집', rating: 4.5 }]),
       }
 
       mockUserRepository.findOne.mockResolvedValue(mockUser)

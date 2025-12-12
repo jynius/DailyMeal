@@ -11,21 +11,16 @@ import {
   HttpStatus,
   Ip,
   Headers,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { ShareService } from './share.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+} from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import { ShareService } from './share.service'
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import {
   CreateShareDto,
   TrackViewDto,
   ConnectFriendDto,
   PublicMealResponseDto,
-} from '../dto/share.dto';
+} from '../dto/share.dto'
 
 @ApiTags('Share')
 @Controller('share')
@@ -42,10 +37,7 @@ export class ShareController {
   @ApiOperation({ summary: '식사 기록 공유 링크 생성' })
   @ApiResponse({ status: 201, description: '공유 링크 생성 성공' })
   async createShare(@Body() createShareDto: CreateShareDto, @Request() req) {
-    return this.shareService.createShareLink(
-      createShareDto.mealId,
-      req.user.id,
-    );
+    return this.shareService.createShareLink(createShareDto.mealId, req.user.id)
   }
 
   /**
@@ -59,10 +51,8 @@ export class ShareController {
     description: '조회 성공',
     type: PublicMealResponseDto,
   })
-  async getPublicMeal(
-    @Param('shareId') shareId: string,
-  ): Promise<PublicMealResponseDto> {
-    return this.shareService.getPublicMeal(shareId);
+  async getPublicMeal(@Param('shareId') shareId: string): Promise<PublicMealResponseDto> {
+    return this.shareService.getPublicMeal(shareId)
   }
 
   /**
@@ -74,16 +64,16 @@ export class ShareController {
   async trackView(
     @Body() trackViewDto: TrackViewDto,
     @Ip() ip: string,
-    @Headers('user-agent') userAgent: string,
+    @Headers('user-agent') userAgent: string
   ) {
     await this.shareService.trackView(
       trackViewDto.shareId,
       trackViewDto.ref,
       trackViewDto.sessionId,
       ip,
-      userAgent || '',
-    );
-    return { success: true };
+      userAgent || ''
+    )
+    return { success: true }
   }
 
   /**
@@ -94,11 +84,8 @@ export class ShareController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '공유를 통한 친구 연결' })
-  async connectFriend(
-    @Body() connectFriendDto: ConnectFriendDto,
-    @Request() req,
-  ) {
-    return this.shareService.connectFriend(connectFriendDto.ref, req.user.id);
+  async connectFriend(@Body() connectFriendDto: ConnectFriendDto, @Request() req) {
+    return this.shareService.connectFriend(connectFriendDto.ref, req.user.id)
   }
 
   /**
@@ -110,6 +97,6 @@ export class ShareController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '내 공유 통계 조회' })
   async getMyShareStats(@Request() req) {
-    return this.shareService.getMyShareStats(req.user.id);
+    return this.shareService.getMyShareStats(req.user.id)
   }
 }

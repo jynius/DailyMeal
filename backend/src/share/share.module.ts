@@ -11,13 +11,7 @@ import { CryptoModule } from '../common/crypto.module'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      MealShare,
-      ShareTracking,
-      MealRecord,
-      User,
-      Friendship,
-    ]),
+    TypeOrmModule.forFeature([MealShare, ShareTracking, MealRecord, User, Friendship]),
     CryptoModule,
   ],
   controllers: [ShareController],

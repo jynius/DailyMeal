@@ -51,7 +51,7 @@ export class LocationsController {
       externalName?: string
       externalData?: Record<string, any>
       notes?: string
-    },
+    }
   ) {
     return this.locationsService.createUserLocation({
       userId: req.user.userId,
@@ -66,7 +66,7 @@ export class LocationsController {
   async updateLocation(
     @Request() req,
     @Param('id') id: string,
-    @Body() body: { name?: string; notes?: string },
+    @Body() body: { name?: string; notes?: string }
   ) {
     return this.locationsService.updateUserLocation(req.user.userId, id, body)
   }
@@ -84,13 +84,11 @@ export class LocationsController {
    * 근처 식당 찾기
    */
   @Post('nearby')
-  async findNearby(
-    @Body() body: { latitude: number; longitude: number; radius?: number },
-  ) {
+  async findNearby(@Body() body: { latitude: number; longitude: number; radius?: number }) {
     return this.locationsService.findNearbyLocationGroups(
       body.latitude,
       body.longitude,
-      body.radius || 50,
+      body.radius || 50
     )
   }
 
@@ -102,10 +100,7 @@ export class LocationsController {
     // TODO: 실제로는 FriendsService에서 친구 목록을 가져와야 함
     // 임시로 빈 배열 반환
     const friendIds: string[] = []
-    return this.locationsService.getFriendRecommendations(
-      req.user.userId,
-      friendIds,
-    )
+    return this.locationsService.getFriendRecommendations(req.user.userId, friendIds)
   }
 
   /**
