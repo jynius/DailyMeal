@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import { ConfigService } from '@nestjs/config'
 import { RecommendationService } from './recommendation.service'
 import { MealRecord } from '../../entities/meal-record.entity'
 import { Friendship } from '../../entities/friendship.entity'
 import { User } from '../../entities/user.entity'
+import { KakaoPlace } from '../../entities/kakao-place.entity'
 import { RecommendationType } from '../dto/recommendation.dto'
 
 describe('RecommendationService', () => {
@@ -12,9 +14,25 @@ describe('RecommendationService', () => {
   let mealRepository: Repository<MealRecord>
   let friendshipRepository: Repository<Friendship>
   let userRepository: Repository<User>
+  let kakaoPlaceRepository: Repository<KakaoPlace>
 
   const mockUserId = 'test-user-id'
   const mockFriendId = 'friend-user-id'
+
+  // getFallbackRecommendations에서 사용하는 복잡한 쿼리빌더 mock
+  const mockQueryBuilder = {
+    select: jest.fn().mockReturnThis(),
+    addSelect: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    groupBy: jest.fn().mockReturnThis(),
+    addGroupBy: jest.fn().mockReturnThis(),
+    having: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    addOrderBy: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    getRawMany: jest.fn().mockResolvedValue([]),
+  }
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -23,8 +41,8 @@ describe('RecommendationService', () => {
         {
           provide: getRepositoryToken(MealRecord),
           useValue: {
-            find: jest.fn(),
-            createQueryBuilder: jest.fn(),
+            find: jest.fn().mockResolvedValue([]),
+            createQueryBuilder: jest.fn(() => mockQueryBuilder),
           },
         },
         {
@@ -40,6 +58,20 @@ describe('RecommendationService', () => {
             findOne: jest.fn(),
           },
         },
+        {
+          provide: getRepositoryToken(KakaoPlace),
+          useValue: {
+            find: jest.fn(),
+            findOne: jest.fn(),
+            createQueryBuilder: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('test-value'),
+          },
+        },
       ],
     }).compile()
 
@@ -47,6 +79,7 @@ describe('RecommendationService', () => {
     mealRepository = module.get<Repository<MealRecord>>(getRepositoryToken(MealRecord))
     friendshipRepository = module.get<Repository<Friendship>>(getRepositoryToken(Friendship))
     userRepository = module.get<Repository<User>>(getRepositoryToken(User))
+    kakaoPlaceRepository = module.get<Repository<KakaoPlace>>(getRepositoryToken(KakaoPlace))
   })
 
   it('should be defined', () => {
