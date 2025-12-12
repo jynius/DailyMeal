@@ -173,7 +173,7 @@ export default function RestaurantsPage() {
                   ) : (
                     <>
                       <MapPin size={16} className="text-purple-500" />
-                      <span>Kakao 맛집</span>
+                      <span>Kakao 추천</span>
                     </>
                   )}
                   <ChevronDown size={14} className={`transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
@@ -210,7 +210,7 @@ export default function RestaurantsPage() {
                       } ${friendRecommendations.length > 0 ? 'border-t border-gray-100' : ''}`}
                     >
                       <MapPin size={14} className="text-purple-500" />
-                      <span className="font-medium">Kakao 맛집</span>
+                      <span className="font-medium">Kakao 추천</span>
                     </button>
                   </div>
                 )}

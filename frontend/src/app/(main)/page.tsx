@@ -227,8 +227,8 @@ export default function Home() {
         }
 
         return (
-          <div className="px-6 py-2">
-            {/* 미평가 식사 섹션 */}
+          <div className="py-2">
+            {/* 평가 완료하기 섹션 */}
             {(() => {
               // rating이 없는 항목만 미평가로 간주
               const unratedMeals = meals.filter((meal) => !meal.rating)
@@ -237,7 +237,7 @@ export default function Home() {
               if (!unratedMeal) return null
 
               return (
-                <div className="mb-6">
+                <div className="px-6 pb-4">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-lg font-bold text-gray-900">평가 완료하기</h2>
                     <div className="flex items-center gap-2">
@@ -261,17 +261,54 @@ export default function Home() {
               )
             })()}
 
-            {/* 최근 평가 완료된 식사 섹션 */}
+            {/* 최근 먹은 메뉴 섹션 (메뉴 중심) */}
             {(() => {
               // rating이 있는 항목만 평가 완료로 간주
-              const ratedMeals = meals.filter((meal) => meal.rating).slice(0, 3)
-
+              const ratedMeals = meals.filter((meal) => meal.rating)
+              
               if (ratedMeals.length === 0) return null
 
+              // 메뉴별로 그룹핑 (같은 메뉴를 여러 식당에서 먹은 경우)
+              const menuMap = new Map<string, MealRecord[]>()
+              ratedMeals.forEach((meal) => {
+                const menuName = meal.name
+                if (!menuMap.has(menuName)) {
+                  menuMap.set(menuName, [])
+                }
+                menuMap.get(menuName)!.push(meal)
+              })
+
+              // 최근순으로 정렬하고 상위 5개만
+              const recentMenus = Array.from(menuMap.entries())
+                .map(([menuName, meals]) => {
+                  // 해당 메뉴의 가장 최근 식사 찾기
+                  const latestMeal = meals.sort((a, b) => 
+                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                  )[0]
+                  
+                  // 평균 평점 계산
+                  const avgRating = meals.reduce((sum, m) => sum + (m.rating || 0), 0) / meals.length
+                  
+                  // 방문한 식당들
+                  const restaurants = [...new Set(meals.map(m => m.location).filter(Boolean))]
+                  
+                  return {
+                    menuName,
+                    latestMeal,
+                    avgRating,
+                    visitCount: meals.length,
+                    restaurants,
+                  }
+                })
+                .sort((a, b) => 
+                  new Date(b.latestMeal.createdAt).getTime() - new Date(a.latestMeal.createdAt).getTime()
+                )
+                .slice(0, 5)
+
               return (
-                <>
+                <div className="px-6 pb-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-gray-900">최근 식사</h2>
+                    <h2 className="text-xl font-bold text-gray-900">최근 먹은 메뉴</h2>
                     <Link
                       href="/feed?filter=rated"
                       className="flex items-center text-blue-500 text-sm font-medium hover:text-blue-600"
@@ -281,62 +318,65 @@ export default function Home() {
                     </Link>
                   </div>
 
-                  {/* 식사 기록 리스트 (텍스트만) */}
+                  {/* 메뉴 목록 */}
                   <div className="space-y-2">
-                    {ratedMeals.map((meal) => (
+                    {recentMenus.map(({ menuName, latestMeal, avgRating, visitCount, restaurants }) => (
                       <Link
-                        key={meal.id}
+                        key={`${menuName}-${latestMeal.id}`}
                         href={`/feed`}
                         className="block bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            {/* 동행자 (맨 위) */}
-                            <div className="flex items-center text-xs text-gray-700 mb-2 pb-2 border-b border-gray-100">
-                              <span className="mr-1.5">{meal.companionNames ? '👥' : '🙋'}</span>
-                              <span className="truncate">{meal.companionNames || '혼밥'}</span>
-                            </div>
+                            {/* 메뉴 이름 (강조) */}
+                            <h3 className="font-bold text-lg text-gray-900 mb-1 truncate">{menuName}</h3>
 
-                            {/* 식사 이름 */}
-                            <h3 className="font-bold text-gray-900 mb-1 truncate">{meal.name}</h3>
-
-                            {/* 가격 */}
-                            {meal.price && (
-                              <div className="text-base font-semibold text-blue-600 mb-2">
-                                ₩{meal.price.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
-                              </div>
-                            )}
-
-                            {/* 식당 이름 & 날짜 */}
-                            <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
-                              {meal.location && (
-                                <>
-                                  <div className="flex items-center">
-                                    <MapPin size={12} className="mr-1 flex-shrink-0" />
-                                    <span className="font-medium truncate">{meal.location}</span>
-                                  </div>
-                                  <span className="text-gray-400">•</span>
-                                </>
-                              )}
-                              <span className="whitespace-nowrap">
-                                {new Date(meal.createdAt).toLocaleDateString('ko-KR', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                            </div>
-
-                            {/* 별점 */}
-                            {meal.rating && (
-                              <div className="flex items-center gap-1">
-                                {renderStars(meal.rating, meal.id)}
-                                <span className="ml-1 text-sm font-semibold text-gray-700">
-                                  {meal.rating}/5
+                            {/* 식당 정보 */}
+                            {restaurants.length > 0 && (
+                              <div className="flex items-center text-xs text-gray-600 mb-2">
+                                <MapPin size={12} className="mr-1 flex-shrink-0" />
+                                <span className="truncate">
+                                  {restaurants[0]}
+                                  {restaurants.length > 1 && ` 외 ${restaurants.length - 1}곳`}
                                 </span>
                               </div>
                             )}
+
+                            {/* 가격 */}
+                            {latestMeal.price && (
+                              <div className="text-base font-semibold text-blue-600 mb-2">
+                                ₩{latestMeal.price.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                              </div>
+                            )}
+
+                            {/* 동행자 & 날짜 */}
+                            <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                              <span className="flex items-center">
+                                <span className="mr-1">{latestMeal.companionNames ? '👥' : '🙋'}</span>
+                                {latestMeal.companionNames || '혼밥'}
+                              </span>
+                              <span>•</span>
+                              <span>
+                                {new Date(latestMeal.createdAt).toLocaleDateString('ko-KR', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </span>
+                              {visitCount > 1 && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-blue-600 font-medium">{visitCount}번 먹음</span>
+                                </>
+                              )}
+                            </div>
+
+                            {/* 평균 별점 */}
+                            <div className="flex items-center gap-1">
+                              {renderStars(Math.round(avgRating), latestMeal.id)}
+                              <span className="ml-1 text-sm font-semibold text-gray-700">
+                                {avgRating.toFixed(1)}/5
+                              </span>
+                            </div>
                           </div>
 
                           <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mt-1" />
@@ -344,7 +384,7 @@ export default function Home() {
                       </Link>
                     ))}
                   </div>
-                </>
+                </div>
               )
             })()}
           </div>

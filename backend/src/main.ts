@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { AppModule } from './app.module'
 import { ConfigService } from './config/config.service'
 import * as fs from 'fs'
+import { json, urlencoded } from 'express'
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap')
@@ -14,6 +15,11 @@ async function bootstrap() {
 
   // 필수 환경 변수 검증
   configService.validateRequiredConfig()
+
+  // Body parser 크기 제한 설정 (이미지 업로드 지원)
+  app.use(json({ limit: '50mb' }))
+  app.use(urlencoded({ limit: '50mb', extended: true }))
+  logger.log('📦 Body parser limit set to 50mb')
 
   // CORS 설정 (환경 변수 기반)
   const corsOrigins = configService.getCorsOrigins()

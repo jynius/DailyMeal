@@ -243,7 +243,7 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+    <>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 flex-1">
           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
@@ -263,7 +263,7 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
                 ) : (
                   <>
                     <MapPin size={18} className="text-purple-500" />
-                    <span>Kakao 맛집</span>
+                    <span>Kakao 추천</span>
                   </>
                 )}
                 <ChevronDown size={16} className={`transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
@@ -300,7 +300,7 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
                     } ${friendRecommendations.length > 0 ? 'border-t border-gray-100' : ''}`}
                   >
                     <MapPin size={16} className="text-purple-500" />
-                    <span className="font-medium">Kakao 맛집</span>
+                    <span className="font-medium">Kakao 추천</span>
                   </button>
                 </div>
               )}
@@ -412,34 +412,38 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
               <Link 
                 key={rec.id}
                 href={linkUrl}
-                className="block border border-gray-100 rounded-lg p-3 hover:bg-gray-50 transition-colors"
+                className="block border border-gray-100 rounded-lg px-3 hover:bg-gray-50 transition-colors"
               >
               <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                    <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs flex items-center justify-center font-semibold">
-                      {index + 1}
-                    </span>
-                    {rec.name}
-                  </h4>
-                  
-                  {/* 메뉴 카테고리 */}
+                <div className="flex-1">
+                  {/* 메뉴 카테고리 (가장 먼저) */}
                   {(rec as any).menuCategory && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 mb-1">
                       🍽️ {(rec as any).menuCategory}
                     </p>
                   )}
                   
-                  {/* 인기 메뉴 */}
+                  {/* 인기 메뉴 (두 번째, 강조) */}
                   {(rec as any).popularMenus && (rec as any).popularMenus.length > 0 && (
-                    <div className="flex gap-1 mt-1 flex-wrap">
+                    <div className="flex gap-1 mb-2 flex-wrap">
                       {(rec as any).popularMenus.slice(0, 3).map((menu: string, idx: number) => (
-                        <span key={idx} className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
+                        <span key={idx} className="text-sm bg-orange-100 text-orange-700 px-2 py-1 rounded font-semibold">
                           {menu}
                         </span>
                       ))}
                     </div>
                   )}
+                  
+                  {/* 식당 이름 (세 번째, 작게) */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full text-xs flex items-center justify-center font-semibold">
+                      {index + 1}
+                    </span>
+                    <h4 className="text-sm text-gray-600">
+                      <MapPin size={12} className="inline mr-1" />
+                      {rec.name}
+                    </h4>
+                  </div>
                   
                   <p className="text-sm text-gray-600 mt-1">{rec.description}</p>
                 </div>
@@ -493,6 +497,6 @@ export function AIMenuRecommendation({ preferences }: AIRecommendationProps) {
           )}
         </>
       )}
-    </div>
+    </>
   )
 }
