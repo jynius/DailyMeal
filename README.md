@@ -59,7 +59,30 @@ nano frontend/.env.local
 ```bash
 # 프론트엔드, 백엔드 동시 실행
 npm run dev
+
+# 또는 PM2로 실행 (권장)
+npm run dev:pm2
 ```
+
+### 5. 테스트 실행
+
+```bash
+# 전체 테스트 실행 (Backend + Frontend + App)
+npm test
+
+# 개별 테스트
+npm run test:backend   # Backend 테스트
+npm run test:frontend  # Frontend 테스트
+npm run test:app       # App 테스트
+
+# 커버리지 포함 테스트
+npm run test:coverage
+```
+
+**테스트 현황**: 151개 테스트 (100% 통과)
+- Backend: 49 tests ✅
+- Frontend: 75 tests ✅
+- App: 27 tests ✅
 
 ## 📦 프로젝트 구조
 
