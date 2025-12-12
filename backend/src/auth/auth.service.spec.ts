@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { JwtService } from '@nestjs/jwt'
 import { getRepositoryToken } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
 import { AuthService } from './auth.service'
 import { UsersService } from '../users/users.service'
 import { User } from '../entities/user.entity'
@@ -30,7 +29,7 @@ describe('AuthService', () => {
 
   const mockUserRepository = {
     findOne: jest.fn(),
-    create: jest.fn().mockImplementation((userData) => userData),
+    create: jest.fn().mockImplementation((userData: Partial<User>) => userData as User),
     save: jest.fn().mockImplementation((user) => Promise.resolve({ ...mockUser, ...user })),
   }
 
@@ -70,9 +69,6 @@ describe('AuthService', () => {
     }).compile()
 
     service = module.get<AuthService>(AuthService)
-    usersService = module.get<UsersService>(UsersService)
-    jwtService = module.get<JwtService>(JwtService)
-    userRepository = module.get<Repository<User>>(getRepositoryToken(User))
   })
 
   afterEach(() => {

@@ -81,7 +81,7 @@ describe('UsersService', () => {
 
   const mockConfigService = {
     get: jest.fn().mockReturnValue('test-value'),
-    transformImageUrl: jest.fn((url) => url),
+    transformImageUrl: jest.fn((url: string) => url),
   }
 
   beforeEach(async () => {
@@ -223,7 +223,7 @@ describe('UsersService', () => {
   describe('updateUserSettings', () => {
     const updateData = {
       notificationNewComment: false,
-      aiRecommendationType: 'popular' as any,
+      aiRecommendationType: 'popular' as const,
     }
 
     it('기존 설정 업데이트', async () => {

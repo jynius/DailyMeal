@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common'
+import { Request as ExpressRequest } from 'express'
 import { LocationsService } from './locations.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { ExternalPlatform } from '../entities/external-place-mapping.entity'
@@ -22,16 +23,16 @@ export class LocationsController {
    * 내 식당 목록 조회
    */
   @Get()
-  async getMyLocations(@Request() req) {
-    return this.locationsService.getUserLocations(req.user.userId)
+  async getMyLocations(@Request() req: ExpressRequest) {
+    return this.locationsService.getUserLocations(req.user!.userId)
   }
 
   /**
    * 특정 식당 조회
    */
   @Get(':id')
-  async getLocation(@Request() req, @Param('id') id: string) {
-    return this.locationsService.getUserLocation(req.user.userId, id)
+  async getLocation(@Request() req: ExpressRequest, @Param('id') id: string) {
+    return this.locationsService.getUserLocation(req.user!.userId, id)
   }
 
   /**
@@ -39,7 +40,7 @@ export class LocationsController {
    */
   @Post()
   async createLocation(
-    @Request() req,
+    @Request() req: ExpressRequest,
     @Body()
     body: {
       name: string
@@ -54,7 +55,7 @@ export class LocationsController {
     }
   ) {
     return this.locationsService.createUserLocation({
-      userId: req.user.userId,
+      userId: req.user!.userId,
       ...body,
     })
   }
@@ -64,19 +65,19 @@ export class LocationsController {
    */
   @Patch(':id')
   async updateLocation(
-    @Request() req,
+    @Request() req: ExpressRequest,
     @Param('id') id: string,
     @Body() body: { name?: string; notes?: string }
   ) {
-    return this.locationsService.updateUserLocation(req.user.userId, id, body)
+    return this.locationsService.updateUserLocation(req.user!.userId, id, body)
   }
 
   /**
    * 식당 삭제
    */
   @Delete(':id')
-  async deleteLocation(@Request() req, @Param('id') id: string) {
-    await this.locationsService.deleteUserLocation(req.user.userId, id)
+  async deleteLocation(@Request() req: ExpressRequest, @Param('id') id: string) {
+    await this.locationsService.deleteUserLocation(req.user!.userId, id)
     return { message: 'Location deleted successfully' }
   }
 
@@ -96,11 +97,11 @@ export class LocationsController {
    * 친구 추천 식당
    */
   @Get('recommendations/friends')
-  async getFriendRecommendations(@Request() req) {
+  async getFriendRecommendations(@Request() req: ExpressRequest) {
     // TODO: 실제로는 FriendsService에서 친구 목록을 가져와야 함
     // 임시로 빈 배열 반환
     const friendIds: string[] = []
-    return this.locationsService.getFriendRecommendations(req.user.userId, friendIds)
+    return this.locationsService.getFriendRecommendations(req.user!.userId, friendIds)
   }
 
   /**

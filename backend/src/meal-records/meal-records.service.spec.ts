@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
 import { NotFoundException } from '@nestjs/common'
 import { MealRecordsService } from './meal-records.service'
 import { MealRecord } from '../entities/meal-record.entity'
@@ -57,7 +56,7 @@ describe('MealRecordsService', () => {
   }
 
   const mockConfigService = {
-    transformImageUrl: jest.fn((url) => url),
+    transformImageUrl: jest.fn((url: string) => url),
   }
 
   const mockLocationsService = {
@@ -88,10 +87,6 @@ describe('MealRecordsService', () => {
     }).compile()
 
     service = module.get<MealRecordsService>(MealRecordsService)
-    repository = module.get<Repository<MealRecord>>(getRepositoryToken(MealRecord))
-    realTimeService = module.get<RealTimeService>(RealTimeService)
-    configService = module.get<ConfigService>(ConfigService)
-    locationsService = module.get<LocationsService>(LocationsService)
   })
 
   afterEach(() => {
@@ -116,7 +111,7 @@ describe('MealRecordsService', () => {
       mockRepository.create.mockReturnValue(savedMeal)
       mockRepository.save.mockResolvedValue(savedMeal)
 
-      const result = await service.create(mockUserId, createDto as any)
+      const result = await service.create(mockUserId, createDto as string)
 
       expect(result).toBeDefined()
       expect(mockRepository.create).toHaveBeenCalled()
@@ -133,7 +128,7 @@ describe('MealRecordsService', () => {
       mockRepository.create.mockReturnValue(savedMeal)
       mockRepository.save.mockResolvedValue(savedMeal)
 
-      await service.create(mockUserId, dtoWithLocation as any)
+      await service.create(mockUserId, dtoWithLocation as string)
 
       expect(mockRepository.create).toHaveBeenCalled()
       expect(mockRepository.save).toHaveBeenCalled()

@@ -78,7 +78,6 @@ describe('RecommendationService', () => {
     mealRepository = module.get<Repository<MealRecord>>(getRepositoryToken(MealRecord))
     friendshipRepository = module.get<Repository<Friendship>>(getRepositoryToken(Friendship))
     userRepository = module.get<Repository<User>>(getRepositoryToken(User))
-    kakaoPlaceRepository = module.get<Repository<KakaoPlace>>(getRepositoryToken(KakaoPlace))
   })
 
   it('should be defined', () => {
