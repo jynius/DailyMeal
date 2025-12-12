@@ -153,8 +153,8 @@ export class MealRecordsService {
       // GPS 위치 추출
       if (tags.GPSLatitude && tags.GPSLongitude) {
         // GPSLatitude/Longitude는 배열 형태 [degrees, minutes, seconds]
-        const latValues = tags.GPSLatitude.description
-        const lonValues = tags.GPSLongitude.description
+        const latValues: unknown = tags.GPSLatitude.description
+        const lonValues: unknown = tags.GPSLongitude.description
         const latRef = tags.GPSLatitudeRef?.value?.[0] || 'N'
         const lonRef = tags.GPSLongitudeRef?.value?.[0] || 'E'
 
@@ -165,8 +165,8 @@ export class MealRecordsService {
         }
 
         if (Array.isArray(latValues) && Array.isArray(lonValues)) {
-          latitude = parseCoordinate(latValues)
-          longitude = parseCoordinate(lonValues)
+          latitude = parseCoordinate(latValues as number[])
+          longitude = parseCoordinate(lonValues as number[])
 
           // 남반구/서반구인 경우 음수로 변환
           if (latRef === 'S') latitude = -latitude
@@ -185,7 +185,8 @@ export class MealRecordsService {
 
       return { photoTakenAt, latitude, longitude }
     } catch (error) {
-      this.logger.warn(`EXIF 메타데이터 추출 실패: ${error.message}`)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      this.logger.warn(`EXIF 메타데이터 추출 실패: ${errorMessage}`)
       return {}
     }
   }
@@ -282,7 +283,8 @@ export class MealRecordsService {
         })
         userLocationId = userLocation.id
       } catch (error) {
-        this.logger.warn(`Failed to create user location: ${error.message}`)
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        this.logger.warn(`Failed to create user location: ${errorMessage}`)
       }
     }
 

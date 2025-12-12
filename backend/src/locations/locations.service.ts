@@ -58,7 +58,7 @@ export class LocationsService {
     externalPlatform?: ExternalPlatform
     externalId?: string
     externalName?: string
-    externalData?: Record<string, any>
+    externalData?: Record<string, unknown>
     notes?: string
   }): Promise<UserLocation> {
     const {
@@ -198,9 +198,19 @@ export class LocationsService {
       [latitude, longitude]
     )
 
-    return result
-      .filter((row: any) => row.distance <= radiusInMeters)
-      .map((row: any) => ({
+    return (
+      result as Array<{
+        id: string
+        canonicalName: string
+        latitude: string
+        longitude: string
+        address: string
+        category: string
+        distance: number
+      }>
+    )
+      .filter((row) => row.distance <= radiusInMeters)
+      .map((row) => ({
         id: row.id,
         canonicalName: row.canonicalName,
         latitude: parseFloat(row.latitude),

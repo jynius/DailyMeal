@@ -102,7 +102,7 @@ export class RestaurantsService {
 
         // Legacy: userLocationId가 없는 경우 location 이름으로 매칭
         const legacyMeals = await this.mealRecordRepository.find({
-          where: { userId, location: userLocation.name, userLocationId: null as any },
+          where: { userId, location: userLocation.name, userLocationId: null },
           order: { createdAt: 'DESC' },
         })
 
@@ -408,7 +408,7 @@ export class RestaurantsService {
 
     // Legacy: userLocationId가 없는 경우 location 이름으로 매칭
     const legacyMeals = await this.mealRecordRepository.find({
-      where: { userId, location: userLocation.name, userLocationId: null as any },
+      where: { userId, location: userLocation.name, userLocationId: null },
       order: { createdAt: 'DESC' },
     })
 
@@ -457,7 +457,12 @@ export class RestaurantsService {
   }
 
   // ExternalPlaceMapping 기반 상세 정보 (방문 안 한 식당)
-  private getRestaurantDetailByExternalMapping(mapping: any) {
+  private getRestaurantDetailByExternalMapping(mapping: {
+    externalId: string
+    externalName: string
+    externalData?: { address?: string; [key: string]: unknown }
+    locationGroup?: { latitude?: number; longitude?: number }
+  }) {
     return {
       placeId: mapping.externalId,
       id: mapping.externalId,
