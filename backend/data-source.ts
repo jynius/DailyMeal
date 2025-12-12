@@ -43,7 +43,7 @@ export const dataSourceOptions: DataSourceOptions = {
     UserLocation,
     ExternalPlaceMapping,
   ],
-  synchronize: true, // 개발/운영 모두 자동 스키마 동기화 (마이그레이션 대신)
+  synchronize: process.env.NODE_ENV !== 'production',
   logging: process.env.NODE_ENV !== 'production',
 };
 
