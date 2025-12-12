@@ -12,8 +12,9 @@
 - [환경 변수 체크리스트](setup/ENV_SETUP_CHECKLIST.md)
 - [프로덕션 환경 가이드](setup/ENV_PRODUCTION_GUIDE.md)
 - [데이터베이스 설정](setup/DATABASE.md)
-- [PostgreSQL 설정](setup/POSTGRES_SETUP_GUIDE.md)
-- [PostgreSQL 마이그레이션](setup/POSTGRES_MIGRATION.md)
+- [PostgreSQL 설정](setup/POSTGRES_GUIDE.md) - 통합 가이드
+- [카카오 로컬 API](setup/KAKAO_LOCAL_API_SETUP.md)
+- [초기 설정](setup/INITIAL_SETUP.md)
 
 ### 📦 [deployment/](deployment/) - 배포
 
@@ -38,12 +39,16 @@
 
 주요 기능 구현 가이드
 
+- [AI 인사이트](features/AI_INSIGHTS_GUIDE.md) - 식습관 분석 & 추천 (✅ 운영 중)
+- [AI 테스트 시나리오](features/AI_PHASE1_TEST_SCENARIOS.md)
+- [AI Cold Start 예제](features/AI_COLD_START_EXAMPLES.md)
 - [2단계 식사 기록 시스템](features/TWO_PHASE_MEAL_SYSTEM.md)
 - [평가 Modal 시스템](features/EVALUATE_MODAL_SYSTEM.md)
 - [평가 선택적 업데이트](features/RATING_OPTIONAL_UPDATE.md)
 - [사용자 시나리오](features/SCENARIOS.md)
 - [웹앱 통합 보고서](features/WEB_APP_INTEGRATION_REPORT.md)
 - [카카오톡 공유 설정](features/KAKAO_SHARE_SETUP.md)
+- [카카오 로컬 검색](features/KAKAO_LOCAL_SEARCH.md)
 - [공유 시스템 백엔드](features/SHARE_SYSTEM_PHASE1_BACKEND.md)
 - [공유 시스템 프론트엔드](features/SHARE_SYSTEM_PHASE2_FRONTEND.md)
 - [PWA 아이콘 가이드](features/PWA_ICONS_GUIDE.md)
@@ -59,10 +64,8 @@ NestJS 관련 문서
 
 ### 🔧 [fixes/](fixes/) - 버그 수정
 
-발견된 문제와 해결 방법
+현재 활성화된 수정 사항
 
-- [JWT 인증 수정](fixes/JWT_AUTH_FIX.md)
-- [JWT 토큰 에러 수정](fixes/JWT_TOKEN_ERROR_FIX.md)
 - [카카오 맵 401 에러 수정](fixes/KAKAO_MAP_401_FIX.md)
 - [이미지 경로 수정](fixes/IMAGE_PATH_FIX.md)
 - [Next.js 이미지 로더 수정](fixes/NEXTJS_IMAGE_LOADER_FIX.md)
@@ -70,6 +73,8 @@ NestJS 관련 문서
 - [Socket.IO Nginx 수정](fixes/SOCKETIO_NGINX_FIX.md)
 - [WebView 네비게이션 디버그](fixes/WEBVIEW_NAVIGATION_DEBUG.md)
 - [플로팅 버튼과 새로고침](fixes/FLOATING_BUTTON_AND_REFRESH.md)
+
+**완료된 수정**: `archive/completed-fixes/` 참조
 
 ### 📱 [app/](app/) - 모바일 앱
 
@@ -110,6 +115,14 @@ GitHub Actions, 브랜치 전략
 
 - [브랜치 설정](github/BRANCH_SETUP.md)
 - [GitHub Actions 설정](github/GITHUB_ACTIONS_SETUP.md)
+
+### 📦 [archive/](archive/) - 아카이브
+
+완료되거나 더 이상 사용하지 않는 문서들
+
+- `completed-migrations/` - 완료된 마이그레이션 문서
+- `completed-fixes/` - 해결 완료된 버그 수정
+- `planning/` - 초기 기획 및 로드맵
 
 ## 🎯 빠른 링크
 
