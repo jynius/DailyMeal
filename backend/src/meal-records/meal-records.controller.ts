@@ -13,7 +13,7 @@ import {
   ValidationPipe,
   Request,
 } from '@nestjs/common'
-import { Request as ExpressRequest } from 'express'
+import type { Request as ExpressRequest } from 'express'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger'
 import { Express } from 'express'
 import { MealRecordsService } from './meal-records.service'
@@ -48,7 +48,7 @@ export class MealRecordsController {
     @UploadedFiles() files: Express.Multer.File[],
     @Request() req: ExpressRequest
   ) {
-    this.logger.info(`🔄 create() called for user: ${req.user!.email}`)
+    this.logger.info(`🔄 create() called for user: ${(req.user as any).email}`)
     this.logger.debug(
       `📋 Meal data: ${createMealRecordDto.name}, Rating: ${createMealRecordDto.rating}`
     )
@@ -81,7 +81,7 @@ export class MealRecordsController {
 
     const result = await this.mealRecordsService.create(
       createMealRecordDto,
-      req.user!.id,
+      (req.user as any).id,
       photoPaths,
       fullPhotoPaths
     )
@@ -98,7 +98,7 @@ export class MealRecordsController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10
   ) {
-    return this.mealRecordsService.findAll(req.user!.id, page, limit)
+    return this.mealRecordsService.findAll((req.user as any).id, page, limit)
   }
 
   @Get('search')
@@ -110,21 +110,21 @@ export class MealRecordsController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10
   ) {
-    return this.mealRecordsService.search(req.user!.id, query, page, limit)
+    return this.mealRecordsService.search((req.user as any).id, query, page, limit)
   }
 
   @Get('statistics')
   @ApiOperation({ summary: '사용자 통계 조회' })
   @ApiResponse({ status: 200, description: '통계 조회 성공' })
   getStatistics(@Request() req: ExpressRequest) {
-    return this.mealRecordsService.getStatistics(req.user!.id)
+    return this.mealRecordsService.getStatistics((req.user as any).id)
   }
 
   @Get('locations/frequent')
   @ApiOperation({ summary: '자주 가는 장소 목록 조회' })
   @ApiResponse({ status: 200, description: '자주 가는 장소 목록 조회 성공' })
   getFrequentLocations(@Request() req: ExpressRequest) {
-    return this.mealRecordsService.getFrequentLocations(req.user!.id)
+    return this.mealRecordsService.getFrequentLocations((req.user as any).id)
   }
 
   @Get(':id')
@@ -132,7 +132,7 @@ export class MealRecordsController {
   @ApiResponse({ status: 200, description: '식사 기록 상세 조회 성공' })
   @ApiResponse({ status: 404, description: '식사 기록을 찾을 수 없음' })
   findOne(@Param('id') id: string, @Request() req: ExpressRequest) {
-    return this.mealRecordsService.findOne(id, req.user!.id)
+    return this.mealRecordsService.findOne(id, (req.user as any).id)
   }
 
   @Patch(':id')
@@ -145,7 +145,7 @@ export class MealRecordsController {
     @Body(ValidationPipe) updateMealRecordDto: UpdateMealRecordDto,
     @Request() req: ExpressRequest
   ) {
-    return this.mealRecordsService.update(id, updateMealRecordDto, req.user!.id)
+    return this.mealRecordsService.update(id, updateMealRecordDto, (req.user as any).id)
   }
 
   @Delete(':id')
@@ -154,6 +154,6 @@ export class MealRecordsController {
   @ApiResponse({ status: 404, description: '식사 기록을 찾을 수 없음' })
   @ApiResponse({ status: 403, description: '권한 없음' })
   remove(@Param('id') id: string, @Request() req: ExpressRequest) {
-    return this.mealRecordsService.remove(id, req.user!.id)
+    return this.mealRecordsService.remove(id, (req.user as any).id)
   }
 }

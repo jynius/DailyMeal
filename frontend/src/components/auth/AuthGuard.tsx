@@ -29,11 +29,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
     // 인증되지 않은 경우 로그인으로 리다이렉트
     if (!isAuthenticated) {
-      const token = tokenManager.get()
-      if (!token) {
-        log.warn('Not authenticated, redirecting to /login')
-        router.push('/login')
-      }
+      // AuthContext가 이미 토큰 검증을 마쳤으므로 (mounted 상태),
+      // isAuthenticated가 false라면 유효한 토큰이 없는 것임.
+      // 따라서 추가 토큰 체크 없이 바로 리다이렉트.
+      log.warn('Not authenticated, redirecting to /login')
+      router.push('/login')
     }
   }, [mounted, isAuthenticated, router])
 

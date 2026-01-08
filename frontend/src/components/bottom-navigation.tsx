@@ -1,12 +1,23 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Plus, User, MapPin, Utensils, Users } from 'lucide-react'
 import { logClick } from '@/lib/webview-utils'
+import { tokenManager } from '@/lib/api'
 
 export function BottomNavigation() {
   const pathname = usePathname()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    setIsAuthenticated(!!tokenManager.get())
+  }, [])
+
+  if (pathname === '/' && !isAuthenticated) {
+    return null
+  }
 
   const navItems = [
     { href: '/', icon: Home, label: '홈' },

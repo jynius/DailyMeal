@@ -4,6 +4,11 @@ import { useEffect } from 'react'
 
 export function PWAInstaller() {
   useEffect(() => {
+    // 개발 환경에서는 Service Worker 등록 방지 (캐싱 문제 해결)
+    if (process.env.NODE_ENV === 'development') {
+      return
+    }
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')

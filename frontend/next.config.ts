@@ -1,10 +1,20 @@
 import type { NextConfig } from "next";
+import path from 'path';
 
 const nextConfig: NextConfig = {
-  // 실험적 기능 모두 제거
-  swcMinify: false, // SWC 비활성화
+  // Monorepo support: Trace output files correctly from workspace root
+  outputFileTracingRoot: path.resolve(__dirname, '../'),
+
+  // Experimental features
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
+
+  // Disable SWC minification for debugging stability
+  // swcMinify: false, // Deprecated in Next.js 15 (always on)
+
   images: {
-    unoptimized: true, // 이미지 최적화 비활성화 - 원본 URL 직접 사용
+    unoptimized: true, // Disable optimization for consistent local asset loading
     remotePatterns: [
       {
         protocol: 'http',
@@ -19,6 +29,12 @@ const nextConfig: NextConfig = {
         pathname: '/uploads/**',
       },
       {
+        protocol: 'http',
+        hostname: '172.21.114.94',
+        port: '8000',
+        pathname: '/uploads/**',
+      },
+      {
         protocol: 'https',
         hostname: 'www.dailymeal.life',
         pathname: '/api/uploads/**',
@@ -28,18 +44,22 @@ const nextConfig: NextConfig = {
         hostname: 'dailymeal.life',
         pathname: '/api/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'www.dailymeal.life',
+        pathname: '/uploads/**',
+      }
     ],
   },
   eslint: {
-    ignoreDuringBuilds: true, // 빌드 시 ESLint 무시
+    ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true, // TypeScript 에러 무시
+    ignoreBuildErrors: true,
   },
-  // 프로덕션 빌드에서 console.* 자동 제거
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'], // error와 warn은 유지
+      exclude: ['error', 'warn'],
     } : false,
   },
 };

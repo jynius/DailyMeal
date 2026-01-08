@@ -9,7 +9,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common'
-import { Request as ExpressRequest } from 'express'
+import type { Request as ExpressRequest } from 'express'
 import { LocationsService } from './locations.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { ExternalPlatform } from '../entities/external-place-mapping.entity'
@@ -24,7 +24,7 @@ export class LocationsController {
    */
   @Get()
   async getMyLocations(@Request() req: ExpressRequest) {
-    return this.locationsService.getUserLocations(req.user!.userId)
+    return this.locationsService.getUserLocations((req.user as any).id)
   }
 
   /**
@@ -32,7 +32,7 @@ export class LocationsController {
    */
   @Get(':id')
   async getLocation(@Request() req: ExpressRequest, @Param('id') id: string) {
-    return this.locationsService.getUserLocation(req.user!.userId, id)
+    return this.locationsService.getUserLocation((req.user as any).id, id)
   }
 
   /**
@@ -55,7 +55,7 @@ export class LocationsController {
     }
   ) {
     return this.locationsService.createUserLocation({
-      userId: req.user!.userId,
+      userId: (req.user as any).id,
       ...body,
     })
   }
@@ -69,7 +69,7 @@ export class LocationsController {
     @Param('id') id: string,
     @Body() body: { name?: string; notes?: string }
   ) {
-    return this.locationsService.updateUserLocation(req.user!.userId, id, body)
+    return this.locationsService.updateUserLocation((req.user as any).id, id, body)
   }
 
   /**
@@ -77,7 +77,7 @@ export class LocationsController {
    */
   @Delete(':id')
   async deleteLocation(@Request() req: ExpressRequest, @Param('id') id: string) {
-    await this.locationsService.deleteUserLocation(req.user!.userId, id)
+    await this.locationsService.deleteUserLocation((req.user as any).id, id)
     return { message: 'Location deleted successfully' }
   }
 
@@ -101,7 +101,7 @@ export class LocationsController {
     // TODO: 실제로는 FriendsService에서 친구 목록을 가져와야 함
     // 임시로 빈 배열 반환
     const friendIds: string[] = []
-    return this.locationsService.getFriendRecommendations(req.user!.userId, friendIds)
+    return this.locationsService.getFriendRecommendations((req.user as any).id, friendIds)
   }
 
   /**

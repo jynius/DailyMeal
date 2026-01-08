@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Repository, IsNull } from 'typeorm'
 import { MealRecord } from '../entities/meal-record.entity'
 import { KakaoPlace } from '../entities/kakao-place.entity'
 import { AppLoggerService } from '../common/logger.service'
@@ -102,7 +102,7 @@ export class RestaurantsService {
 
         // Legacy: userLocationId가 없는 경우 location 이름으로 매칭
         const legacyMeals = await this.mealRecordRepository.find({
-          where: { userId, location: userLocation.name, userLocationId: null },
+          where: { userId, location: userLocation.name, userLocationId: IsNull() },
           order: { createdAt: 'DESC' },
         })
 
@@ -408,7 +408,7 @@ export class RestaurantsService {
 
     // Legacy: userLocationId가 없는 경우 location 이름으로 매칭
     const legacyMeals = await this.mealRecordRepository.find({
-      where: { userId, location: userLocation.name, userLocationId: null },
+      where: { userId, location: userLocation.name, userLocationId: IsNull() },
       order: { createdAt: 'DESC' },
     })
 

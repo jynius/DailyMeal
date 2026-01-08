@@ -181,7 +181,7 @@ export class LocationsService {
     latitude: number,
     longitude: number,
     radiusInMeters: number = 50
-  ): Promise<LocationGroup[]> {
+  ): Promise<any[]> {
     const result = await this.locationGroupRepository.query(
       `
       SELECT id, "canonicalName", latitude, longitude, address, category,
