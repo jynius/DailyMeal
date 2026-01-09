@@ -8,6 +8,7 @@ import { connectFriend } from '@/lib/api/share'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
 import { useAlert } from '@/components/ui/alert'
+import { useAuth } from '@/contexts/auth-context'
 
 interface AuthFormProps {
   initialMode?: 'login' | 'register'
@@ -31,10 +32,11 @@ export function AuthForm({ initialMode = 'login', onSuccess }: AuthFormProps) {
   const { showAlert } = useAlert()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { login } = useAuth()
 
   const handleAuthSuccess = async (token: string, message: string) => {
-    // 토큰 저장
-    tokenManager.set(token)
+    // AuthContext를 통해 토큰 저장 및 상태 업데이트
+    login(token)
     
     // 공유를 통한 친구 연결 처리
     const shareRef = typeof window !== 'undefined' ? sessionStorage.getItem('shareRef') : null
@@ -56,45 +58,27 @@ export function AuthForm({ initialMode = 'login', onSuccess }: AuthFormProps) {
     
     // 리다이렉트 로직:
     // 1. returnUrl 쿼리 파라미터 (미들웨어에서 설정, 최우선)
-    // 2. document.referrer (이전 페이지)
+    // 2. onSuccess 콜백
     // 3. 기본값: / (홈)
-    let redirectUrl = searchParams.get('returnUrl')
+    const returnUrl = searchParams.get('returnUrl')
     
-    console.log('🔍 Redirect Debug:', {
-      returnUrl: searchParams.get('returnUrl'),
-      referrer: typeof window !== 'undefined' ? document.referrer : 'N/A',
-      searchParams: Array.from(searchParams.entries())
+    console.log('🔍 Login Success - Redirect Info:', {
+      returnUrl,
+      hasOnSuccess: !!onSuccess,
+      allParams: Object.fromEntries(searchParams.entries())
     })
     
-    if (!redirectUrl && typeof window !== 'undefined' && document.referrer) {
-      const referrer = new URL(document.referrer)
-      const referrerPath = referrer.pathname
-      
-      // 같은 도메인이고, /login이나 /signup이 아닌 경우에만 referrer 사용
-      if (referrer.origin === window.location.origin && 
-          referrerPath !== '/login' && 
-          referrerPath !== '/signup' &&
-          referrerPath !== '/') {
-        redirectUrl = referrerPath + referrer.search
-      }
+    // 알림 없이 즉시 리다이렉트
+    if (returnUrl) {
+      console.log('✅ Redirecting to returnUrl:', returnUrl)
+      router.replace(returnUrl)
+    } else if (onSuccess) {
+      console.log('✅ Calling onSuccess callback')
+      onSuccess()
+    } else {
+      console.log('✅ Redirecting to default: /')
+      router.replace('/')
     }
-    
-    // 기본값
-    if (!redirectUrl) {
-      redirectUrl = '/'
-    }
-    
-    console.log('✅ Final redirect URL:', redirectUrl)
-    
-    showAlert({
-      title: '로그인 성공',
-      message,
-      confirmText: '확인',
-      onConfirm: () => {
-        // onSuccess는 무시하고 항상 redirectUrl 사용
-        router.push(redirectUrl!)
-      }
-    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,8 +149,6 @@ export function AuthForm({ initialMode = 'login', onSuccess }: AuthFormProps) {
         })
       }
 
-      tokenManager.set(result.token)
-      
       // 친구 연결 처리 및 알림
       await handleAuthSuccess(result.token, '데모 계정으로 로그인되었습니다!')
     } catch (err: unknown) {

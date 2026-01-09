@@ -11,6 +11,7 @@ import { useLocationPermission } from '@/hooks/use-location-permission'
 import AuthGuard from '@/components/auth/AuthGuard'
 import { mealRecordsApi } from '@/lib/api'
 import Spinner from '@/components/ui/spinner'
+import { LocationSelector } from '@/components/location-selector'
 
 const log = createLogger('AddMealPage')
 
@@ -66,6 +67,7 @@ function AddMealPage() {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [isMobileApp, setIsMobileApp] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showLocationSelector, setShowLocationSelector] = useState(false)
   const router = useRouter()
   const { showAlert } = useAlert()
   const toast = useToast()
@@ -73,9 +75,6 @@ function AddMealPage() {
   // 위치 권한 관리 (자동 프롬프트 표시)
   const location = useLocationPermission({
     autoPrompt: true,
-    promptTitle: '📍 위치 권한 필요',
-    promptMessage:
-      '식사 위치를 자동으로 기록하려면 위치 권한이 필요합니다.\n\n권한을 허용하시겠습니까?',
   })
 
   // 모바일 앱 환경 감지
@@ -128,6 +127,28 @@ function AddMealPage() {
       }
     }
   }, [location.latitude, location.longitude, location.address, location.isLoading, toast])
+
+  // 위치 선택 핸들러
+  const handleLocationSelect = (selectedLocation: {
+    lat: number
+    lng: number
+    address?: string
+    placeName?: string
+  }) => {
+    const displayAddress = selectedLocation.address || selectedLocation.placeName || '선택한 위치'
+    const shortAddress = displayAddress.split(',').slice(0, 2).join(',')
+    
+    setFormData((prev) => ({
+      ...prev,
+      latitude: selectedLocation.lat,
+      longitude: selectedLocation.lng,
+      address: displayAddress,
+      location: shortAddress,
+    }))
+    
+    setShowLocationSelector(false)
+    toast.success(`위치 선택 완료: ${shortAddress}`, '위치 정보')
+  }
 
   // 네이티브 앱에서 선택한 이미지 처리
   const handleNativeImages = (images: Array<{ base64: string; uri: string }>) => {
@@ -274,10 +295,54 @@ function AddMealPage() {
         )}
 
         {location.error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
-            <span className="text-sm text-red-700">
-              {location.error instanceof Error ? location.error.message : String(location.error)}
-            </span>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm text-red-700">
+                위치 정보를 가져올 수 없습니다
+              </span>
+            </div>
+            <Button
+              type="button"
+              onClick={() => setShowLocationSelector(true)}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              수동으로 위치 선택하기
+            </Button>
+          </div>
+        )}
+
+        {/* 위치 선택 모달 */}
+        {showLocationSelector && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="p-4 border-b flex items-center justify-between">
+                <h2 className="text-lg font-semibold">위치 선택</h2>
+                <button
+                  type="button"
+                  onClick={() => setShowLocationSelector(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4">
+                <LocationSelector
+                  onLocationSelect={handleLocationSelect}
+                  initialLocation={
+                    formData.latitude && formData.longitude
+                      ? {
+                          lat: formData.latitude,
+                          lng: formData.longitude,
+                          address: formData.address,
+                        }
+                      : undefined
+                  }
+                />
+              </div>
+            </div>
           </div>
         )}
 

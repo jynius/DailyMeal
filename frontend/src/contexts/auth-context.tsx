@@ -27,7 +27,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window === 'undefined') return false
     const token = tokenManager.get()
-    log.info('useState initializer - Token exists', { hasToken: !!token })
+    log.info('useState initializer - Token exists', { 
+      hasToken: !!token,
+      tokenLength: token?.length,
+      cookieExists: document.cookie.includes('token=')
+    })
     if (!token) return false
 
     try {
@@ -89,8 +93,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = useCallback((token: string) => {
-    log.info('Login with token')
+    log.info('Login with token', { tokenLength: token.length })
     tokenManager.set(token)
+    
+    // 토큰이 제대로 저장되었는지 확인
+    const savedToken = tokenManager.get()
+    log.info('Token saved and verified', { 
+      saved: !!savedToken, 
+      matches: savedToken === token,
+      cookieSet: document.cookie.includes('token=')
+    })
+    
     setIsAuthenticated(true)
   }, [])
 

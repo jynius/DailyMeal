@@ -89,26 +89,50 @@ export function LocationProvider({ children }: Readonly<{ children: ReactNode }>
     setIsLoading(true)
     setError(null)
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        log.info('Geolocation acquired', { latitude, longitude })
-        setLatitude(latitude)
-        setLongitude(longitude)
-        setPermissionState('granted')
-        // reverseGeocode 호출을 여기서 분리합니다.
-        // 로딩 상태는 새로운 useEffect에서 관리합니다.
-      },
-      (err) => {
-        log.warn('Failed to get geolocation', { code: err.code, message: err.message })
-        setError(err)
+    const handleSuccess = (position: GeolocationPosition) => {
+      const { latitude, longitude } = position.coords
+      log.info('Geolocation acquired', { latitude, longitude })
+      setLatitude(latitude)
+      setLongitude(longitude)
+      setPermissionState('granted')
+      // 좌표 확보 즉시 로딩 종료 (주소는 백그라운드에서 비동기로 가져옴)
+      setIsLoading(false)
+    }
+
+    const handleError = (err: GeolocationPositionError, isHighAccuracy: boolean) => {
+      // Timeout(code 3)이고 HighAccuracy 시도였다면 LowAccuracy로 재시도
+      if (err.code === 3 && isHighAccuracy) {
+        log.warn('High accuracy geolocation timed out, retrying with low accuracy...')
+        navigator.geolocation.getCurrentPosition(
+          handleSuccess,
+          (retryErr) => handleError(retryErr, false),
+          {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 60000,
+          }
+        )
+        return
+      }
+
+      // 최종 실패 시 에러 설정 (사용자가 수동으로 위치 선택 가능)
+      log.warn('Failed to get geolocation', { code: err.code, message: err.message })
+      setError(err)
+      if (err.code === 1) {
+        // PERMISSION_DENIED
         setPermissionState('denied')
-        setIsLoading(false)
-      },
+      }
+      setIsLoading(false)
+    }
+
+    // 1차 시도: High Accuracy
+    navigator.geolocation.getCurrentPosition(
+      handleSuccess,
+      (err) => handleError(err, true),
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000, // 1분 캐시
+        timeout: 5000, // 5초 타임아웃 (빠른 실패를 위해 줄임)
+        maximumAge: 60000,
       }
     )
   }, []) // reverseGeocode 의존성 제거
@@ -120,13 +144,11 @@ export function LocationProvider({ children }: Readonly<{ children: ReactNode }>
           await reverseGeocode(latitude, longitude)
         } catch (e) {
           log.error('Error during reverse geocoding', e)
-          // 에러는 reverseGeocode 내부에서 이미 설정됨
-        } finally {
-          setIsLoading(false)
+          // 에러가 발생해도 좌표는 이미 확보된 상태이므로 계속 사용 가능
         }
       } else if (latitude && longitude && !isKakaoMapLoaded) {
-        // 좌표는 있으나, 아직 지도 스크립트가 로드되지 않은 경우 로딩 유지
-        setIsLoading(true)
+        // 좌표는 있으나 지도 스크립트가 아직 로드 안 됨 (주소는 나중에)
+        log.debug('Coordinates acquired, waiting for Kakao Map to load for address')
       }
     }
 
