@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import path from 'path';
 
 const nextConfig: NextConfig = {
+  // Standalone build: 실행에 필요한 최소 파일만 포함
+  output: 'standalone',
+  
   // Monorepo support: Trace output files correctly from workspace root
   outputFileTracingRoot: path.resolve(__dirname, '../'),
 

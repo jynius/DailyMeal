@@ -22,13 +22,13 @@ module.exports = {
       min_uptime: '10s',
     },
     {
-      // 🔥 프로덕션 프론트엔드: 빌드된 Next.js 서버
+      // 🔥 프로덕션 프론트엔드: Standalone 빌드 실행
       name: 'dailymeal-frontend',
-      script: 'npm',
-      args: 'run start',
+      script: 'server.js',  // Standalone 빌드가 생성한 서버
       cwd: './frontend',
       env: {
         NODE_ENV: 'production',
+        HOSTNAME: '0.0.0.0',
         PORT: 3000,
         // ⚠️ NEXT_PUBLIC_* 환경 변수는 빌드 시점에 번들에 포함됨
         // npm run build 전에 frontend/.env.production 파일 설정 필수
