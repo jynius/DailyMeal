@@ -1,5 +1,7 @@
 'use client'
 
+console.log('✅ evaluate-modal.tsx 파일 로드됨')
+
 import { useState, useEffect } from 'react'
 import { X, Star, MapPin, Home, Bike, UtensilsCrossed, Users, Navigation } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -49,6 +51,13 @@ export function EvaluateModal({
   const [filteredFriends, setFilteredFriends] = useState<Friend[]>([])
   const [userLat, setUserLat] = useState<number | null>(null)
   const [userLng, setUserLng] = useState<number | null>(null)
+  const [photoMetadata, setPhotoMetadata] = useState<{
+    photoTakenAt: string | null
+    address: string | null
+    latitude: number | null
+    longitude: number | null
+  } | null>(null)
+  const [nearbyRestaurants, setNearbyRestaurants] = useState<RestaurantPlace[]>([])
   const { showAlert } = useAlert()
   const { success: showSuccess } = useToast()
 
@@ -60,6 +69,13 @@ export function EvaluateModal({
     longitude: contextLng,
   } = useLocation()
 
+  // 디버깅: photoMetadata 변경 감지
+  useEffect(() => {
+    if (photoMetadata) {
+      console.log('📸 photoMetadata 업데이트됨:', photoMetadata)
+    }
+  }, [photoMetadata])
+
   // Context에서 위치 받아오기
   useEffect(() => {
     if (contextLat && contextLng) {
@@ -69,6 +85,8 @@ export function EvaluateModal({
   }, [contextLat, contextLng])
 
   useEffect(() => {
+    console.log('🔄 useEffect 실행:', { isOpen, hasExistingMeal: !!existingMeal, mealName })
+    
     if (isOpen) {
       // ✅ Context를 통한 위치 가져오기 (권한 관리 자동)
       if (globalThis.window !== undefined && permissionState !== 'denied') {
@@ -76,6 +94,7 @@ export function EvaluateModal({
       }
 
       if (existingMeal) {
+        console.log('📝 기존 식사 수정 모드')
         // 수정 모드: 기존 데이터 불러오기
         setFormData({
           name: existingMeal.name || '',
@@ -87,6 +106,32 @@ export function EvaluateModal({
           companionIds: existingMeal.companionIds || [],
           companionNames: existingMeal.companionNames || '',
         })
+
+        // 사진 메타정보 추출
+        console.log('📸 기존 식사 메타정보:', {
+          photoTakenAt: existingMeal.photoTakenAt,
+          latitude: existingMeal.latitude,
+          longitude: existingMeal.longitude,
+          address: existingMeal.address,
+        })
+        
+        if (existingMeal.photoTakenAt || existingMeal.latitude) {
+          console.log('✅ 메타정보 설정 중...')
+          setPhotoMetadata({
+            photoTakenAt: existingMeal.photoTakenAt || null,
+            address: existingMeal.address || null,
+            latitude: existingMeal.latitude || null,
+            longitude: existingMeal.longitude || null,
+          })
+
+          // GPS 정보가 있으면 근처 식당 검색
+          if (existingMeal.latitude && existingMeal.longitude) {
+            console.log('🔍 근처 식당 검색 중...')
+            fetchNearbyRestaurants(existingMeal.latitude, existingMeal.longitude)
+          }
+        } else {
+          console.log('⚠️ 메타정보 없음 - 조건 미충족')
+        }
       } else {
         // 새 평가 모드: 초기화
         setFormData({
@@ -152,6 +197,17 @@ export function EvaluateModal({
       console.error('근처 식당 불러오기 실패:', error)
     } finally {
       setIsLoadingPlaces(false)
+    }
+  }
+
+  // 사진 촬영 위치 기준 근처 식당 검색
+  const fetchNearbyRestaurants = async (lat: number, lng: number) => {
+    try {
+      const places = await kakaoLocal.searchByCategory(lat, lng, 500, 'FD6')
+      setNearbyRestaurants(places.slice(0, 5)) // 최대 5개만 표시
+      console.log(`✅ 사진 위치 근처 식당 ${places.length}개 로드 완료`)
+    } catch (error) {
+      console.error('사진 위치 근처 식당 불러오기 실패:', error)
     }
   }
 
@@ -348,6 +404,74 @@ export function EvaluateModal({
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
+          {/* 사진 메타정보 (촬영 시간 & 위치) */}
+          {photoMetadata && (photoMetadata.photoTakenAt || photoMetadata.latitude) && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+              <div className="flex items-center gap-2 text-blue-800 font-medium">
+                <MapPin size={18} />
+                <span>사진 정보</span>
+              </div>
+
+              {photoMetadata.photoTakenAt && (
+                <div className="text-sm text-gray-700">
+                  <span className="font-medium">📅 촬영 시간:</span>{' '}
+                  {new Date(photoMetadata.photoTakenAt).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </div>
+              )}
+
+              {photoMetadata.latitude && photoMetadata.longitude && (
+                <>
+                  <div className="text-sm text-gray-700">
+                    <span className="font-medium">📍 촬영 위치:</span>{' '}
+                    {photoMetadata.address || `${photoMetadata.latitude.toFixed(6)}, ${photoMetadata.longitude.toFixed(6)}`}
+                  </div>
+
+                  {nearbyRestaurants.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-blue-200">
+                      <div className="text-sm font-medium text-gray-700 mb-2">
+                        📌 근처 식당 (반경 500m):
+                      </div>
+                      <div className="space-y-1.5">
+                        {nearbyRestaurants.map((place) => (
+                          <button
+                            key={place.id}
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev) => ({ ...prev, location: place.place_name }))
+                              showSuccess(`"${place.place_name}" 선택됨`, '위치')
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-blue-100 rounded-lg transition-colors"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {place.place_name}
+                                </div>
+                                <div className="text-xs text-gray-600 mt-0.5">
+                                  {place.category_name?.split('>').pop()?.trim()}
+                                  {place.distance && ` · ${Math.round(parseInt(place.distance))}m`}
+                                </div>
+                              </div>
+                              <div className="text-xs text-blue-600 font-medium whitespace-nowrap">
+                                선택 →
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
           {/* 식사 이름 */}
           <div className="space-y-2">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
